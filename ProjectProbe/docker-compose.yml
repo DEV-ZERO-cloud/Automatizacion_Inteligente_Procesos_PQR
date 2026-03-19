@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: pqr_postgres
+    environment:
+      POSTGRES_USER: pqr_user
+      POSTGRES_PASSWORD: pqr_password
+      POSTGRES_DB: pqr_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pqr_user -d pqr_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: pqr_adminer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
