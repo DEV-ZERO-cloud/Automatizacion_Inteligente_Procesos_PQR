@@ -11,6 +11,18 @@ from app.api.routes.user_auth_service import (
     user_query_service,
 )
 
+# ── Microservicio: Organización ───────────────────────────────────────────────
+from app.api.routes.organization_service import (
+    organization_CUD_service,
+    organization_query_service,
+)
+
+# ── Microservicio: Gestión de Clasificación ───────────────────────────────────
+from app.api.routes.classifications_service import (
+    classifications_CUD_service,
+    classifications_query_service,
+)
+
 # ── Microservicio: Reportes y Dashboard ───────────────────────────────────────
 from app.api.routes.reports_service import reports_service
 
@@ -58,6 +70,14 @@ async def shutdown_event():
 # Microservicio 3 – Autenticación y Usuarios
 app.include_router(user_CUD_service.router)    # POST /auth/login, POST /users/create, PUT /users/update, DELETE /users/delete/{id}
 app.include_router(user_query_service.router)  # GET /users, GET /users/{id}
+
+# Microservicio 4 – Organización
+app.include_router(organization_CUD_service.router)
+app.include_router(organization_query_service.router)
+
+# Microservicios 6, 7 y 8 – Gestión de Clasificación
+app.include_router(classifications_CUD_service.router)
+app.include_router(classifications_query_service.router)
 
 # Microservicio 12 – Reportes y Dashboard
 app.include_router(reports_service.router)     # GET /reports/dashboard, /by-category, /by-priority, /by-area
