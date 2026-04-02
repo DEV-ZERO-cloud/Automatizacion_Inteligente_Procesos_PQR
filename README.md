@@ -1,163 +1,133 @@
-# Clasificador Inteligente de PQR para Empresas
+# Automatizacion Inteligente de Procesos PQR
 
-Este proyecto propone el desarrollo de un prototipo de sistema inteligente para automatizar la clasificación de solicitudes de **Peticiones, Quejas y Reclamos (PQR)** en una empresa de servicios.
+<p align="center">
+	<img alt="Status" src="https://img.shields.io/badge/Status-Ready%20for%20Dev-16a34a?style=for-the-badge" />
+	<img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+	<img alt="Backend" src="https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+	<img alt="Frontend" src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite-0ea5e9?style=for-the-badge&logo=react&logoColor=white" />
+</p>
 
----
+<p align="center">
+	<img alt="Database" src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white" />
+	<img alt="Adminer" src="https://img.shields.io/badge/Adminer-Enabled-0f766e?style=flat-square" />
+	<img alt="API Docs" src="https://img.shields.io/badge/API%20Docs-Swagger%20%2F%20ReDoc-f59e0b?style=flat-square" />
+	<img alt="Seed Data" src="https://img.shields.io/badge/Seed-Preloaded-7c3aed?style=flat-square" />
+</p>
 
-## Configuración del Backend
+<p align="center">
+	<a href="#inicio-rapido">Inicio rapido</a> •
+	<a href="#servicios">Servicios</a> •
+	<a href="#usuarios-base">Usuarios base</a> •
+	<a href="#adminer-keys">Adminer</a>
+</p>
 
-Sigue estos pasos para preparar el entorno y ejecutar el servidor de desarrollo.
+Plataforma para gestionar y clasificar PQR con apoyo de IA, frontend web y API FastAPI.
 
-### 1. Acceder al directorio
+## ✨ Estado actual
 
-Desde la terminal, navega a la carpeta del backend:
+- Stack listo para levantar con Docker (frontend + backend + postgres + adminer).
+- Arranque simplificado: construyes imagen y enciendes contenedores.
+- Datos base incluidos para pruebas funcionales desde el primer inicio.
 
-```bash
-cd src/backend
-```
+<a id="inicio-rapido"></a>
 
-## 2. Crear entorno virtual
+## 🚀 Inicio rapido con Docker
 
-```bash
-python -m venv .venv
-```
+Prerequisito unico:
 
-## 3. Activar entorno virtual
+- Docker Desktop activo.
 
-### Windows (PowerShell)
-
-```bash
-.venv\Scripts\Activate.ps1
-```
-
-### Windows (CMD)
-
-```bash
-.venv\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-source .venv/bin/activate
-```
-
-## 4. Instalar dependencias
+Desde la raiz del repositorio:
 
 ```bash
-pip install -r requirements.txt
+docker compose up -d --build
 ```
 
-## 5. Configurar variables de entorno
-
-Crear un archivo .env en la raíz de src/backend con las variables necesarias del proyecto.
-
-## 6. Ejecutar backend en desarrollo
+Si ya tienes la imagen construida, solo enciende:
 
 ```bash
-uvicorn app.api.main:app --reload
+docker compose up -d
 ```
 
-### URL de desarrollo
+<a id="servicios"></a>
 
-http://127.0.0.1:8000
+## 🌐 Servicios disponibles
 
-### Documentación automática de la API
+| Servicio | URL | Puerto |
+|---|---|---|
+| Frontend | http://localhost:5173 | 5173 |
+| Backend API | http://localhost:8000 | 8000 |
+| Swagger | http://localhost:8000/docs | 8000 |
+| ReDoc | http://localhost:8000/redoc | 8000 |
+| Adminer | http://localhost:8080 | 8080 |
+| PostgreSQL | localhost | 5432 |
 
-Swagger UI: http://127.0.0.1:8000/docs
+<a id="usuarios-base"></a>
 
-ReDoc: http://127.0.0.1:8000/redoc
+## 🔐 Usuarios base para login en la app
 
----
+Usa estos datos en el login de la API/app (usuario = correo, password = contrasena):
 
-## Base de Datos Actual (JSON)
+| Rol | Correo | Contrasena | Estado |
+|---|---|---|---|
+| Admin | admin@pqr.com | admin123 | Activo |
+| Supervisor | laura@pqr.com | super456 | Activo |
+| Agente | carlos@pqr.com | agente789 | Activo |
+| Usuario | maria@pqr.com | user000 | Activo |
+| Usuario | pedro@pqr.com | inact111 | Inactivo |
 
-Actualmente el proyecto corre con base de datos local en archivos JSON (modo desarrollo), ubicada en:
+<a id="adminer-keys"></a>
 
-`src/db/`
+## 🗄️ Claves de Adminer / PostgreSQL
 
-Se genera/actualiza con:
+En Adminer usa exactamente estos campos:
+
+- System: PostgreSQL
+- Server: postgres
+- Username: pqr_user
+- Password: pqr_password
+- Database: pqr_db
+
+Nota: Adminer no trae una cuenta propia, se autentica con las credenciales de PostgreSQL.
+
+## ⚙️ Comandos utiles
+
+Levantar contenedores:
 
 ```bash
-cd src/backend
-python -m app.logic.seed_json_db
+docker compose up -d --build
 ```
 
-Tablas seed actuales:
-
-- `ROL.json`
-- `Usuario.json`
-- `Area.json`
-- `PQR.json`
-- `CATEGORIAS.json`
-- `PRIORIDADES.json`
-- `CLASIFICACIONES.json`
-- `ARCHIVOS.json`
-- `HISTORIAL.json`
-
-La estructura se alineó con el diagrama de `src/extras/image.png` para entorno local.
-
----
-
-## Arranque Local Rápido (Windows)
-
-Desde la raíz del repo:
-
-```bat
-src\start.bat
-```
-
-Este script:
-
-1. Ejecuta seed de base de datos JSON.
-2. Levanta backend en `http://localhost:8000`.
-3. Levanta frontend en `http://localhost:5173`.
-
----
-
-## Ejecutar con Docker (Frontend + Backend + PostgreSQL + Adminer)
-
-En la raíz del repositorio:
+Ver logs en vivo:
 
 ```bash
-docker compose up --build
+docker compose logs -f
 ```
 
-Servicios:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8000`
-- PostgreSQL: `localhost:5432`
-- Adminer: `http://localhost:8080`
-
-Credenciales base de PostgreSQL (docker-compose):
-
-- Server: `postgres`
-- Database: `pqr_db`
-- Username: `pqr_user`
-- Password: `pqr_password`
-
-El esquema y seed de PostgreSQL se inicializan automáticamente desde:
-
-- `src/db/postgres/init/01_schema_and_seed.sql`
-
-La carpeta `src/db` se monta como volumen en el backend para compartir datos entre usuarios del repositorio.
-
----
-
-## Endpoints Base de BD (No Estáticos)
-
-Se agregaron endpoints de diagnóstico para validar conexión real a PostgreSQL en Docker:
-
-- `GET /db/health`: estado de conexión + configuración activa
-- `GET /db/config`: configuración pública de conexión usada por la API
-- `GET /db/tables`: lista de tablas y conteo de filas
-- `GET /db/tables/{table_name}?limit=20&offset=0`: filas reales por tabla
-
-Ejemplo rápido:
+Detener stack:
 
 ```bash
-curl http://localhost:8000/db/health
-curl http://localhost:8000/db/tables
-curl "http://localhost:8000/db/tables/pqrs?limit=5"
+docker compose down
 ```
+
+Reiniciar solo backend:
+
+```bash
+docker compose restart backend
+```
+
+## 🧠 Notas tecnicas breves
+
+- El backend inicia ejecutando seed JSON automaticamente.
+- El servicio postgres se inicializa con SQL desde src/db/postgres/init/01_schema_and_seed.sql.
+- Endpoints de diagnostico BD disponibles: /db/health, /db/config, /db/tables.
+
+## 📁 Estructura principal
+
+- src/backend: API FastAPI + logica de negocio + IA.
+- src/frontend: app React + Vite.
+- src/db: datos JSON y scripts SQL de inicializacion.
+
+## 🛡️ Aviso
+
+Este setup esta orientado a desarrollo/demo. Para produccion se recomienda endurecer contrasenas, secretos y configuracion de red.
