@@ -65,10 +65,14 @@ async def validate_classification(
         updated = ClassificationOut(
             id=payload.id,
             pqr_id=payload.pqr_id,
+            modelo_version=payload.modelo_version,
             categoria_id=payload.categoria_id,
             prioridad_id=payload.prioridad_id,
             confianza=payload.confianza,
-            es_manual=True, # Validada por un humano
+            origen="MANUAL",
+            fue_corregida=True,
+            validado_por=current_user.get("sub"),
+            created_at=payload.created_at,
         )
         controller.update(updated)
         

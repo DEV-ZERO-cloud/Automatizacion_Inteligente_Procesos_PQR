@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pqr-postgres
+    environment:
+      POSTGRES_DB: pqr_db
+      POSTGRES_USER: pqr_user
+      POSTGRES_PASSWORD: pqr_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/db/postgres/init:/docker-entrypoint-initdb.d:ro
+
+  adminer:
+    image: adminer:latest
+    container_name: pqr-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pqr-backend
+    ports:
+      - "8000:8000"
+    environment:
+      DB_MODE: json
+      ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_DB: pqr_db
+      PG_USER: pqr_user
+      PG_PASSWORD: pqr_password
+    volumes:
+      - ./src/db:/app/db
+    depends_on:
+      - postgres
+
+  frontend:
+    image: node:20-alpine
+    container_name: pqr-frontend
+    working_dir: /frontend
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src/frontend:/frontend
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

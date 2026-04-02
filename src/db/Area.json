@@ -1,0 +1,27 @@
+[
+  {
+    "ID": 1,
+    "nombre": "Tecnología",
+    "descripcion": "Infraestructura y soporte técnico"
+  },
+  {
+    "ID": 2,
+    "nombre": "Cartera",
+    "descripcion": "Gestión de cobros y facturación"
+  },
+  {
+    "ID": 3,
+    "nombre": "Servicio al Cliente",
+    "descripcion": "Atención y resolución de solicitudes"
+  },
+  {
+    "ID": 4,
+    "nombre": "Recursos Humanos",
+    "descripcion": "Gestión de personal"
+  },
+  {
+    "ID": 5,
+    "nombre": "Operaciones",
+    "descripcion": "Operación del servicio"
+  }
+]

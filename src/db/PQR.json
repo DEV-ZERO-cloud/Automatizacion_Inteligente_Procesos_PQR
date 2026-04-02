@@ -1,0 +1,112 @@
+[
+  {
+    "ID": 1,
+    "titulo": "Factura incorrecta",
+    "descripcion": "Cobro no corresponde al consumo",
+    "tipo": "reclamo",
+    "categoria": "Reclamo",
+    "prioridad": "alta",
+    "estado": "pendiente",
+    "area_id": 2,
+    "usuario_id": 4
+  },
+  {
+    "ID": 2,
+    "titulo": "No funciona el portal",
+    "descripcion": "No permite autenticación",
+    "tipo": "queja",
+    "categoria": "Queja",
+    "prioridad": "alta",
+    "estado": "pendiente",
+    "area_id": 1,
+    "usuario_id": 4
+  },
+  {
+    "ID": 3,
+    "titulo": "Solicitud de certificado",
+    "descripcion": "Certificado de paz y salvo",
+    "tipo": "peticion",
+    "categoria": "Petición",
+    "prioridad": "media",
+    "estado": "resuelta",
+    "area_id": 4,
+    "usuario_id": 3
+  },
+  {
+    "ID": 4,
+    "titulo": "Demora en respuesta",
+    "descripcion": "Sin respuesta en 10 días",
+    "tipo": "queja",
+    "categoria": "Queja",
+    "prioridad": "media",
+    "estado": "resuelta",
+    "area_id": 3,
+    "usuario_id": 4
+  },
+  {
+    "ID": 5,
+    "titulo": "Error en descuento",
+    "descripcion": "Descuento no aplicado",
+    "tipo": "reclamo",
+    "categoria": "Reclamo",
+    "prioridad": "alta",
+    "estado": "pendiente",
+    "area_id": 2,
+    "usuario_id": 4
+  },
+  {
+    "ID": 6,
+    "titulo": "Cambio de dirección",
+    "descripcion": "Actualizar dirección de envío",
+    "tipo": "peticion",
+    "categoria": "Petición",
+    "prioridad": "baja",
+    "estado": "resuelta",
+    "area_id": 3,
+    "usuario_id": 3
+  },
+  {
+    "ID": 7,
+    "titulo": "Cobro duplicado",
+    "descripcion": "Cobro repetido en dos facturas",
+    "tipo": "reclamo",
+    "categoria": "Reclamo",
+    "prioridad": "alta",
+    "estado": "pendiente",
+    "area_id": 2,
+    "usuario_id": 4
+  },
+  {
+    "ID": 8,
+    "titulo": "Mala atención agente",
+    "descripcion": "Atención irrespetuosa",
+    "tipo": "queja",
+    "categoria": "Queja",
+    "prioridad": "media",
+    "estado": "resuelta",
+    "area_id": 3,
+    "usuario_id": 4
+  },
+  {
+    "ID": 9,
+    "titulo": "Información de producto",
+    "descripcion": "Consulta sobre cobertura",
+    "tipo": "peticion",
+    "categoria": "Petición",
+    "prioridad": "baja",
+    "estado": "resuelta",
+    "area_id": 5,
+    "usuario_id": 3
+  },
+  {
+    "ID": 10,
+    "titulo": "Sistema caído",
+    "descripcion": "Plataforma indisponible",
+    "tipo": "queja",
+    "categoria": "Queja",
+    "prioridad": "alta",
+    "estado": "pendiente",
+    "area_id": 1,
+    "usuario_id": 4
+  }
+]

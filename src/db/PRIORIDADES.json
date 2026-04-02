@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "nombre": "Baja"
+  },
+  {
+    "id": 2,
+    "nombre": "Media"
+  },
+  {
+    "id": 3,
+    "nombre": "Alta"
+  },
+  {
+    "id": 4,
+    "nombre": "Urgente"
+  }
+]

@@ -25,6 +25,11 @@ from app.api.routes.classifications_service import (
 
 # ── Microservicio: Reportes y Dashboard ───────────────────────────────────────
 from app.api.routes.reports_service import reports_service
+from app.api.routes.pqr_service import (
+    pqr_CUD_service,
+    pqr_query_service,
+)
+from app.api.routes.database_service import database_query_service
 
 # ── Inicialización de la app ───────────────────────────────────────────────────
 app = FastAPI(
@@ -51,14 +56,14 @@ app.add_middleware(
 # ── Eventos de ciclo de vida ───────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
-    print("Conexión establecida con la base de datos SQL Server.")
+    print("API inicializada. Controlador principal activo en modo JSON.")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     try:
-        from backend.app.logic.universal_controller_instance import universal_controller
-        if universal_controller.conn:
+        from app.logic.universal_controller_instance import universal_controller
+        if hasattr(universal_controller, "conn") and universal_controller.conn:
             universal_controller.conn.close()
             print("Conexión a la base de datos cerrada correctamente.")
     except Exception as exc:
@@ -81,6 +86,13 @@ app.include_router(classifications_query_service.router)
 
 # Microservicio 12 – Reportes y Dashboard
 app.include_router(reports_service.router)     # GET /reports/dashboard, /by-category, /by-priority, /by-area
+
+# Microservicio PQR
+app.include_router(pqr_query_service.router)
+app.include_router(pqr_CUD_service.router)
+
+# Endpoints base de diagnóstico de base de datos Docker
+app.include_router(database_query_service.router)
 
 
 # ── Health check ───────────────────────────────────────────────────────────────

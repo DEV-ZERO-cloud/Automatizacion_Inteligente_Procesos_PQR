@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "nombre": "Facturación"
+  },
+  {
+    "id": 2,
+    "nombre": "Soporte Técnico"
+  },
+  {
+    "id": 3,
+    "nombre": "Servicio al Cliente"
+  },
+  {
+    "id": 4,
+    "nombre": "Infraestructura"
+  },
+  {
+    "id": 5,
+    "nombre": "Legal"
+  }
+]

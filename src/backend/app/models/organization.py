@@ -1,11 +1,10 @@
-from typing import Optional
 from pydantic import BaseModel
 
 
 class AreaCreate(BaseModel):
     """Modelo para crear un área nueva."""
 
-    __entity_name__ = "AREAS"
+    __entity_name__ = "Area"
 
     id: int
     nombre: str
@@ -13,14 +12,18 @@ class AreaCreate(BaseModel):
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
+            "ID": self.id,
             "nombre": self.nombre,
             "descripcion": self.descripcion,
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> "AreaCreate":
-        return cls(**data)
+        return cls(
+            id=data.get("id", data.get("ID")),
+            nombre=data.get("nombre", ""),
+            descripcion=data.get("descripcion", ""),
+        )
 
     @classmethod
     def get_fields(cls) -> dict:
@@ -34,22 +37,26 @@ class AreaCreate(BaseModel):
 class AreaOut(BaseModel):
     """Modelo de salida para área."""
 
-    __entity_name__ = "AREAS"
+    __entity_name__ = "Area"
 
     id: int
     nombre: str
-    descripcion: str
+    descripcion: str = ""
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
+            "ID": self.id,
             "nombre": self.nombre,
             "descripcion": self.descripcion,
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> "AreaOut":
-        return cls(**data)
+        return cls(
+            id=data.get("id", data.get("ID")),
+            nombre=data.get("nombre", ""),
+            descripcion=data.get("descripcion", ""),
+        )
 
 
 class AreaUpdate(BaseModel):

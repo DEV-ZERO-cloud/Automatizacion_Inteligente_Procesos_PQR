@@ -1,0 +1,57 @@
+[
+  {
+    "ID": 1,
+    "identificacion": 100001,
+    "nombre": "Admin Sistema",
+    "correo": "admin@pqr.com",
+    "telefono": "3001000001",
+    "contrasena": "admin123",
+    "rol_id": 1,
+    "area_id": 1,
+    "activo": 1
+  },
+  {
+    "ID": 2,
+    "identificacion": 100002,
+    "nombre": "Laura Supervisora",
+    "correo": "laura@pqr.com",
+    "telefono": "3001000002",
+    "contrasena": "super456",
+    "rol_id": 2,
+    "area_id": 3,
+    "activo": 1
+  },
+  {
+    "ID": 3,
+    "identificacion": 100003,
+    "nombre": "Carlos Agente",
+    "correo": "carlos@pqr.com",
+    "telefono": "3001000003",
+    "contrasena": "agente789",
+    "rol_id": 3,
+    "area_id": 3,
+    "activo": 1
+  },
+  {
+    "ID": 4,
+    "identificacion": 100004,
+    "nombre": "María Usuario",
+    "correo": "maria@pqr.com",
+    "telefono": "3001000004",
+    "contrasena": "user000",
+    "rol_id": 4,
+    "area_id": 2,
+    "activo": 1
+  },
+  {
+    "ID": 5,
+    "identificacion": 100005,
+    "nombre": "Pedro Inactivo",
+    "correo": "pedro@pqr.com",
+    "telefono": "3001000005",
+    "contrasena": "inact111",
+    "rol_id": 4,
+    "area_id": 4,
+    "activo": 0
+  }
+]

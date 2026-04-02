@@ -1,4 +1,4 @@
-    FROM python:3.11-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -8,16 +8,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Instala dependencias Python
-COPY requirements.txt .
+COPY src/backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copia el código
-COPY src/ ./src/
-COPY config.yaml .
-COPY .env .env
+COPY src/backend/app ./app
+COPY src/db ./db
+COPY config.yaml ./config.yaml
 
 # Puerto de la API
 EXPOSE 8000
 
 # Comando de arranque
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "python -m app.logic.seed_json_db && uvicorn app.api.main:app --host 0.0.0.0 --port 8000"]

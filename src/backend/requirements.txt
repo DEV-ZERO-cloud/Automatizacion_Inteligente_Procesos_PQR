@@ -22,6 +22,7 @@ python-multipart>=0.0.9
 
 # Base de datos SQL Server
 pyodbc>=5.1.0
+psycopg2-binary>=2.9.9
 
 # Reglas
 pyyaml>=6.0
