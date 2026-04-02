@@ -127,7 +127,4 @@ docker compose restart backend
 - src/backend: API FastAPI + logica de negocio + IA.
 - src/frontend: app React + Vite.
 - src/db: datos JSON y scripts SQL de inicializacion.
-
-## 🛡️ Aviso
-
-Este setup esta orientado a desarrollo/demo. Para produccion se recomienda endurecer contrasenas, secretos y configuracion de red.
+- 
