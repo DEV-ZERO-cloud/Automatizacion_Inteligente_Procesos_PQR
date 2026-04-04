@@ -1,0 +1,241 @@
+text,category,tags,priority
+El servicio técnico no ha resuelto el problema bajo garantía,Reclamo,garantía|soporte técnico,alta
+Me llegó una factura con un monto mucho mayor al habitual,Reclamo,facturación,media
+El soporte remoto no funcionó y perdí tiempo de trabajo,Queja,soporte técnico,media
+Quiero conocer los beneficios del plan premium,Petición,información|planes,baja
+Necesito saber los requisitos para acceder al plan empresarial,Petición,información|planes,baja
+Quiero reclamar que me vendieron un plan diferente al que me explicaron,Reclamo,contrato|información,media
+Agradecería que me necesito el nit de la empresa para mis registros contables,Petición,documentación,baja
+Los tiempos de espera en el call center son excesivos,Queja,atención,media
+Me aplicaron un descuento incorrecto en mi factura,Reclamo,facturación,media
+Necesito exportar el historial completo de transacciones,Petición,documentación|facturación,media
+El precio cobrado no corresponde al que aparece en el contrato,Reclamo,facturación|contrato,alta
+Quiero manifestar mi inconformidad ya que el módulo de reportes no genera los archivos correctamente,Queja,soporte técnico|aplicación,media
+Solicito el cambio de mi plan actual a uno de mayor capacidad,Petición,planes|cambio,media
+Es inaceptable que llevan tres meses sin devolverme el dinero que prometieron,Reclamo,reembolso,crítica
+Quiero contratar el plan empresarial para mi empresa,Petición,planes|contrato,media
+Requiero que quisiera recibir capacitación sobre el uso de la plataforma,Petición,capacitación,baja
+Es inadmisible que no puedo descargar el comprobante de pago desde la plataforma,Queja,soporte técnico|aplicación,media
+Mi pedido lleva 15 días y no ha llegado a mi dirección,Reclamo,entrega,alta
+Quiero recibir alertas por correo de cada movimiento en mi cuenta,Petición,cuenta|servicio,baja
+Necesito suspender temporalmente el servicio por un mes,Petición,cancelación|servicio,media
+Necesito copia de mi contrato firmado,Petición,documentación|contrato,baja
+Llevo esperando mi pedido más de tres semanas sin respuesta,Reclamo,entrega,alta
+Por favor necesito que solicito cambio del correo principal asociado a mi cuenta,Petición,cuenta,baja
+El cobro de este mes es incorrecto y exijo corrección inmediata,Reclamo,facturación|cobro,alta
+Quiero reclamar que recibí un producto de menor calidad al que aparece en la web,Reclamo,producto,media
+Quisiera información sobre descuentos por pago anual,Petición,información|facturación,baja
+Solicito el reembolso del cobro duplicado que me realizaron,Reclamo,reembolso|facturación,alta
+Me quejo porque el servicio de internet contratado tiene velocidades muy bajas,Queja,servicio,media
+Requiero que solicito integración con el sistema contable de mi empresa,Petición,soporte técnico|servicio,media
+Quiero reclamar que realizaron un cobro no autorizado a mi tarjeta de crédito,Reclamo,facturación|cobro,alta
+El servicio estuvo caído todo el fin de semana sin aviso,Queja,servicio|atención,alta
+Agradecería que me solicito la certificación de servicios para licitación,Petición,documentación,media
+"Es una estafa, me cobran por servicios que nunca activan",Reclamo,facturación|fraude,crítica
+Es inadmisible que mi contraseña no funciona aunque la cambié recientemente,Queja,acceso,media
+El paquete llegó abierto y con el contenido incompleto,Reclamo,entrega|producto,alta
+El producto que compré no funciona como se describe en la publicidad,Queja,producto,media
+Me quejo porque me informaron mal sobre los requisitos del trámite,Queja,atención|información,media
+La plataforma está caída y no puedo realizar mis operaciones,Queja,soporte técnico|aplicación,crítica
+Llevo tres semanas sin servicio y nadie me da solución,Queja,servicio|atención,crítica
+Es inaceptable que el reembolso prometido nunca se realizó en mi cuenta,Reclamo,reembolso,crítica
+Por favor necesito que necesito un estado de cuenta actualizado para trámite bancario,Petición,documentación|facturación,media
+Solicito la activación del servicio adicional de almacenamiento,Petición,activación|servicio,media
+Requiero que solicito el envío de mis facturas en formato electrónico,Petición,facturación,baja
+El producto llegó dañado y quiero que me lo reemplacen,Reclamo,entrega|producto,alta
+Presento reclamo porque pagué el servicio pero sigue apareciendo como deuda pendiente,Reclamo,facturación|pago,alta
+Me prometieron una llamada de seguimiento y nunca me llamaron,Queja,atención,baja
+Quiero reclamar que el equipo dejó de funcionar a los dos meses de comprarlo,Reclamo,garantía|producto,alta
+El equipo presentó fallas a los tres días y no responden,Reclamo,garantía|producto,alta
+Necesito el NIT de la empresa para mis registros contables,Petición,documentación,baja
+Llevo una semana con el ticket abierto sin solución,Queja,soporte técnico|atención,alta
+Me quejo porque el técnico que vino no resolvió el problema de instalación,Queja,soporte técnico|instalación,media
+Quiero manifestar mi inconformidad ya que la app móvil se cierra sola cada vez que la abro,Queja,soporte técnico|aplicación,media
+Quiero manifestar mi inconformidad ya que me cambiaron el plan sin consultarme ni avisarme,Queja,planes|contrato,alta
+Es inadmisible que el producto que compré no funciona como se describe en la publicidad,Queja,producto,media
+Agradecería que me deseo cancelar mi suscripción al servicio mensual,Petición,cancelación,media
+Es inadmisible que nunca me enviaron el comprobante de pago a mi correo,Queja,facturación|atención,baja
+Necesito agregar una línea adicional a mi cuenta corporativa,Petición,cuenta|servicio,media
+Requiero que necesito agregar una línea adicional a mi cuenta corporativa,Petición,cuenta|servicio,media
+La señal se cae constantemente durante el día,Queja,servicio,alta
+Necesito habilitar el acceso a la API para integración,Petición,soporte técnico|servicio,media
+Nunca me enviaron el comprobante de pago a mi correo,Queja,facturación|atención,baja
+Quiero terminar el contrato al finalizar el período vigente,Petición,cancelación|contrato,baja
+Solicito la renovación anticipada de mi contrato,Petición,contrato,media
+El tiempo de respuesta es inaceptablemente largo,Queja,atención,media
+Perdí información importante por un error del sistema,Queja,soporte técnico|seguridad,crítica
+Me informaron mal sobre los requisitos del trámite,Queja,atención|información,media
+Necesito información sobre las políticas de cancelación,Petición,información|cancelación,baja
+El agente de soporte no supo resolver mi problema,Queja,soporte técnico|atención,media
+Solicito el envío de mis facturas en formato electrónico,Petición,facturación,baja
+Es inadmisible que el equipo se dañó a los pocos días de uso normal,Queja,producto,alta
+Es inaceptable que mi pedido fue entregado a otra persona por error,Reclamo,entrega,alta
+Me pueden indicar los pasos para realizar una portabilidad,Petición,información,baja
+Llevan tres meses sin devolverme el dinero que prometieron,Reclamo,reembolso,crítica
+Solicito la cancelación de mi contrato según las condiciones pactadas,Petición,cancelación|contrato,media
+El servicio contratado no tiene las características prometidas,Queja,servicio,media
+Llevo días sin poder acceder a mis documentos en la plataforma,Queja,acceso|soporte técnico,alta
+El débito automático se realizó dos veces este mes,Reclamo,facturación|cobro,alta
+El servicio presenta fallas intermitentes todo el día,Queja,soporte técnico,media
+Quiero reclamar que llevo esperando mi pedido más de tres semanas sin respuesta,Reclamo,entrega,alta
+Presento reclamo porque quiero que me devuelvan el pago que hice por error,Reclamo,reembolso|pago,media
+El asesor me dio información incorrecta sobre el contrato,Queja,atención|información,media
+La calidad del servicio ha bajado mucho en los últimos meses,Queja,atención,media
+Quiero manifestar mi inconformidad ya que perdí información importante por un error del sistema,Queja,soporte técnico|seguridad,crítica
+Me quejo porque las actualizaciones del sistema dañaron mis configuraciones,Queja,soporte técnico|aplicación,alta
+Quiero habilitar la autenticación de dos factores,Petición,cuenta|seguridad,baja
+Me descontaron más de lo acordado en el contrato,Reclamo,facturación|contrato,alta
+Quiero que me devuelvan el pago que hice por error,Reclamo,reembolso|pago,media
+Después de cancelar me siguen cobrando el servicio,Reclamo,facturación|cancelación,alta
+"Cobro no reconocido en mi tarjeta, posible fraude",Reclamo,fraude|facturación,crítica
+El reembolso prometido nunca se realizó en mi cuenta,Reclamo,reembolso,crítica
+Por favor necesito que quiero agregar el servicio de soporte prioritario,Petición,soporte técnico|servicio,media
+Quiero cambiar el titular de la cuenta a nombre de la empresa,Petición,cuenta|contrato,media
+Presento reclamo porque mi pedido lleva 15 días y no ha llegado a mi dirección,Reclamo,entrega,alta
+No puedo acceder a mi cuenta desde hace varios días,Queja,acceso|soporte técnico,alta
+Solicito cotización para el plan de 50 usuarios,Petición,información|planes,baja
+Me quejo porque nadie se hace responsable de mi caso hace más de dos semanas,Queja,atención|soporte técnico,alta
+Es inaceptable que lleve un mes sin acceso a mi cuenta,Queja,acceso,crítica
+Me aplicaron penalización que no está en el contrato,Reclamo,facturación|contrato,alta
+Presento reclamo porque me enviaron un producto diferente al que pedí,Reclamo,entrega|producto,media
+Necesito agregar permisos especiales para un usuario administrador,Petición,cuenta|seguridad,media
+Estoy perdiendo dinero por las fallas del sistema cada día,Queja,soporte técnico,crítica
+Solicito cambio del correo principal asociado a mi cuenta,Petición,cuenta,baja
+Realizaron un fraude con mis datos bancarios,Reclamo,fraude|seguridad,crítica
+Agradecería que me quiero migrar mis datos al nuevo plan contratado,Petición,cuenta|servicio,media
+Requiero que cómo puedo actualizar los datos de mi cuenta,Petición,información|cuenta,baja
+Agradecería que me quisiera información sobre descuentos por pago anual,Petición,información|facturación,baja
+Necesito ampliar el límite de usuarios de mi cuenta empresarial,Petición,cuenta|planes,media
+Me cobraron dos veces el mismo servicio en mi factura de este mes,Reclamo,facturación|cobro,alta
+"Mi factura tiene un valor incorrecto, cobran más de lo acordado",Reclamo,facturación|cobro,alta
+El sistema borró toda mi información sin previo aviso,Queja,soporte técnico|seguridad,crítica
+Me prometieron un descuento que nunca aplicaron,Reclamo,facturación,media
+El servicio de soporte en línea está fuera de horario siempre,Queja,atención,baja
+Quisiera programar una visita técnica para instalación,Petición,instalación|soporte técnico,media
+Solicito integración con el sistema contable de mi empresa,Petición,soporte técnico|servicio,media
+Es inaceptable que el equipo presentó fallas a los tres días y no responden,Reclamo,garantía|producto,alta
+El módulo de reportes no genera los archivos correctamente,Queja,soporte técnico|aplicación,media
+Mi cuenta fue bloqueada sin previo aviso ni explicación,Queja,acceso|cuenta,alta
+"Quiero reclamar que es una estafa, me cobran por servicios que nunca activan",Reclamo,facturación|fraude,crítica
+Es inaceptable que solicito el reembolso del cobro duplicado que me realizaron,Reclamo,reembolso|facturación,alta
+La interfaz de la plataforma tiene errores que impiden su uso,Queja,soporte técnico|aplicación,media
+El servicio técnico no solucionó el problema y lo empeoró,Reclamo,soporte técnico|garantía,alta
+Quisiera agendar una demostración del nuevo módulo,Petición,información|servicio,baja
+La atención recibida fue muy deficiente y poco profesional,Queja,atención,media
+El producto presentó fallas desde el primer día de uso,Reclamo,garantía|producto,alta
+Necesito un certificado de los servicios contratados,Petición,documentación,media
+Quiero reclamar que me llegó una factura con un monto mucho mayor al habitual,Reclamo,facturación,media
+Es inadmisible que el producto tiene una falla de fábrica evidente,Queja,producto,alta
+No reconozco el cargo que aparece en mi estado de cuenta,Reclamo,facturación|fraude,alta
+Exijo la devolución de mi dinero por el servicio no prestado,Reclamo,reembolso,alta
+Por favor necesito que quisiera agendar una demostración del nuevo módulo,Petición,información|servicio,baja
+Me tienen hace dos meses sin resolver un cobro incorrecto,Reclamo,facturación,crítica
+Solicito la activación del módulo de reportes avanzados,Petición,activación|servicio,media
+Me están cobrando un servicio que cancelé hace dos meses,Reclamo,facturación|cancelación,alta
+Deseo cancelar mi suscripción al servicio mensual,Petición,cancelación,media
+Solicito reversión del cobro duplicado del mes pasado,Reclamo,facturación|reembolso,alta
+Quiero configurar el pago automático mensual,Petición,facturación|cuenta,baja
+Quiero reclamar que me descontaron más de lo acordado en el contrato,Reclamo,facturación|contrato,alta
+El agente que me atendió fue grosero e irrespetuoso,Queja,atención,alta
+Quiero migrar mis datos al nuevo plan contratado,Petición,cuenta|servicio,media
+Solicito el historial de pagos de los últimos seis meses,Petición,documentación|facturación,baja
+Requiero que solicito la activación del servicio adicional de almacenamiento,Petición,activación|servicio,media
+Me quejo porque no puedo acceder a mi cuenta desde hace varios días,Queja,acceso|soporte técnico,alta
+La calidad del servicio no corresponde con lo que pagué,Queja,servicio|producto,media
+Es inadmisible que la plataforma está caída y no puedo realizar mis operaciones,Queja,soporte técnico|aplicación,crítica
+Nadie se hace responsable de mi caso hace más de dos semanas,Queja,atención|soporte técnico,alta
+Mi pedido fue entregado a otra persona por error,Reclamo,entrega,alta
+"Presento reclamo porque mi factura tiene un valor incorrecto, cobran más de lo acordado",Reclamo,facturación|cobro,alta
+Quiero devolución por servicio interrumpido durante dos semanas,Reclamo,reembolso|servicio,alta
+Quiero dar de baja el servicio adicional contratado,Petición,cancelación|servicio,media
+Me niegan la garantía sin una razón válida,Reclamo,garantía,alta
+Quiero reclamar que me prometieron un descuento que nunca aplicaron,Reclamo,facturación,media
+Quiero manifestar mi inconformidad ya que el sistema borró toda mi información sin previo aviso,Queja,soporte técnico|seguridad,crítica
+La plataforma falla constantemente y no puedo trabajar,Queja,soporte técnico|aplicación,alta
+Cobro indebido por servicio que nunca fue prestado,Reclamo,facturación|cobro,crítica
+Es inadmisible que la plataforma falla constantemente y no puedo trabajar,Queja,soporte técnico|aplicación,alta
+Realizaron un débito adicional sin autorización previa,Reclamo,facturación|cobro,crítica
+Las actualizaciones del sistema dañaron mis configuraciones,Queja,soporte técnico|aplicación,alta
+Es inadmisible que la aplicación no carga y llevo horas intentando ingresar,Queja,soporte técnico|aplicación,alta
+Recibí un producto de menor calidad al que aparece en la web,Reclamo,producto,media
+Quiero cambiar la frecuencia de facturación de mensual a anual,Petición,facturación,baja
+Por favor necesito que quiero terminar el contrato al finalizar el período vigente,Petición,cancelación|contrato,baja
+Aparece un cargo en mi cuenta que yo no autoricé,Reclamo,facturación|cobro,alta
+Cuáles son los horarios de atención al cliente,Petición,información|atención,baja
+El sistema arroja un error cada vez que intento iniciar sesión,Queja,acceso|soporte técnico,alta
+Quisiera recibir capacitación sobre el uso de la plataforma,Petición,capacitación,baja
+Por favor necesito que quiero contratar el plan empresarial para mi empresa,Petición,planes|contrato,media
+Quiero manifestar mi inconformidad ya que el servicio presenta fallas intermitentes todo el día,Queja,soporte técnico,media
+Por favor necesito que quisiera programar una visita técnica para instalación,Petición,instalación|soporte técnico,media
+Solicito compensación por los días sin servicio,Reclamo,reembolso|servicio,alta
+Quiero reclamar que el paquete llegó abierto y con el contenido incompleto,Reclamo,entrega|producto,alta
+El fallo técnico me impide operar mi negocio con normalidad,Queja,soporte técnico,crítica
+El producto llegó en mal estado y quiero reemplazo o reembolso,Reclamo,entrega|producto|reembolso,alta
+Pagué el servicio pero sigue apareciendo como deuda pendiente,Reclamo,facturación|pago,alta
+Quiero reclamar que después de cancelar me siguen cobrando el servicio,Reclamo,facturación|cancelación,alta
+Cómo puedo actualizar los datos de mi cuenta,Petición,información|cuenta,baja
+Me cambiaron el plan sin consultarme ni avisarme,Queja,planes|contrato,alta
+El servicio de internet contratado tiene velocidades muy bajas,Queja,servicio,media
+Requiero que me pueden enviar el catálogo de servicios que ofrecen,Petición,información,baja
+Agradecería que me solicito el cambio de mi plan actual a uno de mayor capacidad,Petición,planes|cambio,media
+No recibí notificación del cambio en las condiciones del servicio,Queja,información|servicio,media
+Hice el pago hace una semana y no se ha reflejado en mi cuenta,Reclamo,facturación|pago,media
+"Necesito el reembolso urgente, fue un cargo fraudulento",Reclamo,reembolso|fraude,crítica
+El chat de soporte no responde desde hace dos días,Queja,soporte técnico|atención,alta
+Es inadmisible que la aplicación consume demasiados recursos y se vuelve lenta,Queja,soporte técnico|aplicación,baja
+Solicito la certificación de servicios para licitación,Petición,documentación,media
+Me enviaron un producto diferente al que pedí,Reclamo,entrega|producto,media
+Quiero reclamar que el servicio técnico no ha resuelto el problema bajo garantía,Reclamo,garantía|soporte técnico,alta
+El servicio de internet es muy lento y poco estable,Queja,servicio,media
+Requiero que necesito ampliar el límite de usuarios de mi cuenta empresarial,Petición,cuenta|planes,media
+Solicito asignación de un asesor comercial para mi empresa,Petición,atención|servicio,media
+Es inadmisible que la señal se cae constantemente durante el día,Queja,servicio,alta
+Por favor necesito que quiero actualizar mi dirección de facturación,Petición,facturación|cuenta,baja
+Me pasaron de área en área sin darme una solución concreta,Queja,atención,media
+Mi contraseña no funciona aunque la cambié recientemente,Queja,acceso,media
+Me pueden explicar cómo funciona el sistema de facturación,Petición,información|facturación,baja
+Me facturaron el plan más costoso sin mi consentimiento,Reclamo,facturación|contrato,alta
+Quiero manifestar mi inconformidad ya que estoy perdiendo dinero por las fallas del sistema cada día,Queja,soporte técnico,crítica
+Es inaceptable que cobro indebido por servicio que nunca fue prestado,Reclamo,facturación|cobro,crítica
+Es inadmisible que llevo tres semanas sin servicio y nadie me da solución,Queja,servicio|atención,crítica
+Quiero manifestar mi inconformidad ya que me pasaron de área en área sin darme una solución concreta,Queja,atención,media
+Requiero que necesito exportar el historial completo de transacciones,Petición,documentación|facturación,media
+Me quejo porque el servicio de soporte en línea está fuera de horario siempre,Queja,atención,baja
+Es inaceptable que el cobro de este mes es incorrecto y exijo corrección inmediata,Reclamo,facturación|cobro,alta
+La app móvil se cierra sola cada vez que la abro,Queja,soporte técnico|aplicación,media
+"El producto que recibí es falso, no es el original",Reclamo,producto|fraude,crítica
+La aplicación consume demasiados recursos y se vuelve lenta,Queja,soporte técnico|aplicación,baja
+Quiero hacer efectiva la garantía de mi dispositivo dañado,Reclamo,garantía,media
+No puedo descargar el comprobante de pago desde la plataforma,Queja,soporte técnico|aplicación,media
+Me quejo porque los tiempos de espera en el call center son excesivos,Queja,atención,media
+"Quiero reclamar que necesito el reembolso urgente, fue un cargo fraudulento",Reclamo,reembolso|fraude,crítica
+Por favor necesito que quiero configurar el pago automático mensual,Petición,facturación|cuenta,baja
+Es inadmisible que llevo una semana con el ticket abierto sin solución,Queja,soporte técnico|atención,alta
+Me quejo porque me prometieron una llamada de seguimiento y nunca me llamaron,Queja,atención,baja
+Necesito un estado de cuenta actualizado para trámite bancario,Petición,documentación|facturación,media
+Me vendieron un plan diferente al que me explicaron,Reclamo,contrato|información,media
+Es inaceptable que hice el pago hace una semana y no se ha reflejado en mi cuenta,Reclamo,facturación|pago,media
+Por favor necesito que quiero dar de baja el servicio adicional contratado,Petición,cancelación|servicio,media
+Realizaron un cobro no autorizado a mi tarjeta de crédito,Reclamo,facturación|cobro,alta
+La aplicación no carga y llevo horas intentando ingresar,Queja,soporte técnico|aplicación,alta
+Necesito acceso de solo lectura para un usuario externo,Petición,cuenta|seguridad,baja
+Quisiera recibir el manual de usuario del equipo,Petición,documentación,baja
+Solicito el traslado de mis servicios a otra sede,Petición,servicio|contrato,media
+Me pueden enviar el catálogo de servicios que ofrecen,Petición,información,baja
+Mi usuario fue desactivado sin ninguna justificación,Queja,acceso|cuenta,alta
+Quiero actualizar mi dirección de facturación,Petición,facturación|cuenta,baja
+El técnico que vino no resolvió el problema de instalación,Queja,soporte técnico|instalación,media
+Es inadmisible que mi cuenta fue bloqueada sin previo aviso ni explicación,Queja,acceso|cuenta,alta
+El producto tiene una falla de fábrica evidente,Queja,producto,alta
+Por favor necesito que cuáles son los horarios de atención al cliente,Petición,información|atención,baja
+Quiero manifestar mi inconformidad ya que el asesor me dio información incorrecta sobre el contrato,Queja,atención|información,media
+Quiero agregar el servicio de soporte prioritario,Petición,soporte técnico|servicio,media
+Agradecería que me solicito el traslado de mis servicios a otra sede,Petición,servicio|contrato,media
+El equipo dejó de funcionar a los dos meses de comprarlo,Reclamo,garantía|producto,alta
+Me quejo porque la atención recibida fue muy deficiente y poco profesional,Queja,atención,media
+El equipo se dañó a los pocos días de uso normal,Queja,producto,alta
+Quisiera conocer las tarifas vigentes para el próximo año,Petición,información|facturación,baja
+"Pagué por un producto que nunca llegó, solicito devolución",Reclamo,reembolso|entrega,alta
+La conexión se interrumpe en horas pico todos los días,Queja,servicio,alta
+Presento reclamo porque solicito compensación por los días sin servicio,Reclamo,reembolso|servicio,alta
+Quisiera información sobre los planes disponibles actualmente,Petición,información|planes,baja

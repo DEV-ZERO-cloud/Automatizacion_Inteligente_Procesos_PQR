@@ -64,3 +64,4 @@ dist/
 outputs/
 artifacts/
 checkpoints/
+data/models/hf_cache/

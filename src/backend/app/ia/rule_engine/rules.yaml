@@ -1,0 +1,81 @@
+rules:
+  - id: "R001"
+    name: "Reclamo por facturación"
+    priority: 1
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["cobro incorrecto", "me cobraron de más", "factura incorrecta", "doble cobro"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["facturación", "cobro"]
+      set_priority: "alta"
+
+  - id: "R002"
+    name: "Solicitud de información"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["quisiera saber", "necesito información", "me pueden informar", "cuánto cuesta"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["información"]
+      set_priority: "baja"
+
+  - id: "R003"
+    name: "Queja por mal servicio"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["pésimo", "terrible", "muy malo", "no sirve"]
+        - field: text
+          contains: ["servicio", "atención", "soporte"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["servicio", "insatisfacción"]
+      set_priority: "alta"
+
+  - id: "R004"
+    name: "Urgencia crítica"
+    priority: 0
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["urgente", "emergencia", "inmediatamente", "crítico"]
+    actions:
+      add_tags: ["urgente"]
+      set_priority: "crítica"
+
+  - id: "R005"
+    name: "Problema de acceso"
+    priority: 1
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["no puedo acceder", "no me deja entrar", "contraseña incorrecta", "cuenta bloqueada"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["acceso", "soporte técnico"]
+      set_priority: "alta"
+
+  - id: "R006"
+    name: "Solicitud de cancelación"
+    priority: 1
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["quiero cancelar", "dar de baja", "cancelar servicio", "cancelar contrato"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["cancelación"]
+      set_priority: "media"
+
+  
