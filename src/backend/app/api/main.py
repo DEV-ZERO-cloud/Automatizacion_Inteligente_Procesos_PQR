@@ -3,36 +3,36 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.core.config import settings
+from app.core.config import settings
 
 # ── Microservicio: Autenticación y Usuarios ────────────────────────────────────
-from backend.app.api.routes.user_auth_service import (
+from app.api.routes.user_auth_service import (
     user_CUD_service,
     user_query_service,
 )
 
 # ── Microservicio: Organización ───────────────────────────────────────────────
-from backend.app.api.routes.organization_service import (
+from app.api.routes.organization_service import (
     organization_CUD_service,
     organization_query_service,
 )
 
 # ── Microservicio: Gestión de Clasificación ───────────────────────────────────
-from backend.app.api.routes.classifications_service import (
+from app.api.routes.classifications_service import (
     classifications_CUD_service,
     classifications_query_service,
 )
 
 # ── Microservicio: Reportes y Dashboard ───────────────────────────────────────
-from backend.app.api.routes.reports_service import reports_service
-from backend.app.api.routes.pqr_service import (
+from app.api.routes.reports_service import reports_service
+from app.api.routes.pqr_service import (
     pqr_CUD_service,
     pqr_query_service,
 )
-from backend.app.api.routes.database_service import database_query_service
+from app.api.routes.database_service import database_query_service
 
 # ── Microservicio: Agente Inteligente ───────────────────────────────────────
-from backend.app.api.routes.ai_service import ai_service
+from app.api.routes.ai_service import ai_service
 
 # ── Inicialización de la app ───────────────────────────────────────────────────
 app = FastAPI(

@@ -1,9 +1,8 @@
 import logging
 import os
-import platform
 from typing import Any, List, Optional
 
-import pyodbc
+import psycopg2
 
 from app.core.config import settings
 
@@ -13,32 +12,21 @@ logging.basicConfig(level=logging.INFO)
 
 class UniversalController:
     """
-    Controlador universal para operaciones CRUD sobre SQL Server.
-    Sigue el patrón Repository: T-SQL(_entity_name_).
+    Controlador universal para operaciones CRUD sobre PostgreSQL.
+    Sigue el patrón Repository: tablas con __entity_name__.
     """
 
     def __init__(self):
         try:
-            is_linux = platform.system().lower() != "windows"
-            driver = "ODBC Driver 18 for SQL Server" if is_linux else "SQL Server"
-
             password = os.getenv("PASSWORD", settings.PASSWORD)
             if not password:
                 raise ValueError("La variable PASSWORD no está definida en el entorno.")
 
-            conn_str = (
-                f"DRIVER={{{driver}}};"
-                f"SERVER={settings.HOST},{settings.PORT};"
-                f"DATABASE={settings.DB};"
-                f"UID={settings.USER};"
-                f"PWD={password};"
-                f"TrustServerCertificate=yes"
-            )
-            self.conn = pyodbc.connect(conn_str)
+            self.conn = psycopg2.connect(**settings.db_config)
             self.conn.autocommit = False
             self.cursor = self.conn.cursor()
-            logger.info("Conexión a SQL Server establecida correctamente.")
-        except pyodbc.Error as exc:
+            logger.info("Conexión a PostgreSQL establecida correctamente.")
+        except psycopg2.Error as exc:
             raise ConnectionError(f"Error de conexión a la base de datos: {exc}") from exc
 
     # ── Utilidades internas ────────────────────────────────────────────────────
@@ -72,7 +60,7 @@ class UniversalController:
         """Retorna un registro por su ID."""
         table = cls.__entity_name__
         try:
-            self.cursor.execute(f"SELECT * FROM {table} WHERE ID = ?", (record_id,))
+            self.cursor.execute(f"SELECT * FROM {table} WHERE ID = %s", (record_id,))
             row = self.cursor.fetchone()
             return cls.from_dict(self._row_to_dict(row)) if row else None
         except Exception as exc:
@@ -83,7 +71,7 @@ class UniversalController:
         """Retorna el primer registro que coincida con column=value."""
         table = cls.__entity_name__
         try:
-            self.cursor.execute(f"SELECT * FROM {table} WHERE {column} = ?", (value,))
+            self.cursor.execute(f"SELECT * FROM {table} WHERE {column} = %s", (value,))
             row = self.cursor.fetchone()
             return cls.from_dict(self._row_to_dict(row)) if row else None
         except Exception as exc:
@@ -100,7 +88,7 @@ class UniversalController:
             del data["ID"]
 
         columns = ", ".join(data.keys())
-        placeholders = ", ".join(["?" for _ in data])
+        placeholders = ", ".join(["%s" for _ in data])
         sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
 
         try:
@@ -121,8 +109,8 @@ class UniversalController:
         if "ID" not in data or data["ID"] is None:
             raise ValueError("El objeto debe tener un campo 'ID' válido para ser actualizado.")
 
-        set_clause = ", ".join(f"{k} = ?" for k in data if k != "ID")
-        sql = f"UPDATE {table} SET {set_clause} WHERE ID = ?"
+        set_clause = ", ".join(f"{k} = %s" for k in data if k != "ID")
+        sql = f"UPDATE {table} SET {set_clause} WHERE ID = %s"
         values = [v for k, v in data.items() if k != "ID"] + [data["ID"]]
 
         try:
@@ -144,7 +132,7 @@ class UniversalController:
             raise ValueError("El objeto debe tener un campo 'ID' válido para ser eliminado.")
 
         try:
-            self.cursor.execute(f"DELETE FROM {table} WHERE ID = ?", (data["ID"],))
+            self.cursor.execute(f"DELETE FROM {table} WHERE ID = %s", (data["ID"],))
             self.conn.commit()
             logger.info("Registro ID=%s eliminado de %s.", data["ID"], table)
             return True
@@ -163,7 +151,7 @@ class UniversalController:
                     COUNT(*) AS total_pqrs,
                     SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) AS pendientes,
                     SUM(CASE WHEN estado = 'resuelta'  THEN 1 ELSE 0 END) AS resueltas
-                FROM PQR
+                FROM pqrs
             """)
             row = self.cursor.fetchone()
             return {
@@ -180,7 +168,7 @@ class UniversalController:
         try:
             self.cursor.execute("""
                 SELECT categoria, COUNT(*) AS cantidad
-                FROM PQR
+                FROM pqrs
                 GROUP BY categoria
                 ORDER BY cantidad DESC
             """)
@@ -195,7 +183,7 @@ class UniversalController:
         try:
             self.cursor.execute("""
                 SELECT prioridad, COUNT(*) AS cantidad
-                FROM PQR
+                FROM pqrs
                 GROUP BY prioridad
                 ORDER BY cantidad DESC
             """)
@@ -209,9 +197,9 @@ class UniversalController:
         """Retorna cantidad de PQR agrupadas por área organizacional."""
         try:
             self.cursor.execute("""
-                SELECT a.nombre AS area, COUNT(p.ID) AS cantidad
-                FROM PQR p
-                JOIN Area a ON p.area_id = a.ID
+                SELECT a.nombre AS area, COUNT(p.id) AS cantidad
+                FROM pqrs p
+                JOIN areas a ON p.area_id = a.id
                 GROUP BY a.nombre
                 ORDER BY cantidad DESC
             """)

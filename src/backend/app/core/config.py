@@ -15,10 +15,10 @@ class Settings:
 
     # SQL Server
     HOST: str = os.getenv("HOST", "localhost")
-    PORT: str = os.getenv("PORT", "1433")
-    DB: str = os.getenv("DB", "PQR_DB")
-    USER: str = os.getenv("DB_USER", "sa")
-    PASSWORD: str = os.getenv("PASSWORD", "")
+    PORT: str = os.getenv("PORT", "5432")
+    DB: str = os.getenv("DB", "pqr_db")
+    USER: str = os.getenv("DB_USER", "pqr_user")
+    PASSWORD: str = os.getenv("PASSWORD", "pqr_password")
     
     # HF_HOME relativo al proyecto
     os.environ["HF_HOME"] = os.getenv(

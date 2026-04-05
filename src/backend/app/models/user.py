@@ -5,9 +5,9 @@ from pydantic import BaseModel, EmailStr
 class UserCreate(BaseModel):
     """Modelo para crear un usuario nuevo."""
 
-    __entity_name__ = "Usuario"
+    __entity_name__ = "usuarios"
 
-    ID: int
+    id: int
     identificacion: int
     nombre: str
     correo: str
@@ -19,7 +19,7 @@ class UserCreate(BaseModel):
 
     def to_dict(self) -> dict:
         return {
-            "ID": self.ID,
+            "id": self.id,
             "identificacion": self.identificacion,
             "nombre": self.nombre,
             "correo": self.correo,
@@ -37,7 +37,7 @@ class UserCreate(BaseModel):
     @classmethod
     def get_fields(cls) -> dict:
         return {
-            "ID": "INTEGER PRIMARY KEY",
+            "id": "INTEGER PRIMARY KEY",
             "identificacion": "INTEGER NOT NULL",
             "nombre": "VARCHAR(150) NOT NULL",
             "correo": "VARCHAR(200) NOT NULL",
@@ -52,9 +52,9 @@ class UserCreate(BaseModel):
 class UserOut(BaseModel):
     """Modelo de salida para usuarios (sin contraseña)."""
 
-    __entity_name__ = "Usuario"
+    __entity_name__ = "usuarios"
 
-    ID: int
+    id: int
     identificacion: int
     nombre: str
     correo: str
@@ -66,7 +66,7 @@ class UserOut(BaseModel):
 
     def to_dict(self) -> dict:
         return {
-            "ID": self.ID,
+            "id": self.id,
             "identificacion": self.identificacion,
             "nombre": self.nombre,
             "correo": self.correo,
@@ -85,7 +85,7 @@ class UserOut(BaseModel):
 class UserUpdate(BaseModel):
     """Modelo para actualizar datos de un usuario."""
 
-    ID: int
+    id: int
     nombre: str
     correo: str
     telefono: Optional[str] = None

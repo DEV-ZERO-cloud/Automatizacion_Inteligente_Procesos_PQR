@@ -40,3 +40,5 @@ httpx>=0.27.0
 jupyter>=1.0.0
 
 hf_xet
+
+psycopg2-binary==2.9.11

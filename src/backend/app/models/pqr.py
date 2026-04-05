@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class PQRCreate(BaseModel):
-    __entity_name__ = "PQR"
+    __entity_name__ = "pqrs"
 
     ID: Optional[int] = None
     titulo: str

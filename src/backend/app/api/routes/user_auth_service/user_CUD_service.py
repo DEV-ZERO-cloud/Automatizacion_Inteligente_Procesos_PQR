@@ -55,15 +55,15 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             )
 
         scope = ROLE_SCOPE_MAP.get(user.rol_id, "usuario")
-        payload = {"sub": str(user.ID), "scope": scope}
+        payload = {"sub": str(user.id), "scope": scope}
         token = encode_token(payload)
 
-        logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.ID, scope)
+        logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.id, scope)
 
         return {
             "access_token": token,
             "token_type": "bearer",
-            "user_id": user.ID,
+            "user_id": user.id,
             "role": scope
         }
 
@@ -106,14 +106,14 @@ async def create_user(
             )
 
         controller.add(payload)
-        logger.info("[POST /users/create] Usuario creado con ID=%s", payload.ID)
+        logger.info("[POST /users/create] Usuario creado con ID=%s", payload.id)
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={
                 "success": True,
                 "message": "Usuario creado",
-                "data": {"id": payload.ID},
+                "data": {"id": payload.id},
             },
         )
 
@@ -138,9 +138,9 @@ async def update_user(
     Requiere token válido.
     """
     try:
-        logger.info("[PUT /users/update] Actualizando usuario ID=%s", payload.ID)
+        logger.info("[PUT /users/update] Actualizando usuario ID=%s", payload.id)
 
-        existing: UserOut = controller.get_by_id(UserOut, payload.ID)
+        existing: UserOut = controller.get_by_id(UserOut, payload.id)
         if not existing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -149,7 +149,7 @@ async def update_user(
 
         # Actualizar campos
         updated = UserOut(
-            ID=payload.ID,
+            ID=payload.id,
             identificacion=existing.identificacion,
             nombre=payload.nombre,
             correo=payload.correo,
@@ -161,7 +161,7 @@ async def update_user(
         )
         controller.update(updated)
 
-        logger.info("[PUT /users/update] Usuario ID=%s actualizado.", payload.ID)
+        logger.info("[PUT /users/update] Usuario ID=%s actualizado.", payload.id)
 
         return JSONResponse(
             content={"success": True, "message": "Usuario actualizado"}
