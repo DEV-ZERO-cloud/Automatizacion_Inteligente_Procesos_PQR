@@ -80,6 +80,7 @@ export function Topbar() {
             placeholder="Buscar PQR, cliente..."
           />
         </div>
+        <div className="badge badge-primary" style={{ textTransform: 'none' }}>Entorno productivo académico</div>
       </div>
 
       <div className="flex items-center gap-2">

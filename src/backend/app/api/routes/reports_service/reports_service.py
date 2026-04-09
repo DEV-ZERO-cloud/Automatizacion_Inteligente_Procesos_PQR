@@ -1,9 +1,9 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, Security
-from fastapi.responses import JSONResponse
 
 from app.core.auth import get_current_user
+from app.core.responses import ok_response
 from app.logic.universal_controller_instance import universal_controller as controller
 
 logger = logging.getLogger(__name__)
@@ -31,20 +31,18 @@ async def get_dashboard(
         logger.info("[GET /reports/dashboard] Generando resumen del dashboard.")
         summary = controller.get_dashboard_summary()
 
-        return JSONResponse(
-            content={
-                "success": True,
-                "data": {
-                    "total_pqrs": summary["total_pqrs"],
-                    "pendientes": summary["pendientes"],
-                    "resueltas": summary["resueltas"],
-                },
-            }
+        return ok_response(
+            data={
+                "total_pqrs": summary["total_pqrs"],
+                "pendientes": summary["pendientes"],
+                "resueltas": summary["resueltas"],
+            },
+            message="Dashboard consultado",
         )
 
     except Exception as exc:
         logger.error("[GET /reports/dashboard] Error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error al generar el dashboard: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo generar el dashboard")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -63,16 +61,11 @@ async def get_by_category(
         logger.info("[GET /reports/by-category] Generando reporte por categoría.")
         data = controller.get_pqrs_by_category()
 
-        return JSONResponse(
-            content={
-                "success": True,
-                "data": data,
-            }
-        )
+        return ok_response(data=data, message="Reporte por categoría consultado")
 
     except Exception as exc:
         logger.error("[GET /reports/by-category] Error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error al generar el reporte: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo generar el reporte")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -91,16 +84,11 @@ async def get_by_priority(
         logger.info("[GET /reports/by-priority] Generando reporte por prioridad.")
         data = controller.get_pqrs_by_priority()
 
-        return JSONResponse(
-            content={
-                "success": True,
-                "data": data,
-            }
-        )
+        return ok_response(data=data, message="Reporte por prioridad consultado")
 
     except Exception as exc:
         logger.error("[GET /reports/by-priority] Error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error al generar el reporte: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo generar el reporte")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -119,13 +107,8 @@ async def get_by_area(
         logger.info("[GET /reports/by-area] Generando reporte por área.")
         data = controller.get_pqrs_by_area()
 
-        return JSONResponse(
-            content={
-                "success": True,
-                "data": data,
-            }
-        )
+        return ok_response(data=data, message="Reporte por área consultado")
 
     except Exception as exc:
         logger.error("[GET /reports/by-area] Error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error al generar el reporte: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo generar el reporte")

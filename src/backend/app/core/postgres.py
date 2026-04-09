@@ -7,7 +7,7 @@ from psycopg2.extras import RealDictCursor
 
 def _pg_config() -> dict:
     return {
-        "host": os.getenv("PG_HOST", "localhost"),
+        "host": os.getenv("PG_HOST", "postgres"),
         "port": int(os.getenv("PG_PORT", "5432")),
         "dbname": os.getenv("PG_DB", "pqr_db"),
         "user": os.getenv("PG_USER", "pqr_user"),

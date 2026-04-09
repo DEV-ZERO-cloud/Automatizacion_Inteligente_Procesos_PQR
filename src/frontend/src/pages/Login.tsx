@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 
@@ -21,15 +21,15 @@ export function Login() {
       login(response.user, response.access_token);
       navigate('/');
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { detail?: string } } };
-      setError(e.response?.data?.detail || 'Credenciales inválidas');
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      setError(e.response?.data?.message || e.response?.data?.detail || 'Credenciales inválidas');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #0b3b7a 0%, #1f2937 60%, #0f766e 100%)', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
         <div className="card animate-fade-in" style={{ padding: '40px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -83,6 +83,9 @@ export function Login() {
 
         <p style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '24px' }}>
           Sistema de Automatización Inteligente de Procesos PQR
+        </p>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(255,255,255,0.9)', marginTop: '10px' }}>
+          ¿No tienes cuenta? <Link to="/register" style={{ color: '#bfdbfe', fontWeight: 700 }}>Regístrate</Link>
         </p>
       </div>
     </div>

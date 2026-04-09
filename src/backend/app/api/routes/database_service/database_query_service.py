@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 from psycopg2 import sql
 
 from app.core.postgres import pg_cursor, public_pg_config
+from app.core.responses import ok_response
 
 router = APIRouter(prefix="/db", tags=["Database Diagnostics"])
 
@@ -38,16 +39,16 @@ def db_health():
             )
             row = cur.fetchone()
 
-        return {
-            "success": True,
-            "data": {
+        return ok_response(
+            data={
                 "status": "ok",
                 "connection": row,
                 "config": public_pg_config(),
             },
-        }
+            message="Conexión a PostgreSQL verificada",
+        )
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"PostgreSQL no disponible: {exc}")
+        raise HTTPException(status_code=503, detail="PostgreSQL no disponible")
 
 
 @router.get("/tables")
@@ -65,9 +66,9 @@ def db_tables():
                 count_row = cur.fetchone()
                 stats.append({"table": table_name, "rows": int(count_row["total"])})
 
-        return {"success": True, "data": stats}
+        return ok_response(data=stats, message="Tablas consultadas")
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"No se pudo consultar tablas: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo consultar tablas")
 
 
 @router.get("/tables/{table_name}")
@@ -98,20 +99,20 @@ def db_table_rows(
             )
             total_row = cur.fetchone()
 
-        return {
-            "success": True,
-            "data": {
+        return ok_response(
+            data={
                 "table": table_name,
                 "total": int(total_row["total"]),
                 "limit": limit,
                 "offset": offset,
                 "rows": rows,
             },
-        }
+            message="Filas de tabla consultadas",
+        )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"No se pudo consultar la tabla: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo consultar la tabla")
 
 
 @router.get("/config")
 def db_config():
-    return {"success": True, "data": public_pg_config()}
+    return ok_response(data=public_pg_config(), message="Configuración pública de DB")

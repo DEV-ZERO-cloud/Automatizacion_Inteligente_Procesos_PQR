@@ -6,7 +6,7 @@ from datetime import datetime
 
 # ── Modelos de Categoría ──────────────────────────────────────────────────────
 class CategoryCreate(BaseModel):
-    __entity_name__ = "CATEGORIAS"
+    __entity_name__ = "categorias"
 
     id: int
     nombre: str
@@ -20,7 +20,7 @@ class CategoryCreate(BaseModel):
 
 
 class CategoryOut(BaseModel):
-    __entity_name__ = "CATEGORIAS"
+    __entity_name__ = "categorias"
 
     id: int
     nombre: str
@@ -40,7 +40,7 @@ class CategoryUpdate(BaseModel):
 
 # ── Modelos de Prioridad ──────────────────────────────────────────────────────
 class PriorityCreate(BaseModel):
-    __entity_name__ = "PRIORIDADES"
+    __entity_name__ = "prioridades"
 
     id: int
     nombre: str
@@ -57,7 +57,7 @@ class PriorityCreate(BaseModel):
 
 
 class PriorityOut(BaseModel):
-    __entity_name__ = "PRIORIDADES"
+    __entity_name__ = "prioridades"
 
     id: int
     nombre: str
@@ -80,7 +80,7 @@ class PriorityUpdate(BaseModel):
 
 # ── Modelos de Clasificación ──────────────────────────────────────────────────
 class ClassificationCreate(BaseModel):
-    __entity_name__ = "CLASIFICACIONES"
+    __entity_name__ = "clasificaciones"
 
     id: int
     pqr_id: int
@@ -113,7 +113,7 @@ class ClassificationCreate(BaseModel):
 
 
 class ClassificationOut(BaseModel):
-    __entity_name__ = "CLASIFICACIONES"
+    __entity_name__ = "clasificaciones"
 
     id: int
     pqr_id: int

@@ -43,6 +43,7 @@ export function BandejaEntrada() {
   const [classificationByPqr, setClassificationByPqr] = useState<Record<number, Classification | null>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchText, setSearchText] = useState('');
 
   const canValidate = ['admin', 'supervisor', 'agente'].includes(user?.rol_id || '');
 
@@ -76,14 +77,16 @@ export function BandejaEntrada() {
         setPrioridades(apiPriorities.length > 0 ? apiPriorities : dbPriorities);
 
         const classificationPairs = await Promise.all(
-          pqrData.map(async (item) => {
-            try {
-              const classification = await pqrService.getClassification(item.id);
-              return [item.id, classification] as const;
-            } catch {
-              return [item.id, null] as const;
-            }
-          })
+          pqrData
+            .filter((item) => !['resuelta', 'cerrada'].includes(item.estado.toLowerCase()))
+            .map(async (item) => {
+              try {
+                const classification = await pqrService.getClassification(item.id);
+                return [item.id, classification] as const;
+              } catch {
+                return [item.id, null] as const;
+              }
+            })
         );
 
         if (!isMounted) {
@@ -134,9 +137,17 @@ export function BandejaEntrada() {
         return false;
       }
 
+      const search = searchText.trim().toLowerCase();
+      if (search) {
+        const text = `${pqr.id} ${pqr.titulo} ${pqr.descripcion} ${pqr.usuario_nombre || ''}`.toLowerCase();
+        if (!text.includes(search)) {
+          return false;
+        }
+      }
+
       return true;
     });
-  }, [activeTab, filtroCategoria, filtroPrioridad, pqrs]);
+  }, [activeTab, filtroCategoria, filtroPrioridad, pqrs, searchText]);
 
   const pendientesCount = useMemo(() => pqrs.filter((p) => !['resuelta', 'cerrada'].includes(p.estado.toLowerCase())).length, [pqrs]);
 
@@ -206,7 +217,7 @@ export function BandejaEntrada() {
       const updated = await pqrService.getClassification(pqr.id);
       setClassificationByPqr((prev) => ({ ...prev, [pqr.id]: updated }));
     } catch {
-      setError('No fue posible validar la clasificacion seleccionada.');
+      setError('No fue posible validar la clasificación seleccionada.');
     }
   };
 
@@ -214,10 +225,10 @@ export function BandejaEntrada() {
     <div>
       <div className="page-header animate-fade-in">
         <h1 className="page-title">Bandeja de Entrada</h1>
-        <p className="page-subtitle">Supervision y validacion de clasificaciones automaticas por IA</p>
+        <p className="page-subtitle">Supervisión y validación de clasificaciones automáticas por IA</p>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '12px', flexWrap: 'wrap' }}>
         <div className="tabs">
           <button className={`tab ${activeTab === 'pendientes' ? 'active' : ''}`} onClick={() => setActiveTab('pendientes')}>
             Pendientes ({pendientesCount})
@@ -226,6 +237,13 @@ export function BandejaEntrada() {
             Validados
           </button>
         </div>
+        <input
+          className="input"
+          style={{ width: '340px', maxWidth: '100%' }}
+          placeholder="Buscar por ID, asunto o usuario..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
       </div>
 
       <div className="filters-grid">
@@ -278,7 +296,7 @@ export function BandejaEntrada() {
               <tr>
                 <th>ID</th>
                 <th>Fecha</th>
-                <th>Descripcion</th>
+                <th>Descripción</th>
                 <th>Categoria</th>
                 <th>Prioridad</th>
                 <th>Confianza</th>
@@ -377,7 +395,7 @@ export function BandejaEntrada() {
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Descripcion</p>
+                <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Descripción</p>
                 <p style={{ padding: '12px', background: '#f8fafc', borderRadius: '10px', fontSize: '14px' }}>{selectedPQR.descripcion}</p>
               </div>
               <div>

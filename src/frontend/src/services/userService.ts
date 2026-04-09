@@ -13,4 +13,9 @@ export const userService = {
     const response = await api.get('/users');
     return response.data?.data ?? [];
   },
+
+  async getSupervisors(): Promise<UserListItem[]> {
+    const response = await api.get('/supervisors');
+    return response.data?.data ?? [];
+  },
 };

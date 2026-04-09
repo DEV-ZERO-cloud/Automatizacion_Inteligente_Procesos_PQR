@@ -1,5 +1,6 @@
 import logging
 import os
+from contextlib import contextmanager
 from typing import Any, List, Optional
 
 import psycopg2
@@ -18,16 +19,27 @@ class UniversalController:
 
     def __init__(self):
         try:
-            password = os.getenv("PASSWORD", settings.PASSWORD)
+            password = os.getenv("PG_PASSWORD", os.getenv("PASSWORD", settings.PASSWORD))
             if not password:
                 raise ValueError("La variable PASSWORD no está definida en el entorno.")
-
-            self.conn = psycopg2.connect(**settings.db_config)
-            self.conn.autocommit = False
-            self.cursor = self.conn.cursor()
             logger.info("Conexión a PostgreSQL establecida correctamente.")
         except psycopg2.Error as exc:
             raise ConnectionError(f"Error de conexión a la base de datos: {exc}") from exc
+
+    @contextmanager
+    def _cursor(self):
+        conn = psycopg2.connect(**settings.db_config)
+        conn.autocommit = False
+        cursor = conn.cursor()
+        try:
+            yield conn, cursor
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            cursor.close()
+            conn.close()
 
     # ── Utilidades internas ────────────────────────────────────────────────────
 
@@ -39,9 +51,18 @@ class UniversalController:
             return obj.__class__.__entity_name__
         raise ValueError("El objeto no tiene definido '__entity_name__'.")
 
-    def _row_to_dict(self, row) -> dict:
+    @staticmethod
+    def _row_to_dict(row, description) -> dict:
         """Convierte una fila de cursor en diccionario."""
-        return dict(zip([col[0] for col in self.cursor.description], row))
+        return dict(zip([col[0] for col in description], row))
+
+    @staticmethod
+    def _resolve_id_field(data: dict) -> tuple[str, str]:
+        if "ID" in data:
+            return "ID", "id"
+        if "id" in data:
+            return "id", "id"
+        raise ValueError("El objeto debe tener un campo 'id' o 'ID' válido.")
 
     # ── CRUD genérico ──────────────────────────────────────────────────────────
 
@@ -49,9 +70,11 @@ class UniversalController:
         """Retorna todos los registros de la tabla asociada a cls."""
         table = cls.__entity_name__
         try:
-            self.cursor.execute(f"SELECT * FROM {table}")
-            rows = self.cursor.fetchall()
-            return [cls.from_dict(self._row_to_dict(r)) for r in rows]
+            with self._cursor() as (_, cursor):
+                cursor.execute(f"SELECT * FROM {table}")
+                rows = cursor.fetchall()
+                description = cursor.description
+            return [cls.from_dict(self._row_to_dict(r, description)) for r in rows]
         except Exception as exc:
             logger.error("Error en get_all(%s): %s", table, exc)
             raise
@@ -60,9 +83,11 @@ class UniversalController:
         """Retorna un registro por su ID."""
         table = cls.__entity_name__
         try:
-            self.cursor.execute(f"SELECT * FROM {table} WHERE ID = %s", (record_id,))
-            row = self.cursor.fetchone()
-            return cls.from_dict(self._row_to_dict(row)) if row else None
+            with self._cursor() as (_, cursor):
+                cursor.execute(f"SELECT * FROM {table} WHERE id = %s", (record_id,))
+                row = cursor.fetchone()
+                description = cursor.description
+            return cls.from_dict(self._row_to_dict(row, description)) if row else None
         except Exception as exc:
             logger.error("Error en get_by_id(%s, %s): %s", table, record_id, exc)
             raise
@@ -71,9 +96,11 @@ class UniversalController:
         """Retorna el primer registro que coincida con column=value."""
         table = cls.__entity_name__
         try:
-            self.cursor.execute(f"SELECT * FROM {table} WHERE {column} = %s", (value,))
-            row = self.cursor.fetchone()
-            return cls.from_dict(self._row_to_dict(row)) if row else None
+            with self._cursor() as (_, cursor):
+                cursor.execute(f"SELECT * FROM {table} WHERE {column} = %s", (value,))
+                row = cursor.fetchone()
+                description = cursor.description
+            return cls.from_dict(self._row_to_dict(row, description)) if row else None
         except Exception as exc:
             logger.error("Error en get_by_column(%s.%s=%s): %s", table, column, value, exc)
             raise
@@ -86,18 +113,19 @@ class UniversalController:
         # Eliminar ID si es None (autoincremental)
         if "ID" in data and data["ID"] is None:
             del data["ID"]
+        if "id" in data and data["id"] is None:
+            del data["id"]
 
         columns = ", ".join(data.keys())
         placeholders = ", ".join(["%s" for _ in data])
         sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
 
         try:
-            self.cursor.execute(sql, tuple(data.values()))
-            self.conn.commit()
+            with self._cursor() as (_, cursor):
+                cursor.execute(sql, tuple(data.values()))
             logger.info("Registro insertado en %s.", table)
             return obj
         except Exception as exc:
-            self.conn.rollback()
             logger.error("Error en add(%s): %s", table, exc)
             raise
 
@@ -106,20 +134,20 @@ class UniversalController:
         table = self._get_table_name(obj)
         data = obj.to_dict()
 
-        if "ID" not in data or data["ID"] is None:
-            raise ValueError("El objeto debe tener un campo 'ID' válido para ser actualizado.")
+        id_key, id_column = self._resolve_id_field(data)
+        if data[id_key] is None:
+            raise ValueError("El objeto debe tener un campo 'id' válido para ser actualizado.")
 
-        set_clause = ", ".join(f"{k} = %s" for k in data if k != "ID")
-        sql = f"UPDATE {table} SET {set_clause} WHERE ID = %s"
-        values = [v for k, v in data.items() if k != "ID"] + [data["ID"]]
+        set_clause = ", ".join(f"{k} = %s" for k in data if k != id_key)
+        sql = f"UPDATE {table} SET {set_clause} WHERE {id_column} = %s"
+        values = [v for k, v in data.items() if k != id_key] + [data[id_key]]
 
         try:
-            self.cursor.execute(sql, values)
-            self.conn.commit()
-            logger.info("Registro ID=%s actualizado en %s.", data["ID"], table)
+            with self._cursor() as (_, cursor):
+                cursor.execute(sql, values)
+            logger.info("Registro ID=%s actualizado en %s.", data[id_key], table)
             return obj
         except Exception as exc:
-            self.conn.rollback()
             logger.error("Error en update(%s): %s", table, exc)
             raise
 
@@ -128,16 +156,16 @@ class UniversalController:
         table = self._get_table_name(obj)
         data = obj.to_dict()
 
-        if "ID" not in data or data["ID"] is None:
-            raise ValueError("El objeto debe tener un campo 'ID' válido para ser eliminado.")
+        id_key, id_column = self._resolve_id_field(data)
+        if data[id_key] is None:
+            raise ValueError("El objeto debe tener un campo 'id' válido para ser eliminado.")
 
         try:
-            self.cursor.execute(f"DELETE FROM {table} WHERE ID = %s", (data["ID"],))
-            self.conn.commit()
-            logger.info("Registro ID=%s eliminado de %s.", data["ID"], table)
+            with self._cursor() as (_, cursor):
+                cursor.execute(f"DELETE FROM {table} WHERE {id_column} = %s", (data[id_key],))
+            logger.info("Registro ID=%s eliminado de %s.", data[id_key], table)
             return True
         except Exception as exc:
-            self.conn.rollback()
             logger.error("Error en delete(%s): %s", table, exc)
             raise
 
@@ -146,14 +174,15 @@ class UniversalController:
     def get_dashboard_summary(self) -> dict:
         """Retorna totales de PQR: total, pendientes y resueltas."""
         try:
-            self.cursor.execute("""
-                SELECT
-                    COUNT(*) AS total_pqrs,
-                    SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) AS pendientes,
-                    SUM(CASE WHEN estado = 'resuelta'  THEN 1 ELSE 0 END) AS resueltas
-                FROM pqrs
-            """)
-            row = self.cursor.fetchone()
+            with self._cursor() as (_, cursor):
+                cursor.execute("""
+                    SELECT
+                        COUNT(*) AS total_pqrs,
+                        SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) AS pendientes,
+                        SUM(CASE WHEN estado = 'resuelta'  THEN 1 ELSE 0 END) AS resueltas
+                    FROM pqrs
+                """)
+                row = cursor.fetchone()
             return {
                 "total_pqrs": row[0] or 0,
                 "pendientes": row[1] or 0,
@@ -166,13 +195,14 @@ class UniversalController:
     def get_pqrs_by_category(self) -> List[dict]:
         """Retorna cantidad de PQR agrupadas por categoría."""
         try:
-            self.cursor.execute("""
-                SELECT categoria, COUNT(*) AS cantidad
-                FROM pqrs
-                GROUP BY categoria
-                ORDER BY cantidad DESC
-            """)
-            rows = self.cursor.fetchall()
+            with self._cursor() as (_, cursor):
+                cursor.execute("""
+                    SELECT categoria, COUNT(*) AS cantidad
+                    FROM pqrs
+                    GROUP BY categoria
+                    ORDER BY cantidad DESC
+                """)
+                rows = cursor.fetchall()
             return [{"categoria": r[0], "cantidad": r[1]} for r in rows]
         except Exception as exc:
             logger.error("Error en get_pqrs_by_category: %s", exc)
@@ -181,13 +211,14 @@ class UniversalController:
     def get_pqrs_by_priority(self) -> List[dict]:
         """Retorna cantidad de PQR agrupadas por prioridad."""
         try:
-            self.cursor.execute("""
-                SELECT prioridad, COUNT(*) AS cantidad
-                FROM pqrs
-                GROUP BY prioridad
-                ORDER BY cantidad DESC
-            """)
-            rows = self.cursor.fetchall()
+            with self._cursor() as (_, cursor):
+                cursor.execute("""
+                    SELECT prioridad, COUNT(*) AS cantidad
+                    FROM pqrs
+                    GROUP BY prioridad
+                    ORDER BY cantidad DESC
+                """)
+                rows = cursor.fetchall()
             return [{"prioridad": r[0], "cantidad": r[1]} for r in rows]
         except Exception as exc:
             logger.error("Error en get_pqrs_by_priority: %s", exc)
@@ -196,14 +227,15 @@ class UniversalController:
     def get_pqrs_by_area(self) -> List[dict]:
         """Retorna cantidad de PQR agrupadas por área organizacional."""
         try:
-            self.cursor.execute("""
-                SELECT a.nombre AS area, COUNT(p.id) AS cantidad
-                FROM pqrs p
-                JOIN areas a ON p.area_id = a.id
-                GROUP BY a.nombre
-                ORDER BY cantidad DESC
-            """)
-            rows = self.cursor.fetchall()
+            with self._cursor() as (_, cursor):
+                cursor.execute("""
+                    SELECT a.nombre AS area, COUNT(p.id) AS cantidad
+                    FROM pqrs p
+                    JOIN areas a ON p.area_id = a.id
+                    GROUP BY a.nombre
+                    ORDER BY cantidad DESC
+                """)
+                rows = cursor.fetchall()
             return [{"area": r[0], "cantidad": r[1]} for r in rows]
         except Exception as exc:
             logger.error("Error en get_pqrs_by_area: %s", exc)

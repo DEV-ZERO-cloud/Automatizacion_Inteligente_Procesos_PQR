@@ -5,7 +5,7 @@ import { reportService } from '../services/reportService';
 import { pqrService } from '../services/pqrService';
 import type { PQR } from '../types';
 
-const chartColors = ['#003d9b', '#047857', '#d97706', '#525f73', '#dc2626'];
+const chartColors = ['#1e64c8', '#0f766e', '#c87a1e', '#475569', '#be123c'];
 
 function formatDateLabel(value?: string) {
   if (!value) {
@@ -37,6 +37,7 @@ export function Dashboard() {
   const [categoryStats, setCategoryStats] = useState<Array<{ name: string; count: number; color: string }>>([]);
   const [recentPQRS, setRecentPQRS] = useState<PQR[]>([]);
   const [avgConfidence, setAvgConfidence] = useState<number | null>(null);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -54,6 +55,7 @@ export function Dashboard() {
         }
 
         const total = dashboard.total;
+        setLoadError('');
         setDashboardStats({
           total,
           pendientes: dashboard.pendientes,
@@ -87,6 +89,7 @@ export function Dashboard() {
         }
       } catch {
         if (isMounted) {
+          setLoadError('No fue posible cargar los indicadores del dashboard. Verifica conexión y permisos.');
           setCategoryStats([]);
           setRecentPQRS([]);
           setDashboardStats({ total: 0, pendientes: 0, resueltas: 0, enProceso: 0 });
@@ -125,9 +128,9 @@ export function Dashboard() {
   const getRoleGreeting = () => {
     switch (user?.rol_id) {
       case 'admin':
-        return 'Panel de Administracion';
+        return 'Panel de Administración';
       case 'supervisor':
-        return 'Panel de Supervision';
+        return 'Panel de Supervisión';
       case 'agente':
         return 'Panel del Agente';
       default:
@@ -139,7 +142,7 @@ export function Dashboard() {
     switch (user?.rol_id) {
       case 'admin':
         return [
-          { label: 'Gestionar Usuarios', icon: 'group', path: '/usuarios' },
+          { label: 'Gestionar usuarios', icon: 'group', path: '/usuarios' },
           { label: 'Configurar IA', icon: 'psychology', path: '/gestion-ia' },
         ];
       case 'supervisor':
@@ -193,9 +196,21 @@ export function Dashboard() {
         </p>
       </div>
 
+      <div className="card" style={{ marginBottom: '18px', padding: '14px 18px', background: 'linear-gradient(90deg, #ecf4ff 0%, #f7fbff 100%)' }}>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: '#1553a1' }}>
+          Panel ejecutivo: indicadores operativos, calidad de clasificación IA y estado de atención.
+        </p>
+      </div>
+
+      {loadError ? (
+        <div className="card" style={{ marginBottom: '16px', padding: '14px 18px', borderLeft: '4px solid #dc2626', background: '#fff5f5' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: '#991b1b' }}>{loadError}</p>
+        </div>
+      ) : null}
+
       <div className="dashboard-stats-grid">
         {statsCards.map((stat, i) => (
-          <div key={stat.label} className={`stat-card animate-fade-in stagger-${i + 1}`} style={{ opacity: 0 }}>
+          <div key={stat.label} className={`stat-card animate-fade-in stagger-${i + 1}`} style={{ opacity: 0, background: 'linear-gradient(180deg, #ffffff 0%, #f9fbff 100%)' }}>
             <div className="stat-icon" style={{ background: stat.color }}>
               <span className="material-symbols-outlined">{stat.icon}</span>
             </div>
@@ -206,7 +221,7 @@ export function Dashboard() {
       </div>
 
       <div className="dashboard-main-grid">
-        <div className="card animate-fade-in" style={{ opacity: 0, animationDelay: '0.2s' }}>
+        <div className="card animate-fade-in" style={{ opacity: 0, animationDelay: '0.2s', borderTop: '4px solid #1e64c8' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: '16px', fontWeight: '700' }}>PQRs Recientes</h2>
             <Link to="/bandeja-entrada" className="btn btn-sm btn-secondary">Ver todas</Link>
@@ -216,7 +231,7 @@ export function Dashboard() {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Descripcion</th>
+                  <th>Descripción</th>
                   <th>Tipo</th>
                   <th>Prioridad</th>
                   <th>Estado</th>
@@ -246,7 +261,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="card animate-fade-in" style={{ opacity: 0, animationDelay: '0.3s' }}>
+        <div className="card animate-fade-in" style={{ opacity: 0, animationDelay: '0.3s', borderTop: '4px solid #0f766e' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7' }}>
             <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Por Categoria</h2>
           </div>
@@ -273,7 +288,7 @@ export function Dashboard() {
       {getRoleActions().length > 0 && (
         <div className="card animate-fade-in" style={{ marginTop: '24px', opacity: 0, animationDelay: '0.4s' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Acciones Rapidas</h2>
+            <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Acciones rápidas</h2>
           </div>
           <div style={{ padding: '20px 24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {getRoleActions().map((action) => (
@@ -288,7 +303,7 @@ export function Dashboard() {
 
       <div className="card animate-fade-in" style={{ marginTop: '24px', opacity: 0, animationDelay: '0.5s' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Metricas del Sistema</h2>
+          <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Métricas del sistema</h2>
         </div>
         <div className="metrics-grid" style={{ padding: '24px' }}>
           <div style={{ textAlign: 'center', padding: '20px', background: '#f8fafc', borderRadius: '12px' }}>

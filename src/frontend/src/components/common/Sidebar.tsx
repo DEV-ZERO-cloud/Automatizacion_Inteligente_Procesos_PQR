@@ -2,9 +2,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 
 const menuItems = [
-  { path: '/', icon: 'dashboard', label: 'Dashboard' },
-  { path: '/bandeja-entrada', icon: 'inbox', label: 'Bandeja de Entrada' },
-  { path: '/reportes', icon: 'analytics', label: 'Reportes' },
+  { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+  { path: '/gestion-pqrs', icon: 'assignment', label: 'Gestión de PQRs', roles: ['admin', 'supervisor'] },
+  { path: '/mis-pqrs', icon: 'folder', label: 'Mis PQRs', roles: ['usuario'] },
+  { path: '/bandeja-entrada', icon: 'inbox', label: 'Validar Clasificaciones', roles: ['admin', 'supervisor', 'agente'] },
+  { path: '/reportes', icon: 'analytics', label: 'Reportes', roles: ['admin', 'supervisor', 'agente'] },
   { path: '/usuarios', icon: 'group', label: 'Gestión de Usuarios', roles: ['admin'] },
   { path: '/gestion-ia', icon: 'psychology', label: 'Gestión IA', roles: ['admin'] },
   { path: '/ajustes', icon: 'settings', label: 'Configuración', roles: ['admin'] },
@@ -28,7 +30,7 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-gray-900">Gestión PQR</h1>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">Panel de Control</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Control Corporativo</p>
           </div>
         </div>
       </div>

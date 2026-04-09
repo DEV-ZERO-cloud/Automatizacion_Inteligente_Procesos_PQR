@@ -20,4 +20,4 @@ COPY config.yaml ./config.yaml
 EXPOSE 8000
 
 # Comando de arranque
-CMD ["sh", "-c", "python -m app.logic.seed_json_db && uvicorn app.api.main:app --host 0.0.0.0 --port 8000"]
+CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,9 +1,9 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, Security, status
-from fastapi.responses import JSONResponse
 
 from app.core.auth import get_current_user
+from app.core.responses import ok_response
 from app.logic.universal_controller_instance import universal_controller as controller
 from app.models.classification import (
     ClassificationCreate, ClassificationOut, ClassificationUpdate,
@@ -36,9 +36,10 @@ async def create_classification(
             )
 
         controller.add(payload)
-        return JSONResponse(
+        return ok_response(
+            data={"id": payload.id},
+            message="Clasificación creada",
             status_code=status.HTTP_201_CREATED,
-            content={"success": True, "message": "Clasificación creada", "data": {"id": payload.id}},
         )
     except HTTPException:
         raise
@@ -58,7 +59,7 @@ async def validate_classification(
     try:
         logger.info("[POST /classifications/validate] Validando clasificación ID=%s", payload.id)
         
-        existing: ClassificationOut = controller.get_by_id(ClassificationOut, payload.id)
+        existing: ClassificationOut | None = controller.get_by_id(ClassificationOut, payload.id)
         if not existing:
             raise HTTPException(status_code=404, detail="Clasificación no encontrada.")
         
@@ -76,7 +77,7 @@ async def validate_classification(
         )
         controller.update(updated)
         
-        return JSONResponse(content={"success": True, "message": "Clasificación validada"})
+        return ok_response(data=None, message="Clasificación validada")
     except HTTPException:
         raise
     except Exception as exc:
@@ -94,13 +95,13 @@ async def update_classification(
 ):
     try:
         logger.info("[PUT /classifications/update] Actualizando clasificación ID=%s", payload.id)
-        existing: ClassificationOut = controller.get_by_id(ClassificationOut, payload.id)
+        existing: ClassificationOut | None = controller.get_by_id(ClassificationOut, payload.id)
         if not existing:
             raise HTTPException(status_code=404, detail="Clasificación no encontrada.")
         
-        updated = ClassificationOut(**payload.dict())
+        updated = ClassificationOut(**payload.model_dump())
         controller.update(updated)
-        return JSONResponse(content={"success": True, "message": "Clasificación actualizada"})
+        return ok_response(data=None, message="Clasificación actualizada")
     except HTTPException:
         raise
     except Exception as exc:
@@ -118,12 +119,12 @@ async def delete_classification(
 ):
     try:
         logger.info("[DELETE /classifications/delete/%s] Eliminando", class_id)
-        existing: ClassificationOut = controller.get_by_id(ClassificationOut, class_id)
+        existing: ClassificationOut | None = controller.get_by_id(ClassificationOut, class_id)
         if not existing:
             raise HTTPException(status_code=404, detail="No encontrada.")
         
         controller.delete(existing)
-        return JSONResponse(content={"success": True, "message": "Clasificación eliminada"})
+        return ok_response(data=None, message="Clasificación eliminada")
     except HTTPException:
         raise
     except Exception as exc:
@@ -139,7 +140,11 @@ async def create_category(
 ):
     try:
         controller.add(payload)
-        return JSONResponse(status_code=201, content={"success": True, "message": "Categoría creada", "data": {"id": payload.id}})
+        return ok_response(
+            data={"id": payload.id},
+            message="Categoría creada",
+            status_code=status.HTTP_201_CREATED,
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Error interno")
 
@@ -152,10 +157,10 @@ async def update_category(
     current_user: dict = Security(get_current_user, scopes=["admin"]),
 ):
     try:
-        existing: CategoryOut = controller.get_by_id(CategoryOut, payload.id)
+        existing: CategoryOut | None = controller.get_by_id(CategoryOut, payload.id)
         if not existing: raise HTTPException(status_code=404, detail="No encontrada")
-        controller.update(CategoryOut(**payload.dict()))
-        return JSONResponse(content={"success": True, "message": "Categoría actualizada"})
+        controller.update(CategoryOut(**payload.model_dump()))
+        return ok_response(data=None, message="Categoría actualizada")
     except HTTPException: raise
     except Exception: raise HTTPException(status_code=500, detail="Error interno")
 
@@ -168,10 +173,10 @@ async def delete_category(
     current_user: dict = Security(get_current_user, scopes=["admin"]),
 ):
     try:
-        existing: CategoryOut = controller.get_by_id(CategoryOut, cat_id)
+        existing: CategoryOut | None = controller.get_by_id(CategoryOut, cat_id)
         if not existing: raise HTTPException(status_code=404, detail="No encontrada")
         controller.delete(existing)
-        return JSONResponse(content={"success": True, "message": "Categoría eliminada"})
+        return ok_response(data=None, message="Categoría eliminada")
     except HTTPException: raise
     except Exception: raise HTTPException(status_code=500, detail="Error interno")
 
@@ -185,7 +190,11 @@ async def create_priority(
 ):
     try:
         controller.add(payload)
-        return JSONResponse(status_code=201, content={"success": True, "message": "Prioridad creada", "data": {"id": payload.id}})
+        return ok_response(
+            data={"id": payload.id},
+            message="Prioridad creada",
+            status_code=status.HTTP_201_CREATED,
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Error interno")
 
@@ -198,10 +207,10 @@ async def update_priority(
     current_user: dict = Security(get_current_user, scopes=["admin"]),
 ):
     try:
-        existing: PriorityOut = controller.get_by_id(PriorityOut, payload.id)
+        existing: PriorityOut | None = controller.get_by_id(PriorityOut, payload.id)
         if not existing: raise HTTPException(status_code=404, detail="No encontrada")
-        controller.update(PriorityOut(**payload.dict()))
-        return JSONResponse(content={"success": True, "message": "Prioridad actualizada"})
+        controller.update(PriorityOut(**payload.model_dump()))
+        return ok_response(data=None, message="Prioridad actualizada")
     except HTTPException: raise
     except Exception: raise HTTPException(status_code=500, detail="Error interno")
 
@@ -214,9 +223,9 @@ async def delete_priority(
     current_user: dict = Security(get_current_user, scopes=["admin"]),
 ):
     try:
-        existing: PriorityOut = controller.get_by_id(PriorityOut, prio_id)
+        existing: PriorityOut | None = controller.get_by_id(PriorityOut, prio_id)
         if not existing: raise HTTPException(status_code=404, detail="No encontrada")
         controller.delete(existing)
-        return JSONResponse(content={"success": True, "message": "Prioridad eliminada"})
+        return ok_response(data=None, message="Prioridad eliminada")
     except HTTPException: raise
     except Exception: raise HTTPException(status_code=500, detail="Error interno")

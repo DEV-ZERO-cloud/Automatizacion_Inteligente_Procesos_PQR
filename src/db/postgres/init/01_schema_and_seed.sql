@@ -25,10 +25,10 @@ CREATE TABLE IF NOT EXISTS pqrs (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
     descripcion TEXT NOT NULL,
-    tipo VARCHAR(30) NOT NULL,
+    tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('peticion', 'queja', 'reclamo')),
     categoria VARCHAR(80),
-    prioridad VARCHAR(30),
-    estado VARCHAR(30) NOT NULL DEFAULT 'pendiente',
+    prioridad VARCHAR(30) CHECK (prioridad IS NULL OR prioridad IN ('baja', 'media', 'alta', 'urgente')),
+    estado VARCHAR(30) NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_proceso', 'resuelta', 'cerrada')),
     area_id INTEGER REFERENCES areas(id),
     usuario_id INTEGER REFERENCES usuarios(id),
     operador_id INTEGER REFERENCES usuarios(id),
@@ -39,12 +39,12 @@ CREATE TABLE IF NOT EXISTS pqrs (
 
 CREATE TABLE IF NOT EXISTS categorias (
     id INTEGER PRIMARY KEY,
-    nombre VARCHAR(80) NOT NULL
+    nombre VARCHAR(80) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS prioridades (
     id INTEGER PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL
+    nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS clasificaciones (
@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS clasificaciones (
     modelo_version VARCHAR(30) NOT NULL,
     categoria_id INTEGER NOT NULL REFERENCES categorias(id),
     prioridad_id INTEGER NOT NULL REFERENCES prioridades(id),
-    confianza NUMERIC(5,4) NOT NULL,
-    origen VARCHAR(20) NOT NULL,
+    confianza NUMERIC(5,4) NOT NULL CHECK (confianza >= 0 AND confianza <= 1),
+    origen VARCHAR(20) NOT NULL CHECK (origen IN ('IA', 'MANUAL')),
     fue_corregida BOOLEAN NOT NULL DEFAULT FALSE,
     validado_por INTEGER REFERENCES usuarios(id),
     created_at TIMESTAMP DEFAULT NOW()
@@ -78,6 +78,12 @@ CREATE TABLE IF NOT EXISTS historial (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_pqrs_estado_created_at ON pqrs (estado, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pqrs_supervisor_estado ON pqrs (supervisor_id, estado);
+CREATE INDEX IF NOT EXISTS idx_pqrs_usuario_created_at ON pqrs (usuario_id, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_clasificaciones_unique_pqr ON clasificaciones (pqr_id);
+CREATE INDEX IF NOT EXISTS idx_historial_pqr_created_at ON historial (pqr_id, created_at DESC);
+
 INSERT INTO rol (id, nombre) VALUES
 (1, 'admin'),
 (2, 'supervisor'),
@@ -94,10 +100,10 @@ ON CONFLICT (id) DO NOTHING;
 SELECT setval('areas_id_seq', (SELECT MAX(id) FROM areas));
 
 INSERT INTO usuarios (id, identificacion, nombre, correo, telefono, rol_id, area_id, activo, contrasena) VALUES
-(1, '1001', 'Admin Sistema', 'admin@pqr.com', '3000000001', 1, 1, TRUE, 'admin123'),
-(2, '1002', 'Laura Supervisora', 'laura@pqr.com', '3000000002', 2, 3, TRUE, 'super456'),
-(3, '1003', 'Carlos Agente', 'carlos@pqr.com', '3000000003', 3, 3, TRUE, 'agente789'),
-(4, '1004', 'Maria Usuario', 'maria@pqr.com', '3000000004', 4, 2, TRUE, 'user000')
+(1, '1001', 'Admin Sistema', 'admin@pqr.com', '3000000001', 1, 1, TRUE, '$pbkdf2-sha256$29000$yVmL0RpDiLHWWmtNqdX63w$g/lwiSsV7O3xnR0zfCqkAA6TorDMQzsuudNb5n1VLus'),
+(2, '1002', 'Laura Supervisora', 'laura@pqr.com', '3000000002', 2, 3, TRUE, '$pbkdf2-sha256$29000$kNK6l7K29t7b./8/x3gPoQ$NknU3fpkXas68fbIaD1VoYWmqr.9516zmqnQZ4U4kg4'),
+(3, '1003', 'Carlos Agente', 'carlos@pqr.com', '3000000003', 3, 3, TRUE, '$pbkdf2-sha256$29000$21tLKaWUUioFoLQWohTi/A$Q87Uotg6xKMmOKKaqx1AH0wSnLE4FlYBlrKajjLpYqc'),
+(4, '1004', 'Maria Usuario', 'maria@pqr.com', '3000000004', 4, 2, TRUE, '$pbkdf2-sha256$29000$Z4zxvjdGSElprVWKsdYaQw$UcpAhAE3RZrfreWo0y8vpvyhLO6Du1hWwkFKgozY4SE')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));

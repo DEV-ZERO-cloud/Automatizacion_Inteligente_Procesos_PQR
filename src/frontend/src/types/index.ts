@@ -84,6 +84,14 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  identificacion: number;
+  nombre: string;
+  correo: string;
+  telefono?: string;
+  password: string;
+}
+
 export interface LoginResponse {
   access_token: string;
   token_type: string;

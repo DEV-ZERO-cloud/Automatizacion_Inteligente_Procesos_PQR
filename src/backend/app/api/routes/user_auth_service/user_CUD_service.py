@@ -1,11 +1,13 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, Security, status
-from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends
+from pydantic import BaseModel, EmailStr, Field
 
 from app.core.auth import encode_token, get_current_user
+from app.core.responses import ok_response
+from app.core.security import hash_password, is_password_hashed, verify_password
 from app.logic.universal_controller_instance import universal_controller as controller
 from app.models.user import UserCreate, UserOut, UserUpdate
 
@@ -23,6 +25,14 @@ ROLE_SCOPE_MAP: dict = {
 }
 
 
+class RegisterRequest(BaseModel):
+    identificacion: int = Field(..., gt=0)
+    nombre: str = Field(..., min_length=3, max_length=120)
+    correo: EmailStr
+    telefono: str | None = Field(default=None, max_length=30)
+    password: str = Field(..., min_length=8, max_length=128)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  3.1 POST /auth/login
 # ══════════════════════════════════════════════════════════════════════════════
@@ -31,7 +41,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     try:
         logger.info("[POST /auth/login] Intento de inicio de sesión: %s", form_data.username)
 
-        user: UserOut = controller.get_by_column(UserOut, "correo", form_data.username)
+        user = controller.get_by_column(UserOut, "correo", form_data.username)
 
         if not user:
             logger.warning("[POST /auth/login] Usuario no encontrado: %s", form_data.username)
@@ -47,7 +57,18 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                 detail="Usuario inactivo. Contacte al administrador.",
             )
 
-        if user.contrasena != form_data.password:
+        stored_password = user.contrasena or ""
+        password_ok = False
+
+        if is_password_hashed(stored_password):
+            password_ok = verify_password(form_data.password, stored_password)
+        else:
+            password_ok = stored_password == form_data.password
+            if password_ok:
+                user.contrasena = hash_password(form_data.password)
+                controller.update(user)
+
+        if not password_ok:
             logger.warning("[POST /auth/login] Contraseña incorrecta para: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -60,17 +81,74 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
         logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.id, scope)
 
-        return {
-            "access_token": token,
-            "token_type": "bearer",
-            "user_id": user.id,
-            "role": scope
-        }
+        return ok_response(
+            data={
+                "access_token": token,
+                "token_type": "bearer",
+                "user_id": user.id,
+                "role": scope,
+            },
+            message="Inicio de sesión exitoso",
+        )
 
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("[POST /auth/login] Error interno: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+
+@router.post("/auth/register", status_code=status.HTTP_201_CREATED)
+async def register_user(payload: RegisterRequest):
+    try:
+        logger.info("[POST /auth/register] Registro de usuario: %s", payload.correo)
+
+        existing = controller.get_by_column(UserOut, "correo", payload.correo)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ya existe un usuario con ese correo.",
+            )
+
+        existing_identification = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
+        if existing_identification:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ya existe un usuario con esa identificación.",
+            )
+
+        users = controller.get_all(UserOut)
+        next_id = (max((u.id for u in users), default=0) + 1) if users else 1
+
+        user_to_create = UserCreate(
+            id=next_id,
+            identificacion=payload.identificacion,
+            nombre=payload.nombre,
+            correo=str(payload.correo),
+            telefono=payload.telefono or "",
+            contrasena=hash_password(payload.password),
+            rol_id=4,
+            area_id=3,
+            activo=1,
+        )
+        controller.add(user_to_create)
+
+        token = encode_token({"sub": str(next_id), "scope": "usuario"})
+
+        return ok_response(
+            data={
+                "access_token": token,
+                "token_type": "bearer",
+                "user_id": next_id,
+                "role": "usuario",
+            },
+            message="Usuario registrado exitosamente",
+            status_code=status.HTTP_201_CREATED,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("[POST /auth/register] Error interno: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -105,23 +183,24 @@ async def create_user(
                 detail="Ya existe un usuario con esa identificación.",
             )
 
-        controller.add(payload)
+        payload_data = payload.model_dump()
+        payload_data["contrasena"] = hash_password(payload_data["contrasena"])
+        secure_payload = UserCreate(**payload_data)
+
+        controller.add(secure_payload)
         logger.info("[POST /users/create] Usuario creado con ID=%s", payload.id)
 
-        return JSONResponse(
+        return ok_response(
+            data={"id": payload.id},
+            message="Usuario creado",
             status_code=status.HTTP_201_CREATED,
-            content={
-                "success": True,
-                "message": "Usuario creado",
-                "data": {"id": payload.id},
-            },
         )
 
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("[POST /users/create] Error interno: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error interno: {exc}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -140,7 +219,7 @@ async def update_user(
     try:
         logger.info("[PUT /users/update] Actualizando usuario ID=%s", payload.id)
 
-        existing: UserOut = controller.get_by_id(UserOut, payload.id)
+        existing = controller.get_by_id(UserOut, payload.id)
         if not existing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -149,7 +228,7 @@ async def update_user(
 
         # Actualizar campos
         updated = UserOut(
-            ID=payload.id,
+            id=payload.id,
             identificacion=existing.identificacion,
             nombre=payload.nombre,
             correo=payload.correo,
@@ -163,15 +242,13 @@ async def update_user(
 
         logger.info("[PUT /users/update] Usuario ID=%s actualizado.", payload.id)
 
-        return JSONResponse(
-            content={"success": True, "message": "Usuario actualizado"}
-        )
+        return ok_response(data=None, message="Usuario actualizado")
 
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("[PUT /users/update] Error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error interno: {exc}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -190,7 +267,7 @@ async def delete_user(
     try:
         logger.info("[DELETE /users/delete/%s] Eliminando usuario.", user_id)
 
-        existing: UserOut = controller.get_by_id(UserOut, user_id)
+        existing = controller.get_by_id(UserOut, user_id)
         if not existing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -200,12 +277,10 @@ async def delete_user(
         controller.delete(existing)
         logger.info("[DELETE /users/delete/%s] Usuario eliminado.", user_id)
 
-        return JSONResponse(
-            content={"success": True, "message": "Usuario eliminado"}
-        )
+        return ok_response(data=None, message="Usuario eliminado")
 
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("[DELETE /users/delete/%s] Error: %s", user_id, exc, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error interno: {exc}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")

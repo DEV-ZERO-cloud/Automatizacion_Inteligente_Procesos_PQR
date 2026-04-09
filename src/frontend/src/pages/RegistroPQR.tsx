@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { catalogService } from '../services/catalogService';
@@ -7,68 +7,48 @@ import { pqrService } from '../services/pqrService';
 export function RegistroPQR() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [createdId, setCreatedId] = useState<number | null>(null);
   const [areas, setAreas] = useState<Array<{ id: string; nombre: string }>>([]);
-  const [categories, setCategories] = useState<Array<{ id: string; nombre: string }>>([]);
-  const [priorities, setPriorities] = useState<Array<{ id: string; nombre: string }>>([]);
 
   const [formData, setFormData] = useState({
     tipo: '',
-    categoria: '',
-    prioridad: '',
     area_id: '',
     titulo: '',
     descripcion: '',
   });
 
+  const [adjuntos, setAdjuntos] = useState<File[]>([]);
+
   useEffect(() => {
     let isMounted = true;
-
     const loadCatalogs = async () => {
       try {
-        const [areasData, categoriesData, prioritiesData] = await Promise.all([
-          catalogService.getAreas(),
-          catalogService.getCategories(),
-          catalogService.getPriorities(),
-        ]);
-
-        if (!isMounted) {
-          return;
-        }
-
+        const areasData = await catalogService.getAreas();
+        if (!isMounted) return;
         setAreas(areasData.map((item) => ({ id: item.id, nombre: item.nombre })));
-        setCategories(categoriesData.map((item) => ({ id: item.id, nombre: item.nombre })));
-        setPriorities(prioritiesData.map((item) => ({ id: item.id, nombre: item.nombre })));
       } catch {
-        if (isMounted) {
-          setAreas([]);
-          setCategories([]);
-          setPriorities([]);
-        }
+        if (isMounted) setAreas([]);
       }
     };
-
     loadCatalogs();
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   const steps = [
-    { num: 1, label: 'Solicitante' },
-    { num: 2, label: 'Clasificacion Inicial' },
-    { num: 3, label: 'Descripcion' },
-    { num: 4, label: 'Confirmacion' },
+    { num: 1, label: 'Tipo' },
+    { num: 2, label: 'Detalles' },
+    { num: 3, label: 'Confirmacion' },
   ];
 
   const tipos = [
-    { value: 'peticion', label: 'Peticion', icon: 'handshake', desc: 'Solicitud formal' },
-    { value: 'queja', label: 'Queja', icon: 'sentiment_dissatisfied', desc: 'Inconformidad' },
-    { value: 'reclamo', label: 'Reclamo', icon: 'report', desc: 'Protesta formal' },
+    { value: 'peticion', label: 'Peticion', icon: 'edit_note', color: '#059669', bg: '#d1fae5', desc: 'Solicitud formal de informacion o servicio' },
+    { value: 'queja', label: 'Queja', icon: 'sentiment_dissatisfied', color: '#dc2626', bg: '#fee2e2', desc: 'Expresion de inconformidad por un servicio' },
+    { value: 'reclamo', label: 'Reclamo', icon: 'warning', color: '#d97706', bg: '#fef3c7', desc: 'Protesta formal por incumplimiento' },
   ];
 
   const currentUserId = useMemo(() => {
@@ -77,17 +57,21 @@ export function RegistroPQR() {
   }, [user?.id]);
 
   const canContinue = useMemo(() => {
-    if (step === 1) {
-      return Boolean(currentUserId);
-    }
-    if (step === 2) {
-      return Boolean(formData.tipo && formData.categoria && formData.prioridad && formData.area_id);
-    }
-    if (step === 3) {
-      return Boolean(formData.titulo.trim() && formData.descripcion.trim().length >= 20);
-    }
+    if (step === 1) return Boolean(formData.tipo && formData.area_id);
+    if (step === 2) return Boolean(formData.titulo.trim() && formData.descripcion.trim().length >= 10);
     return true;
-  }, [currentUserId, formData, step]);
+  }, [formData, step]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setAdjuntos([...adjuntos, ...newFiles]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setAdjuntos(adjuntos.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     if (!currentUserId) {
@@ -101,8 +85,6 @@ export function RegistroPQR() {
     try {
       const created = await pqrService.create({
         tipo: formData.tipo,
-        categoria: formData.categoria,
-        prioridad: formData.prioridad,
         area_id: Number(formData.area_id),
         titulo: formData.titulo.trim(),
         descripcion: formData.descripcion.trim(),
@@ -111,7 +93,7 @@ export function RegistroPQR() {
       });
 
       setCreatedId(created.id);
-      navigate('/bandeja-entrada');
+      navigate('/mis-pqrs');
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string } } };
       setError(e.response?.data?.detail || 'No fue posible registrar la solicitud.');
@@ -123,29 +105,26 @@ export function RegistroPQR() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div className="page-header animate-fade-in">
-        <h1 className="page-title">Registro de PQR</h1>
-        <p className="page-subtitle">Diligencie el formulario para registrar su solicitud</p>
+        <h1 className="page-title">Nueva PQR</h1>
+        <p className="page-subtitle">Registre su solicitud, queja o reclamo</p>
       </div>
 
       <div className="card animate-fade-in" style={{ padding: '32px' }}>
         <div className="registro-steps">
           {steps.map((s, i) => (
             <div key={s.num} className="registro-step">
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: step >= s.num ? '#003d9b' : '#f2f4f7',
-                  color: step >= s.num ? '#fff' : '#525f73',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: '700',
-                  fontSize: '14px',
-                  transition: 'all 0.3s',
-                }}
-              >
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: step >= s.num ? '#003d9b' : '#f2f4f7',
+                color: step >= s.num ? '#fff' : '#525f73',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '14px',
+              }}>
                 {step > s.num ? '✓' : s.num}
               </div>
               <span className="registro-step-label" style={{ color: step >= s.num ? '#003d9b' : '#525f73' }}>{s.label}</span>
@@ -154,30 +133,12 @@ export function RegistroPQR() {
           ))}
         </div>
 
-        <div style={{ minHeight: '280px' }}>
+        <div style={{ minHeight: '300px', marginTop: '24px' }}>
           {step === 1 && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Datos del Solicitante</h3>
-              <div style={{ display: 'grid', gap: '20px' }}>
-                <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px' }}>
-                  <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '6px' }}>Nombre</p>
-                  <p style={{ fontWeight: '700' }}>{user?.full_name || user?.username || '-'}</p>
-                </div>
-                <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px' }}>
-                  <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '6px' }}>Correo</p>
-                  <p style={{ fontWeight: '700' }}>{user?.email || '-'}</p>
-                </div>
-                <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px' }}>
-                  <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '6px' }}>Rol</p>
-                  <p style={{ fontWeight: '700', textTransform: 'capitalize' }}>{user?.rol_id || '-'}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Clasificacion Inicial</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px' }}>Seleccione el tipo de solicitud</h3>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>¿Que tipo de tramite desea realizar?</p>
+              
               <div className="registro-types-grid">
                 {tipos.map((tipo) => (
                   <button
@@ -186,55 +147,36 @@ export function RegistroPQR() {
                     style={{
                       padding: '24px',
                       borderRadius: '16px',
-                      border: `2px solid ${formData.tipo === tipo.value ? '#003d9b' : '#e6e8eb'}`,
-                      background: formData.tipo === tipo.value ? '#dae2ff' : '#fff',
+                      border: `3px solid ${formData.tipo === tipo.value ? tipo.color : '#e5e7eb'}`,
+                      background: formData.tipo === tipo.value ? tipo.bg : '#fff',
                       cursor: 'pointer',
                       textAlign: 'left',
                       transition: 'all 0.2s',
+                      boxShadow: formData.tipo === tipo.value ? '0 16px 28px -24px rgba(30,100,200,0.6)' : 'none',
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#003d9b', marginBottom: '12px' }}>{tipo.icon}</span>
-                    <p style={{ fontWeight: '700', marginBottom: '4px' }}>{tipo.label}</p>
-                    <p style={{ fontSize: '12px', color: '#525f73' }}>{tipo.desc}</p>
+                    <span className="material-symbols-outlined" style={{ fontSize: '40px', color: tipo.color, marginBottom: '12px' }}>{tipo.icon}</span>
+                    <p style={{ fontWeight: '700', fontSize: '18px', marginBottom: '4px', color: tipo.color }}>{tipo.label}</p>
+                    <p style={{ fontSize: '13px', color: '#525f73' }}>{tipo.desc}</p>
                   </button>
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gap: '16px', marginTop: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Categoria</label>
-                  <select className="select" value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}>
-                    <option value="">Seleccione una categoria</option>
-                    {categories.map((item) => (
-                      <option key={item.id} value={item.nombre}>{item.nombre}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Prioridad</label>
-                  <select className="select" value={formData.prioridad} onChange={(e) => setFormData({ ...formData, prioridad: e.target.value })}>
-                    <option value="">Seleccione una prioridad</option>
-                    {priorities.map((item) => (
-                      <option key={item.id} value={item.nombre}>{item.nombre}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Area responsable</label>
-                  <select className="select" value={formData.area_id} onChange={(e) => setFormData({ ...formData, area_id: e.target.value })}>
-                    <option value="">Seleccione un area</option>
-                    {areas.map((item) => (
-                      <option key={item.id} value={item.id}>{item.nombre}</option>
-                    ))}
-                  </select>
-                </div>
+              <div style={{ marginTop: '24px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Area responsable</label>
+                <select className="select" value={formData.area_id} onChange={(e) => setFormData({ ...formData, area_id: e.target.value })}>
+                  <option value="">Seleccione el area</option>
+                  {areas.map((item) => (
+                    <option key={item.id} value={item.id}>{item.nombre}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}
 
-          {step === 3 && (
+          {step === 2 && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Descripcion de la Solicitud</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Detalles de la solicitud</h3>
               <div style={{ display: 'grid', gap: '20px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Titulo *</label>
@@ -246,50 +188,72 @@ export function RegistroPQR() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Descripcion detallada *</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Descripción detallada *</label>
                   <textarea
                     className="input"
                     rows={5}
-                    placeholder="Describa su solicitud en detalle (minimo 20 caracteres)"
+                    placeholder="Describa su solicitud en detalle..."
                     value={formData.descripcion}
                     onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                     style={{ resize: 'vertical' }}
                   />
                   <p style={{ fontSize: '12px', color: '#525f73', marginTop: '8px' }}>{formData.descripcion.length} caracteres</p>
                 </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Adjuntos (opcional)</label>
+                  <div style={{ border: '2px dashed #e5e7eb', borderRadius: '12px', padding: '20px', textAlign: 'center', cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '40px', color: '#9ca3af' }}>cloud_upload</span>
+                    <p style={{ marginTop: '8px', color: '#6b7280' }}>Haga clic para seleccionar archivos o imagenes</p>
+                    <p style={{ fontSize: '12px', color: '#9ca3af' }}>PNG, JPG, PDF hasta 10MB</p>
+                    <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf" style={{ display: 'none' }} onChange={handleFileChange} />
+                  </div>
+                  {adjuntos.length > 0 && (
+                    <div style={{ marginTop: '12px' }}>
+                      {adjuntos.map((file, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f3f4f6', borderRadius: '8px', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '13px' }}>{file.name}</span>
+                          <button type="button" onClick={() => removeFile(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {step === 4 && (
+          {step === 3 && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Confirmacion</h3>
-              <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '24px' }}>
-                <div className="registro-confirm-grid">
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Solicitante</p>
-                    <p style={{ fontWeight: '600' }}>{user?.full_name || user?.username || '-'}</p>
-                  </div>
+              <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Confirmación</h3>
+              <div style={{ background: 'linear-gradient(180deg, #f8fbff 0%, #f2f7ff 100%)', borderRadius: '16px', padding: '24px', border: '1px solid #dde9ff' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
                     <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Tipo</p>
-                    <span className="badge badge-primary" style={{ textTransform: 'capitalize' }}>{formData.tipo || '-'}</span>
+                    <span className="badge badge-primary" style={{ textTransform: 'capitalize', background: tipos.find(t => t.value === formData.tipo)?.bg, color: tipos.find(t => t.value === formData.tipo)?.color }}>
+                      {tipos.find(t => t.value === formData.tipo)?.label || '-'}
+                    </span>
                   </div>
                   <div>
-                    <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Categoria</p>
-                    <p style={{ fontWeight: '600' }}>{formData.categoria || '-'}</p>
+                    <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Area</p>
+                    <p style={{ fontWeight: '600' }}>{areas.find(a => a.id === formData.area_id)?.nombre || '-'}</p>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Prioridad</p>
-                    <p style={{ fontWeight: '600' }}>{formData.prioridad || '-'}</p>
-                  </div>
-                  <div>
+                  <div style={{ gridColumn: '1 / -1' }}>
                     <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Titulo</p>
                     <p style={{ fontWeight: '600' }}>{formData.titulo || '-'}</p>
                   </div>
-                </div>
-                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e6e8eb' }}>
-                  <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Descripcion</p>
-                  <p>{formData.descripcion || '-'}</p>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Descripción</p>
+                    <p>{formData.descripcion || '-'}</p>
+                  </div>
+                  {adjuntos.length > 0 && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Archivos adjuntos</p>
+                      <p style={{ fontWeight: '600' }}>{adjuntos.length} archivo(s)</p>
+                    </div>
+                  )}
                 </div>
               </div>
               {createdId && (
@@ -311,7 +275,7 @@ export function RegistroPQR() {
           ) : (
             <div />
           )}
-          {step < 4 ? (
+          {step < 3 ? (
             <button className="btn btn-primary" onClick={() => setStep(step + 1)} disabled={!canContinue || submitting}>Siguiente</button>
           ) : (
             <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting || !canContinue}>

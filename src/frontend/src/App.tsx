@@ -2,13 +2,17 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { BandejaEntrada } from './pages/BandejaEntrada';
 import { RegistroPQR } from './pages/RegistroPQR';
+import { MisPQRs } from './pages/MisPQRs';
+import { GestionPQRs } from './pages/GestionPQRs';
 import { Reportes } from './pages/Reportes';
 import { GestionUsuarios } from './pages/GestionUsuarios';
 import { GestionIA } from './pages/GestionIA';
 import { Ajustes } from './pages/Ajustes';
+import { UserDashboard } from './pages/UserDashboard';
 import { useAuthStore } from './stores/authStore';
 import { pqrService } from './services/pqrService';
 import type { PQR } from './types';
@@ -17,6 +21,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
+}
+
+function HomeRouter() {
+  const { user } = useAuthStore();
+
+  // Users see simplified UserDashboard without sidebar
+  if (user?.rol_id === 'usuario') {
+    return <UserDashboard />;
+  }
+
+  // Admin, supervisor, agente go to full dashboard
+  return <Navigate to="/dashboard" replace />;
 }
 
 function DetallePQR() {
@@ -81,7 +97,7 @@ function DetallePQR() {
               <p style={{ fontWeight: '700' }}>{pqr.titulo}</p>
             </div>
             <div>
-              <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Descripcion</p>
+              <p style={{ fontSize: '12px', color: '#525f73', marginBottom: '4px' }}>Descripción</p>
               <p>{pqr.descripcion}</p>
             </div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -104,10 +120,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<ProtectedRoute><HomeRouter /></ProtectedRoute>} />
+        <Route path="*" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="bandeja-entrada" element={<BandejaEntrada />} />
           <Route path="registro-pqr" element={<RegistroPQR />} />
+          <Route path="mis-pqrs" element={<MisPQRs />} />
+          <Route path="gestion-pqrs" element={<GestionPQRs />} />
           <Route path="reportes" element={<Reportes />} />
           <Route path="usuarios" element={<GestionUsuarios />} />
           <Route path="gestion-ia" element={<GestionIA />} />

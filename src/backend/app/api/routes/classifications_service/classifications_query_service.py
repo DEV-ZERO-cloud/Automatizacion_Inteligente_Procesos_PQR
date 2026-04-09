@@ -1,9 +1,9 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, Security, status
-from fastapi.responses import JSONResponse
 
 from app.core.auth import get_current_user
+from app.core.responses import ok_response
 from app.logic.universal_controller_instance import universal_controller as controller
 from app.models.classification import ClassificationOut, CategoryOut, PriorityOut
 
@@ -23,7 +23,7 @@ async def get_all_classifications(
     try:
         results = controller.get_all(ClassificationOut)
         data = [r.to_dict() for r in results]
-        return JSONResponse(content={"success": True, "data": data})
+        return ok_response(data=data, message="Clasificaciones consultadas")
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Error interno")
 
@@ -37,10 +37,10 @@ async def get_classification_by_id(
     current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
 ):
     try:
-        obj: ClassificationOut = controller.get_by_id(ClassificationOut, class_id)
+        obj: ClassificationOut | None = controller.get_by_id(ClassificationOut, class_id)
         if not obj:
             raise HTTPException(status_code=404, detail="No encontrada.")
-        return JSONResponse(content={"success": True, "data": obj.to_dict()})
+        return ok_response(data=obj.to_dict(), message="Clasificación consultada")
     except HTTPException: raise
     except Exception as exc: raise HTTPException(status_code=500, detail="Error interno")
 
@@ -54,10 +54,10 @@ async def get_classification_by_pqr(
     current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
 ):
     try:
-        obj: ClassificationOut = controller.get_by_column(ClassificationOut, "pqr_id", pqr_id)
+        obj: ClassificationOut | None = controller.get_by_column(ClassificationOut, "pqr_id", pqr_id)
         if not obj:
             raise HTTPException(status_code=404, detail="No se encontró clasificación para esta PQR.")
-        return JSONResponse(content={"success": True, "data": obj.to_dict()})
+        return ok_response(data=obj.to_dict(), message="Clasificación por PQR consultada")
     except HTTPException: raise
     except Exception as exc: raise HTTPException(status_code=500, detail="Error interno")
 
@@ -72,7 +72,7 @@ async def get_all_categories(
     try:
         results = controller.get_all(CategoryOut)
         data = [r.to_dict() for r in results]
-        return JSONResponse(content={"success": True, "data": data})
+        return ok_response(data=data, message="Categorías consultadas")
     except Exception as exc: raise HTTPException(status_code=500, detail="Error interno")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -84,9 +84,9 @@ async def get_category_by_id(
     current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
 ):
     try:
-        obj: CategoryOut = controller.get_by_id(CategoryOut, cat_id)
+        obj: CategoryOut | None = controller.get_by_id(CategoryOut, cat_id)
         if not obj: raise HTTPException(status_code=404, detail="No encontrada")
-        return JSONResponse(content={"success": True, "data": obj.to_dict()})
+        return ok_response(data=obj.to_dict(), message="Categoría consultada")
     except HTTPException: raise
     except Exception: raise HTTPException(status_code=500, detail="Error interno")
 
@@ -101,7 +101,7 @@ async def get_all_priorities(
     try:
         results = controller.get_all(PriorityOut)
         data = [r.to_dict() for r in results]
-        return JSONResponse(content={"success": True, "data": data})
+        return ok_response(data=data, message="Prioridades consultadas")
     except Exception as exc: raise HTTPException(status_code=500, detail="Error interno")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -113,8 +113,8 @@ async def get_priority_by_id(
     current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
 ):
     try:
-        obj: PriorityOut = controller.get_by_id(PriorityOut, prio_id)
+        obj: PriorityOut | None = controller.get_by_id(PriorityOut, prio_id)
         if not obj: raise HTTPException(status_code=404, detail="No encontrada")
-        return JSONResponse(content={"success": True, "data": obj.to_dict()})
+        return ok_response(data=obj.to_dict(), message="Prioridad consultada")
     except HTTPException: raise
     except Exception: raise HTTPException(status_code=500, detail="Error interno")

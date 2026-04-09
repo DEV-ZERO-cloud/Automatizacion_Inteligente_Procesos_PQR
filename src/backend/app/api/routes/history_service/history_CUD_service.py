@@ -5,125 +5,105 @@ from fastapi import APIRouter, HTTPException, Security, status
 from app.core.auth import get_current_user
 from app.core.responses import ok_response
 from app.logic.universal_controller_instance import universal_controller as controller
-from app.models.organization import AreaCreate, AreaOut, AreaUpdate
+from app.models.history import HistoryCreate, HistoryOut, HistoryUpdate
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-router = APIRouter(tags=["Organizacional"])
+router = APIRouter(tags=["Historial"])
+
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  4.1 POST /areas/create
+#  POST /historial/create
 # ══════════════════════════════════════════════════════════════════════════════
-@router.post("/areas/create", status_code=status.HTTP_201_CREATED)
-async def create_area(
-    payload: AreaCreate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+@router.post("/historial/create", status_code=status.HTTP_201_CREATED)
+async def create_history(
+    payload: HistoryCreate,
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
 ):
-    """
-    Crea un área nueva en el sistema.
-
-    Requiere token con scope **admin** o **supervisor**.
-    """
+    """Registra un evento en el historial de una PQR."""
     try:
-        logger.info("[POST /areas/create] Creando área con nombre: %s", payload.nombre)
-
-        # Verificar duplicado
-        existing_area = controller.get_by_column(AreaOut, "nombre", payload.nombre)
-        if existing_area:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya existe un área con ese nombre.",
-            )
+        logger.info("[POST /historial/create] Registrando acción para PQR ID=%s", payload.pqr_id)
 
         controller.add(payload)
-        logger.info("[POST /areas/create] Área creada con ID=%s", payload.id)
+        logger.info("[POST /historial/create] Evento ID=%s registrado.", payload.id)
 
         return ok_response(
             data={"id": payload.id},
-            message="Área creada",
+            message="Historial registrado",
             status_code=status.HTTP_201_CREATED,
         )
 
-    except HTTPException:
-        raise
     except Exception as exc:
-        logger.error("[POST /areas/create] Error interno: %s", exc, exc_info=True)
+        logger.error("[POST /historial/create] Error: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  4.4 PUT /areas/update
+#  PUT /historial/update
 # ══════════════════════════════════════════════════════════════════════════════
-@router.put("/areas/update")
-async def update_area(
-    payload: AreaUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+@router.put("/historial/update")
+async def update_history(
+    payload: HistoryUpdate,
+    current_user: dict = Security(get_current_user, scopes=["admin"]),
 ):
-    """
-    Actualiza los datos de un área existente.
-
-    Requiere token con scope **admin** o **supervisor**.
-    """
+    """Actualiza un registro de historial."""
     try:
-        logger.info("[PUT /areas/update] Actualizando área ID=%s", payload.id)
+        logger.info("[PUT /historial/update] Actualizando evento ID=%s", payload.id)
 
-        existing: AreaOut | None = controller.get_by_id(AreaOut, payload.id)
+        existing = controller.get_by_id(HistoryOut, payload.id)
         if not existing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Área no encontrada.",
+                detail="Evento no encontrado.",
             )
 
-        # Actualizar campos
-        updated = AreaOut(
+        # Actualizar solo campos proporcionados
+        updated = HistoryOut(
             id=payload.id,
-            nombre=payload.nombre,
-            descripcion=payload.descripcion,
+            pqr_id=existing.pqr_id,
+            usuario_id=existing.usuario_id,
+            accion=payload.accion or existing.accion,
+            detalle=payload.detalle or existing.detalle,
+            created_at=existing.created_at,
         )
         controller.update(updated)
 
-        logger.info("[PUT /areas/update] Área ID=%s actualizada.", payload.id)
-
-        return ok_response(data=None, message="Área actualizada")
+        logger.info("[PUT /historial/update] Evento ID=%s actualizado.", payload.id)
+        return ok_response(data=None, message="Historial actualizado")
 
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error("[PUT /areas/update] Error: %s", exc, exc_info=True)
+        logger.error("[PUT /historial/update] Error: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  4.5 DELETE /areas/delete/{id}
+#  DELETE /historial/delete/{id}
 # ══════════════════════════════════════════════════════════════════════════════
-@router.delete("/areas/delete/{area_id}")
-async def delete_area(
-    area_id: int,
+@router.delete("/historial/delete/{history_id}")
+async def delete_history(
+    history_id: int,
     current_user: dict = Security(get_current_user, scopes=["admin"]),
 ):
-    """
-    Elimina un área del sistema.
-
-    Requiere token con scope **admin**.
-    """
+    """Elimina un registro del historial."""
     try:
-        logger.info("[DELETE /areas/delete/%s] Eliminando área.", area_id)
+        logger.info("[DELETE /historial/delete/%s] Eliminando evento.", history_id)
 
-        existing: AreaOut | None = controller.get_by_id(AreaOut, area_id)
+        existing = controller.get_by_id(HistoryOut, history_id)
         if not existing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Área no encontrada.",
+                detail="Evento no encontrado.",
             )
 
         controller.delete(existing)
-        logger.info("[DELETE /areas/delete/%s] Área eliminada.", area_id)
-
-        return ok_response(data=None, message="Área eliminada")
+        logger.info("[DELETE /historial/delete/%s] Evento eliminado.", history_id)
+        return ok_response(data=None, message="Historial eliminado")
 
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error("[DELETE /areas/delete/%s] Error: %s", area_id, exc, exc_info=True)
+        logger.error("[DELETE /historial/delete/%s] Error: %s", history_id, exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno del servidor")

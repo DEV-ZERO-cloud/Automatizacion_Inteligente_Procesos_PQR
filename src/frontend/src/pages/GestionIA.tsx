@@ -95,8 +95,8 @@ export function GestionIA() {
   return (
     <div>
       <div className="page-header animate-fade-in">
-        <h1 className="page-title">Gestion del Modelo de IA</h1>
-        <p className="page-subtitle">Indicadores de clasificacion construidos desde la base de datos</p>
+        <h1 className="page-title">Gestión del Modelo de IA</h1>
+        <p className="page-subtitle">Indicadores de clasificación construidos desde la base de datos</p>
       </div>
 
       {error && (
@@ -164,7 +164,7 @@ export function GestionIA() {
                   <th>Version</th>
                   <th style={{ textAlign: 'right' }}>Registros</th>
                   <th style={{ textAlign: 'right' }}>Confianza Prom.</th>
-                  <th>Ultimo Registro</th>
+                  <th>Último registro</th>
                   <th>Estado</th>
                 </tr>
               </thead>

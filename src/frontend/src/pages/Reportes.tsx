@@ -3,8 +3,8 @@ import { reportService } from '../services/reportService';
 import { pqrService } from '../services/pqrService';
 import type { PQR } from '../types';
 
-const categoryColors = ['#003d9b', '#047857', '#d97706', '#525f73', '#dc2626'];
-const priorityColors = ['#dc2626', '#d97706', '#525f73', '#94a3b8'];
+const categoryColors = ['#1e64c8', '#0f766e', '#c87a1e', '#475569', '#be123c'];
+const priorityColors = ['#be123c', '#c87a1e', '#475569', '#64748b'];
 
 function rangeToDays(range: string): number {
   switch (range) {
@@ -144,16 +144,22 @@ export function Reportes() {
       <div className="page-header page-header-split animate-fade-in">
         <div>
           <h1 className="page-title">Reportes Estadisticos</h1>
-          <p className="page-subtitle">Analisis detallado del sistema PQR</p>
+          <p className="page-subtitle">Análisis ejecutivo del sistema PQR</p>
         </div>
         <div className="page-header-actions">
           <select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)} style={{ width: '180px' }}>
-            <option value="7d">Ultimos 7 dias</option>
-            <option value="30d">Ultimos 30 dias</option>
-            <option value="90d">Ultimos 90 dias</option>
-            <option value="1y">Ultimo ano</option>
+            <option value="7d">Últimos 7 días</option>
+            <option value="30d">Últimos 30 días</option>
+            <option value="90d">Últimos 90 días</option>
+            <option value="1y">Último año</option>
           </select>
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '16px', padding: '14px 18px', background: 'linear-gradient(90deg, #ecf4ff 0%, #f4f9ff 100%)' }}>
+        <p style={{ fontSize: '13px', color: '#1553a1', fontWeight: 600 }}>
+          Vista corporativa: monitoreo de volumen, distribucion y tendencia de atencion.
+        </p>
       </div>
 
       <div className="reports-stats-grid">

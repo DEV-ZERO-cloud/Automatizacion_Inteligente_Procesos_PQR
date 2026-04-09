@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, List, Callable
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Callable, Optional
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
@@ -26,7 +27,12 @@ def encode_token(payload: dict) -> str:
     """
     Codifica un JWT con el payload recibido.
     """
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    token_payload = payload.copy()
+    token_payload.setdefault(
+        "exp",
+        datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    return jwt.encode(token_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def get_current_user(
@@ -55,8 +61,8 @@ def get_current_user(
             algorithms=[settings.ALGORITHM],
         )
 
-        user_id: str = payload.get("sub")
-        scope: str = payload.get("scope")
+        user_id: Optional[str] = payload.get("sub")
+        scope: Optional[str] = payload.get("scope")
 
         if user_id is None or scope is None:
             raise HTTPException(

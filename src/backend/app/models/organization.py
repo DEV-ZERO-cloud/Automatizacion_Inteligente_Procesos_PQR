@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class AreaCreate(BaseModel):
     """Modelo para crear un área nueva."""
 
-    __entity_name__ = "Area"
+    __entity_name__ = "areas"
 
     id: int
     nombre: str
@@ -37,7 +37,7 @@ class AreaCreate(BaseModel):
 class AreaOut(BaseModel):
     """Modelo de salida para área."""
 
-    __entity_name__ = "Area"
+    __entity_name__ = "areas"
 
     id: int
     nombre: str

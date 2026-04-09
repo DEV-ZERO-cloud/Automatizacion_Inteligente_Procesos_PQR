@@ -8,6 +8,7 @@ export const pqrService = {
     prioridad?: string;
     area_id?: number;
     usuario_id?: number;
+    supervisor_id?: number;
     search?: string;
   }): Promise<PQR[]> {
     const response = await api.get('/pqrs', { params: filters });
@@ -27,6 +28,22 @@ export const pqrService = {
   },
   async delete(id: number): Promise<void> {
     await api.delete(`/pqrs/${id}`);
+  },
+  async asignar(id: number, supervisor_id: number): Promise<PQR> {
+    const response = await api.put(`/pqrs/${id}/asignar`, { supervisor_id });
+    return response.data?.data;
+  },
+  async clasificar(id: number, categoria: string, prioridad: string, comentario?: string): Promise<PQR> {
+    const response = await api.put(`/pqrs/${id}/clasificar`, { categoria, prioridad, comentario });
+    return response.data?.data;
+  },
+  async resolver(id: number, respuesta: string): Promise<PQR> {
+    const response = await api.put(`/pqrs/${id}/resolver`, { respuesta });
+    return response.data?.data;
+  },
+  async cerrar(id: number): Promise<PQR> {
+    const response = await api.put(`/pqrs/${id}/cerrar`, { confirmacion: true });
+    return response.data?.data;
   },
   async getAllClassifications(): Promise<Classification[]> {
     const response = await api.get('/classifications');
