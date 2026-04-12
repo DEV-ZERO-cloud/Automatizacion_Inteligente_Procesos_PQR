@@ -15,7 +15,7 @@ class UserCreate(BaseModel):
     contrasena: str
     rol_id: int
     area_id: int
-    activo: Optional[int] = 1
+    activo: Optional[bool] = True
 
     def to_dict(self) -> dict:
         return {
@@ -61,7 +61,7 @@ class UserOut(BaseModel):
     telefono: Optional[str] = None
     rol_id: int
     area_id: int
-    activo: Optional[int] = 1
+    activo: Optional[bool] = True
     contrasena: Optional[str] = None  # Se incluye solo para autenticación interna
 
     def to_dict(self) -> dict:

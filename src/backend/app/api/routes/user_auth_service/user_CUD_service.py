@@ -44,21 +44,18 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         user = controller.get_by_column(UserOut, "correo", form_data.username)
 
         if not user:
-            logger.warning("[POST /auth/login] Usuario no encontrado: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
             )
 
-        if user.activo != 1:
-            logger.warning("[POST /auth/login] Usuario inactivo: %s", form_data.username)
+        if not user.activo:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Usuario inactivo. Contacte al administrador.",
+                detail="Usuario inactivo",
             )
 
         stored_password = user.contrasena or ""
-        password_ok = False
 
         if is_password_hashed(stored_password):
             password_ok = verify_password(form_data.password, stored_password)
@@ -69,7 +66,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                 controller.update(user)
 
         if not password_ok:
-            logger.warning("[POST /auth/login] Contraseña incorrecta para: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
@@ -79,17 +75,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         payload = {"sub": str(user.id), "scope": scope}
         token = encode_token(payload)
 
-        logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.id, scope)
+        logger.info("[POST /auth/login] Login exitoso user_id=%s scope=%s", user.id, scope)
 
-        return ok_response(
-            data={
-                "access_token": token,
-                "token_type": "bearer",
-                "user_id": user.id,
-                "role": scope,
-            },
-            message="Inicio de sesión exitoso",
-        )
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user_id": user.id,
+            "role": scope
+        }
 
     except HTTPException:
         raise

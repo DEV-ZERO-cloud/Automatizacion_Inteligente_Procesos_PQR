@@ -1,6 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Callable, Optional
+from typing import Dict, List, Callable
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
@@ -27,12 +26,7 @@ def encode_token(payload: dict) -> str:
     """
     Codifica un JWT con el payload recibido.
     """
-    token_payload = payload.copy()
-    token_payload.setdefault(
-        "exp",
-        datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-    return jwt.encode(token_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def get_current_user(
@@ -40,15 +34,32 @@ def get_current_user(
     request: Request,
     token: str = Depends(oauth2_scheme),
 ) -> Dict[str, str]:
-    """
-    Extrae y valida el usuario autenticado desde un JWT.
-    También verifica si el token tiene los scopes requeridos por la ruta.
-    """
-    token_cookie = request.cookies.get("access_token")
-    if token_cookie:
-        token = token_cookie.replace("Bearer ", "")
 
-    if not token:
+    logger.info("---- AUTH DEBUG ----")
+
+    # Header Authorization
+    auth_header = request.headers.get("authorization")
+    logger.info("Authorization header: %s", auth_header)
+
+    # Token inicial (lo que inyecta OAuth2)
+    logger.info("Token from Depends: %s", token)
+
+    # Cookie
+    token_cookie = request.cookies.get("access_token")
+    logger.info("Token from cookie: %s", token_cookie)
+
+    # Si hay cookie, sobrescribe
+    if token_cookie:
+        if token_cookie.startswith("Bearer "):
+            token = token_cookie.replace("Bearer ", "")
+        else:
+            token = token_cookie
+
+    logger.info("Token final usado: %s", token)
+
+    # Validación básica
+    if not token or token == "undefined":
+        logger.error("Token vacío o undefined")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
@@ -61,23 +72,32 @@ def get_current_user(
             algorithms=[settings.ALGORITHM],
         )
 
+        logger.info("Payload decodificado: %s", payload)
+
         user_id: Optional[str] = payload.get("sub")
         scope: Optional[str] = payload.get("scope")
 
+        logger.info("User ID: %s | Scope: %s", user_id, scope)
+
         if user_id is None or scope is None:
+            logger.error("Payload incompleto")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido o faltan campos requeridos",
+                detail="Token inválido",
             )
 
-        # ── VALIDACIÓN REAL DE SCOPES ─────────────────────────────────────────
+        # Validación de scopes
         if security_scopes.scopes:
+            logger.info("Scopes requeridos: %s", security_scopes.scopes)
+
             if scope not in security_scopes.scopes:
+                logger.error("Scope no autorizado")
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="No tienes permisos suficientes para acceder a este recurso",
+                    detail="No tienes permisos suficientes",
                 )
 
+        logger.info("AUTH OK")
         return {"sub": user_id, "scope": scope}
 
     except JWTError as e:
