@@ -18,7 +18,7 @@ router = APIRouter(tags=["Archivos"])
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/archivos", status_code=status.HTTP_200_OK)
 async def list_files(
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna todos los archivos registrados."""
     try:
@@ -40,7 +40,7 @@ async def list_files(
 @router.get("/archivos/{file_id}", status_code=status.HTTP_200_OK)
 async def get_file(
     file_id: int,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna un archivo específico por ID."""
     try:
@@ -69,7 +69,7 @@ async def get_file(
 @router.get("/archivos/pqr/{pqr_id}", status_code=status.HTTP_200_OK)
 async def get_files_by_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna todos los archivos asociados a una PQR específica."""
     try:

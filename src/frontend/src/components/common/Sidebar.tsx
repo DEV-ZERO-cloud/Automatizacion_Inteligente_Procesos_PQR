@@ -3,9 +3,9 @@ import { useAuthStore } from '../../stores/authStore';
 
 const menuItems = [
   { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-  { path: '/gestion-pqrs', icon: 'assignment', label: 'Gestión de PQRs', roles: ['admin', 'supervisor'] },
+  { path: '/gestion-pqrs', icon: 'assignment', label: 'Gestión de PQRs', roles: ['admin', 'supervisor', 'operador'] },
   { path: '/mis-pqrs', icon: 'folder', label: 'Mis PQRs', roles: ['usuario'] },
-  { path: '/bandeja-entrada', icon: 'inbox', label: 'Validar Clasificaciones', roles: ['admin', 'supervisor', 'agente'] },
+  { path: '/bandeja-entrada', icon: 'inbox', label: 'Validar Clasificaciones', roles: ['admin', 'supervisor', 'operador', 'agente'] },
   { path: '/reportes', icon: 'analytics', label: 'Reportes', roles: ['admin', 'supervisor', 'agente'] },
   { path: '/usuarios', icon: 'group', label: 'Gestión de Usuarios', roles: ['admin'] },
   { path: '/gestion-ia', icon: 'psychology', label: 'Gestión IA', roles: ['admin'] },

@@ -7,6 +7,7 @@ const roleById: Record<number, string> = {
   2: 'Supervisora',
   3: 'Agente',
   4: 'Usuario',
+  5: 'Operador'
 };
 
 export function GestionUsuarios() {
@@ -57,6 +58,7 @@ export function GestionUsuarios() {
       case 'Administrador': return 'badge badge-danger';
       case 'Supervisora': return 'badge badge-warning';
       case 'Agente': return 'badge badge-primary';
+      case 'Operador': return 'badge badge-success';
       default: return 'badge badge-neutral';
     }
   };

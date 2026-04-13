@@ -18,7 +18,7 @@ router = APIRouter(tags=["Roles"])
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/roles", status_code=status.HTTP_200_OK)
 async def list_roles(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     """Retorna todos los roles disponibles."""
     try:
@@ -40,7 +40,7 @@ async def list_roles(
 @router.get("/roles/{role_id}", status_code=status.HTTP_200_OK)
 async def get_role(
     role_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     """Retorna un rol específico por ID."""
     try:

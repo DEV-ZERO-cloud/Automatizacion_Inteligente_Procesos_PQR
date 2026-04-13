@@ -45,7 +45,7 @@ export function BandejaEntrada() {
   const [error, setError] = useState('');
   const [searchText, setSearchText] = useState('');
 
-  const canValidate = ['admin', 'supervisor', 'agente'].includes(user?.rol_id || '');
+  const canValidate = ['admin', 'supervisor', 'operador', 'agente'].includes(user?.rol_id || '');
 
   useEffect(() => {
     let isMounted = true;
@@ -194,6 +194,15 @@ export function BandejaEntrada() {
     setShowModal(true);
   };
 
+  const handleQuickUpdate = async (pqrId: number, field: 'categoria' | 'prioridad', value: string) => {
+    try {
+      await pqrService.update(pqrId, { [field]: value });
+      setPqrs((prev) => prev.map(p => p.id === pqrId ? { ...p, [field]: value } : p));
+    } catch {
+      setError(`Error actualizando ${field} para la PQR #${pqrId}`);
+    }
+  };
+
   const handleValidate = async (pqr: PQR) => {
     const classification = classificationByPqr[pqr.id];
     if (!classification) {
@@ -321,8 +330,36 @@ export function BandejaEntrada() {
                         <p style={{ fontWeight: '500', marginBottom: '4px' }}>{pqr.titulo}</p>
                         <p style={{ fontSize: '12px', color: '#94a3b8' }}>Usuario: {pqr.usuario_nombre || pqr.usuario_id || '-'}</p>
                       </td>
-                      <td><span className="badge badge-neutral">{pqr.categoria || 'N/D'}</span></td>
-                      <td><span className={getPriorityBadge(pqr.prioridad || 'media')}>{pqr.prioridad || 'N/D'}</span></td>
+                        <td>
+                          {canValidate ? (
+                            <select
+                              className="input"
+                              style={{ padding: '2px 8px', fontSize: '12px', height: 'auto', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                              value={pqr.categoria || ''}
+                              onChange={(e) => handleQuickUpdate(pqr.id, 'categoria', e.target.value)}
+                            >
+                              <option value="" disabled>N/D</option>
+                              {categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            </select>
+                          ) : (
+                            <span className="badge badge-neutral">{pqr.categoria || 'N/D'}</span>
+                          )}
+                        </td>
+                        <td>
+                          {canValidate ? (
+                            <select
+                              className={getPriorityBadge(pqr.prioridad || 'media')}
+                              style={{ padding: '2px 8px', fontSize: '12px', height: 'auto', border: 'none', cursor: 'pointer', borderRadius: '8px' }}
+                              value={pqr.prioridad || ''}
+                              onChange={(e) => handleQuickUpdate(pqr.id, 'prioridad', e.target.value)}
+                            >
+                              <option value="" disabled>N/D</option>
+                              {prioridades.map(pri => <option key={pri} value={pri}>{pri.toUpperCase()}</option>)}
+                            </select>
+                          ) : (
+                            <span className={getPriorityBadge(pqr.prioridad || 'media')}>{pqr.prioridad || 'N/D'}</span>
+                          )}
+                        </td>
                       <td>
                         {confidence !== null ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -387,11 +424,41 @@ export function BandejaEntrada() {
                 </div>
                 <div>
                   <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Categoria</p>
-                  <span className="badge badge-primary">{selectedPQR.categoria || 'N/D'}</span>
+                    {canValidate && activeTab === 'pendientes' ? (
+                      <select
+                        className="input"
+                        style={{ padding: '2px 8px', fontSize: '12px', height: 'auto', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                        value={selectedPQR.categoria || ''}
+                        onChange={(e) => {
+                          handleQuickUpdate(selectedPQR.id, 'categoria', e.target.value);
+                          setSelectedPQR({ ...selectedPQR, categoria: e.target.value });
+                        }}
+                      >
+                        <option value="" disabled>N/D</option>
+                        {categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      </select>
+                    ) : (
+                      <span className="badge badge-primary">{selectedPQR.categoria || 'N/D'}</span>
+                    )}
                 </div>
                 <div>
                   <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Prioridad</p>
-                  <span className={getPriorityBadge(selectedPQR.prioridad || 'media')}>{selectedPQR.prioridad || 'N/D'}</span>
+                    {canValidate && activeTab === 'pendientes' ? (
+                      <select
+                        className={getPriorityBadge(selectedPQR.prioridad || 'media')}
+                        style={{ padding: '2px 8px', fontSize: '12px', height: 'auto', border: 'none', cursor: 'pointer', borderRadius: '8px' }}
+                        value={selectedPQR.prioridad || ''}
+                        onChange={(e) => {
+                          handleQuickUpdate(selectedPQR.id, 'prioridad', e.target.value);
+                          setSelectedPQR({ ...selectedPQR, prioridad: e.target.value });
+                        }}
+                      >
+                        <option value="" disabled>N/D</option>
+                        {prioridades.map(pri => <option key={pri} value={pri}>{pri.toUpperCase()}</option>)}
+                      </select>
+                    ) : (
+                      <span className={getPriorityBadge(selectedPQR.prioridad || 'media')}>{selectedPQR.prioridad || 'N/D'}</span>
+                    )}
                 </div>
               </div>
               <div>

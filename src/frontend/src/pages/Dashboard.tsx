@@ -130,6 +130,7 @@ export function Dashboard() {
       case 'admin':
         return 'Panel de Administración';
       case 'supervisor':
+      case 'operador':
         return 'Panel de Supervisión';
       case 'agente':
         return 'Panel del Agente';
@@ -149,6 +150,11 @@ export function Dashboard() {
         return [
           { label: 'Validar Clasificaciones', icon: 'fact_check', path: '/bandeja-entrada' },
           { label: 'Ver Reportes', icon: 'analytics', path: '/reportes' },
+        ];
+      case 'operador':
+        return [
+          { label: 'Validar Clasificaciones', icon: 'fact_check', path: '/bandeja-entrada' },
+          { label: 'Gestión de PQRs', icon: 'assignment', path: '/gestion-pqrs' },
         ];
       case 'agente':
         return [{ label: 'Atender PQRs', icon: 'inbox', path: '/bandeja-entrada' }];

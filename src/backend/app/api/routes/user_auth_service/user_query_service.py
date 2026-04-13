@@ -19,7 +19,7 @@ router = APIRouter(tags=["Autenticación y Usuarios"])
 @router.get("/users")
 async def get_all_users(
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
     ),
 ):
     """
@@ -56,7 +56,7 @@ async def get_all_users(
 async def get_user_by_id(
     user_id: int,
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
     ),
 ):
     """
@@ -98,7 +98,7 @@ async def get_user_by_id(
 @router.get("/supervisors")
 async def get_all_supervisors(
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
     ),
 ):
     """

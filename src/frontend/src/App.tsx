@@ -31,7 +31,7 @@ function HomeRouter() {
     return <UserDashboard />;
   }
 
-  // Admin, supervisor, agente go to full dashboard
+  // Admin, supervisor, operador, agente go to full dashboard
   return <Navigate to="/dashboard" replace />;
 }
 

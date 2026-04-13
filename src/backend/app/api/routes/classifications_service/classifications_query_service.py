@@ -18,7 +18,7 @@ router = APIRouter(tags=["Gestión de Clasificación"])
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/classifications")
 async def get_all_classifications(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     try:
         results = controller.get_all(ClassificationOut)
@@ -34,7 +34,7 @@ async def get_all_classifications(
 @router.get("/classifications/{class_id}")
 async def get_classification_by_id(
     class_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: ClassificationOut | None = controller.get_by_id(ClassificationOut, class_id)
@@ -51,7 +51,7 @@ async def get_classification_by_id(
 @router.get("/classifications/pqr/{pqr_id}")
 async def get_classification_by_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: ClassificationOut | None = controller.get_by_column(ClassificationOut, "pqr_id", pqr_id)
@@ -67,7 +67,7 @@ async def get_classification_by_pqr(
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/categories")
 async def get_all_categories(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         results = controller.get_all(CategoryOut)
@@ -81,7 +81,7 @@ async def get_all_categories(
 @router.get("/categories/{cat_id}")
 async def get_category_by_id(
     cat_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: CategoryOut | None = controller.get_by_id(CategoryOut, cat_id)
@@ -96,7 +96,7 @@ async def get_category_by_id(
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/priorities")
 async def get_all_priorities(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         results = controller.get_all(PriorityOut)
@@ -110,7 +110,7 @@ async def get_all_priorities(
 @router.get("/priorities/{prio_id}")
 async def get_priority_by_id(
     prio_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: PriorityOut | None = controller.get_by_id(PriorityOut, prio_id)

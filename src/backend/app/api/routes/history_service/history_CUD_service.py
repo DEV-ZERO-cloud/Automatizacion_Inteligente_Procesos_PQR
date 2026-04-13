@@ -19,7 +19,7 @@ router = APIRouter(tags=["Historial"])
 @router.post("/historial/create", status_code=status.HTTP_201_CREATED)
 async def create_history(
     payload: HistoryCreate,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Registra un evento en el historial de una PQR."""
     try:

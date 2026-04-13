@@ -22,6 +22,7 @@ ROLE_SCOPE_MAP: dict = {
     2: "supervisor",
     3: "agente",
     4: "usuario",
+    5: "operador",
 }
 
 
@@ -157,7 +158,7 @@ async def register_user(payload: RegisterRequest):
 @router.post("/users/create", status_code=status.HTTP_201_CREATED)
 async def create_user(
     payload: UserCreate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     """
     Crea un nuevo usuario en el sistema.
@@ -209,7 +210,7 @@ async def create_user(
 @router.put("/users/update")
 async def update_user(
     payload: UserUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     """
     Actualiza los datos de un usuario existente.

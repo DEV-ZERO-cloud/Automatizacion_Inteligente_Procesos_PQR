@@ -69,6 +69,9 @@ export function Reportes() {
   const [priorities, setPriorities] = useState<Array<{ name: string; cantidad: number; porcentaje: number; color: string }>>([]);
   const [stats, setStats] = useState({ total: 0, pendientes: 0, enProceso: 0, resueltas: 0 });
   const [trends, setTrends] = useState<Array<{ label: string; dateKey: string; count: number }>>([]);
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+  const [chartType, setChartType] = useState<'barra' | 'lineas'>('barra');
+  const [rawPqrs, setRawPqrs] = useState<PQR[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -113,13 +116,16 @@ export function Reportes() {
         );
 
         const trendDays = rangeToDays(dateRange);
-        setTrends(buildTrendData(pqrs, trendDays));
+        setRawPqrs(pqrs);
+        const filteredPqrs = filtroCategoria ? pqrs.filter(p => p.categoria === filtroCategoria) : pqrs;
+        setTrends(buildTrendData(filteredPqrs, trendDays));
       } catch {
         if (isMounted) {
           setStats({ total: 0, pendientes: 0, enProceso: 0, resueltas: 0 });
           setCategories([]);
           setPriorities([]);
           setTrends([]);
+          setRawPqrs([]);
         }
       }
     };
@@ -128,7 +134,7 @@ export function Reportes() {
     return () => {
       isMounted = false;
     };
-  }, [dateRange]);
+  }, [dateRange, filtroCategoria]);
 
   const resolvedRate = useMemo(() => {
     if (!stats.total) {
@@ -229,32 +235,83 @@ export function Reportes() {
       </div>
 
       <div className="card animate-fade-in">
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Tendencias Temporales</h2>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select className="select" style={{ width: '160px', padding: '4px 8px', fontSize: '12px' }} value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)}>
+              <option value="">Todas las Categorias</option>
+              {Array.from(new Set(rawPqrs.map(p => p.categoria).filter(Boolean))).map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <select className="select" style={{ width: '120px', padding: '4px 8px', fontSize: '12px' }} value={chartType} onChange={(e) => setChartType(e.target.value as 'barra' | 'lineas')}>
+              <option value="barra">Barras</option>
+              <option value="lineas">Lineas</option>
+            </select>
+          </div>
         </div>
         <div style={{ padding: '24px' }}>
-          <div className="reports-trend-grid">
-            {trends.length > 0 ? (
-              trends.map((item) => (
-                <div key={item.dateKey}>
-                  <div style={{ height: '120px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '8px' }}>
-                    <div
-                      style={{
-                        width: '40px',
-                        background: '#003d9b',
-                        borderRadius: '6px 6px 0 0',
-                        height: `${Math.max((item.count / maxTrendValue) * 100, item.count > 0 ? 10 : 2)}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <p style={{ fontSize: '12px', fontWeight: '600', color: '#525f73' }}>{item.label}</p>
+          {chartType === 'lineas' ? (
+            trends.length > 0 ? (
+              <div style={{ height: '160px', width: '100%', position: 'relative', marginBottom: '8px', marginLeft: '12px' }}>
+                <svg viewBox="-2 -5 104 110" preserveAspectRatio="none" style={{ width: '100%', height: '140px', overflow: 'visible' }}>
+                  {/* Axes */}
+                  <line x1="0" y1="0" x2="0" y2="100" stroke="#1e293b" strokeWidth="0.5" />
+                  <line x1="0" y1="100" x2="100" y2="100" stroke="#1e293b" strokeWidth="0.5" />
+                  
+                  {/* Line */}
+                  <polyline 
+                    points={trends.map((item, i) => `${(i / Math.max(1, trends.length - 1)) * 100},${100 - (maxTrendValue > 0 ? (item.count / maxTrendValue) * 100 : 0)}`).join(' ')} 
+                    fill="none" stroke="#f05032" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" 
+                  />
+                  
+                  {/* Datapoints */}
+                  {trends.map((item, i) => (
+                    <circle 
+                      key={i} 
+                      cx={(i / Math.max(1, trends.length - 1)) * 100} 
+                      cy={100 - (maxTrendValue > 0 ? (item.count / maxTrendValue) * 100 : 0)} 
+                      r="1.5" 
+                      fill="#f05032" 
+                      stroke="#fff" 
+                      strokeWidth="0.5" 
+                    />
+                  ))}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', overflowX: 'auto', marginLeft: '0' }}>
+                  {trends.map((item, i) => (
+                    <span key={item.dateKey} style={{ fontSize: '10px', color: '#525f73', opacity: i % Math.max(1, Math.floor(trends.length / 5)) === 0 ? 1 : 0 }}>{item.label}</span>
+                  ))}
                 </div>
-              ))
+              </div>
             ) : (
-              <p style={{ color: '#64748b', fontSize: '13px' }}>No hay fechas registradas en las PQR para construir una tendencia temporal.</p>
-            )}
-          </div>
-          <p style={{ textAlign: 'center', fontSize: '13px', color: '#525f73', marginTop: '16px' }}>Volumen de PQR registradas por dia</p>
+              <p style={{ color: '#64748b', fontSize: '13px' }}>No hay fechas registradas.</p>
+            )
+          ) : (
+            <div className="reports-trend-grid">
+              {trends.length > 0 ? (
+                trends.map((item) => (
+                  <div key={item.dateKey}>
+                    <div style={{ height: '120px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '8px' }}>
+                      <div
+                        style={{
+                          width: 'min(100%, 40px)',
+                          background: '#003d9b',
+                          borderRadius: '6px 6px 0 0',
+                          height: `${Math.max((item.count / maxTrendValue) * 100, item.count > 0 ? 10 : 2)}%`,
+                          transition: 'height 0.3s ease'
+                        }}
+                      ></div>
+                    </div>
+                    <p style={{ fontSize: '10px', fontWeight: '600', color: '#525f73' }}>{item.label}</p>
+                  </div>
+                ))
+              ) : (
+                <p style={{ color: '#64748b', fontSize: '13px' }}>No hay fechas registradas.</p>
+              )}
+            </div>
+          )}
+          <p style={{ textAlign: 'center', fontSize: '13px', color: '#525f73', marginTop: '16px' }}>Volumen de PQR registradas segun filtros</p>
         </div>
       </div>
     </div>

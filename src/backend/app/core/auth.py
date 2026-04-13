@@ -16,6 +16,7 @@ oauth2_scheme = OAuth2PasswordBearer(
     scopes={
         "admin": "Acceso total al sistema",
         "supervisor": "Supervisión de PQR y reportes",
+        "operador": "Supervisión de PQR sin acceso a reportes",
         "agente": "Gestión y respuesta de PQR",
         "usuario": "Consulta y creación de PQR",
     },

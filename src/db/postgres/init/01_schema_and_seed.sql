@@ -88,7 +88,8 @@ INSERT INTO rol (id, nombre) VALUES
 (1, 'admin'),
 (2, 'supervisor'),
 (3, 'agente'),
-(4, 'usuario')
+(4, 'usuario'),
+(5, 'operador')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO areas (id, nombre, descripcion) VALUES
@@ -100,10 +101,11 @@ ON CONFLICT (id) DO NOTHING;
 SELECT setval('areas_id_seq', (SELECT MAX(id) FROM areas));
 
 INSERT INTO usuarios (id, identificacion, nombre, correo, telefono, rol_id, area_id, activo, contrasena) VALUES
-(1, '1001', 'Admin Sistema', 'admin@pqr.com', '3000000001', 1, 1, TRUE, '$pbkdf2-sha256$29000$yVmL0RpDiLHWWmtNqdX63w$g/lwiSsV7O3xnR0zfCqkAA6TorDMQzsuudNb5n1VLus'),
-(2, '1002', 'Laura Supervisora', 'laura@pqr.com', '3000000002', 2, 3, TRUE, '$pbkdf2-sha256$29000$kNK6l7K29t7b./8/x3gPoQ$NknU3fpkXas68fbIaD1VoYWmqr.9516zmqnQZ4U4kg4'),
-(3, '1003', 'Carlos Agente', 'carlos@pqr.com', '3000000003', 3, 3, TRUE, '$pbkdf2-sha256$29000$21tLKaWUUioFoLQWohTi/A$Q87Uotg6xKMmOKKaqx1AH0wSnLE4FlYBlrKajjLpYqc'),
-(4, '1004', 'Maria Usuario', 'maria@pqr.com', '3000000004', 4, 2, TRUE, '$pbkdf2-sha256$29000$Z4zxvjdGSElprVWKsdYaQw$UcpAhAE3RZrfreWo0y8vpvyhLO6Du1hWwkFKgozY4SE')
+(1, '1001', 'Admin Sistema', 'admin@pqr.com', '3000000001', 1, 1, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
+(2, '1002', 'Laura Supervisora', 'laura@pqr.com', '3000000002', 2, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
+(3, '1003', 'Carlos Agente', 'carlos@pqr.com', '3000000003', 3, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
+(4, '1004', 'Maria Usuario', 'maria@pqr.com', '3000000004', 4, 2, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
+(5, '1005', 'Juan Operador', 'operador@pqr.com', '3000000005', 5, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));

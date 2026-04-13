@@ -19,7 +19,7 @@ router = APIRouter(tags=["Organizacional"])
 @router.get("/areas")
 async def get_all_areas(
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
     ),
 ):
     """
@@ -54,7 +54,7 @@ async def get_all_areas(
 async def get_area_by_id(
     area_id: int,
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
     ),
 ):
     """
