@@ -107,7 +107,7 @@ Requiero que cómo puedo actualizar los datos de mi cuenta,Petición,informació
 Agradecería que me quisiera información sobre descuentos por pago anual,Petición,información|facturación,baja
 Necesito ampliar el límite de usuarios de mi cuenta empresarial,Petición,cuenta|planes,media
 Me cobraron dos veces el mismo servicio en mi factura de este mes,Reclamo,facturación|cobro,alta
-"Mi factura tiene un valor incorrecto, cobran más de lo acordado",Reclamo,facturación|cobro,alta
+"Mi factura tiene un valor incorrecto, cobran más de lo acordado",Queja,facturación|cobro,alta
 El sistema borró toda mi información sin previo aviso,Queja,soporte técnico|seguridad,crítica
 Me prometieron un descuento que nunca aplicaron,Reclamo,facturación,media
 El servicio de soporte en línea está fuera de horario siempre,Queja,atención,baja

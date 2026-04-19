@@ -1,6 +1,13 @@
 import time
 import structlog
-from fastapi import APIRouter, HTTPException
+import httpx
+import os
+import logging
+from dotenv import load_dotenv
+
+from fastapi import APIRouter, HTTPException, Security, status, Depends, Request
+from fastapi.security import OAuth2PasswordBearer
+
 
 from app.ia.embeddings.generator import EmbeddingGenerator
 from app.ia.rule_engine.engine import RuleEngine
@@ -9,12 +16,21 @@ from app.ia.classifiers.tags import TagsClassifier
 from app.ia.classifiers.priority import PriorityClassifier
 from app.ia.preprocessing.cleaner import clean_text
 from app.models.classify_request import ClassifyRequestIn
+from app.models.pqr import PQRCreate
 from app.models.classify_response import ClassifyResponseIn
 from app.models.health_response import HealthResponseIn
 from app.models.reload_response import ReloadResponseIn
+from app.core.auth import get_current_user
+from app.core.responses import ok_response
 
-logger = structlog.get_logger()
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # ajusta tu tokenUrl
+
 router = APIRouter()
+load_dotenv()
+base_url = os.getenv("BASE_URL")
 
 # ── Instancias lazy ────────────────────────────────────────────────────────────
 _rule_engine = None
@@ -77,14 +93,30 @@ def _determine_source(rule_matched: bool, ml_ready: bool) -> str:
     return "rules"
 
 
+async def _get_pqr(pqr_id: int, token: str):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{base_url}/pqrs/{pqr_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        response.raise_for_status()
+        data = response.json()
+        pqr_data = data.get("data")
+        pqr = PQRCreate.from_dict(pqr_data)
+        return pqr
+
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
-@router.post("/classify", tags=["IA"])
-async def classify(request: ClassifyRequestIn):
-    start = time.time()
-
+@router.post("/classify/{pqr_id}", tags=["IA"])
+async def classify(
+    pqr_id: int,
+    token: str = Depends(oauth2_scheme),          # extrae el Bearer token
+    current_user=Depends(get_current_user),        # valida al usuario
+    ):
     try:
-        text = clean_text(request.text)
+        pqr = await _get_pqr(pqr_id, token)
+        pqr_description = pqr.descripcion
+        text = clean_text(pqr_description)
 
         # Motor de reglas
         re = get_rule_engine()
@@ -126,28 +158,20 @@ async def classify(request: ClassifyRequestIn):
             rule_matched=len(rule_result.rules_matched) > 0,
             ml_ready=ml_ready
         )
-
-        elapsed = round((time.time() - start) * 1000, 1)
-        logger.info(
-            "classify_request",
-            pqr_id=request.pqr_id,
-            category=category,
-            priority=priority,
-            source=source,
-            elapsed_ms=elapsed,
-        )
-
+        
         return ClassifyResponseIn(
+            id =pqr.ID,
             category=category,
             tags=tags,
             priority=priority,
             rules_matched=rule_result.rules_matched,
             source=source,
             confidence=confidence,
+            model=os.getenv("MODEL_NAME")
         )
 
     except Exception as e:
-        logger.error("classify_error", error=str(e), exc_info=True)
+        logger.error("classify_error", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error al clasificar: {str(e)}")
 
 @router.get("/health", tags=["IA"])

@@ -1,0 +1,4 @@
+{
+  "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+  "csv_fingerprint": "fbdae3ebb05da9ebc8e383d7cab6117b"
+}

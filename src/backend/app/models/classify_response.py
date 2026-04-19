@@ -9,6 +9,7 @@ class ClassifyResponseIn(BaseModel):
     rules_matched: List[str] = []
     source: str = "rules"
     confidence: Optional[float] = None
+    model: str 
 
     def to_dict(self):
         return self.model_dump()
