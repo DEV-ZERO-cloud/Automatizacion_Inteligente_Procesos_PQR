@@ -368,7 +368,7 @@ class TestCreateUser:
 
             from app.api.routes.user_auth_service.user_CUD_service import create_user
             payload = UserCreate(
-                id=10, identificacion=100, nombre="Nuevo Admin", correo="nadmin@pqr.com",
+                id=10, identificacion="100", nombre="Nuevo Admin", correo="nadmin@pqr.com",
                 telefono="3001234567", contrasena="secret123", rol_id=1, area_id=1
             )
             current_user = {"sub": "1", "scope": "admin"}
@@ -384,7 +384,7 @@ class TestCreateUser:
 
             from app.api.routes.user_auth_service.user_CUD_service import create_user
             payload = UserCreate(
-                id=11, identificacion=200, nombre="Dup", correo="dup@pqr.com",
+                id=11, identificacion="200", nombre="Dup", correo="dup@pqr.com",
                 telefono="", contrasena="pass1234", rol_id=1, area_id=1
             )
             with pytest.raises(HTTPException) as exc:
@@ -466,7 +466,7 @@ class TestUpdateDeleteUser:
     @pytest.mark.asyncio
     async def test_update_user_exitoso(self):
         existing = MagicMock()
-        existing.identificacion = 123
+        existing.identificacion = "123"
         existing.activo = True
         existing.contrasena = "hashed"
 
