@@ -103,7 +103,7 @@ async def register_user(payload: RegisterRequest):
                 detail="Ya existe un usuario con ese correo.",
             )
 
-        existing_identification = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
+        existing_identification = controller.get_by_column(UserOut, "identificacion", str(payload.identificacion))
         if existing_identification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -115,7 +115,7 @@ async def register_user(payload: RegisterRequest):
 
         user_to_create = UserCreate(
             id=next_id,
-            identificacion=payload.identificacion,
+            identificacion=str(payload.identificacion),
             nombre=payload.nombre,
             correo=str(payload.correo),
             telefono=payload.telefono or "",
@@ -169,7 +169,7 @@ async def create_user(
             )
 
         # Verificar duplicado por identificación
-        existing_id = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
+        existing_id = controller.get_by_column(UserOut, "identificacion", str(payload.identificacion))
         if existing_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
