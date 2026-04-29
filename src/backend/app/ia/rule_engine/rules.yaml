@@ -1,44 +1,8 @@
 rules:
-  - id: "R001"
-    name: "Reclamo por facturación"
-    priority: 1
-    conditions:
-      operator: OR
-      items:
-        - field: text
-          contains: ["cobro incorrecto", "me cobraron de más", "factura incorrecta", "doble cobro"]
-    actions:
-      set_category: "Reclamo"
-      add_tags: ["facturación", "cobro"]
-      set_priority: "alta"
 
-  - id: "R002"
-    name: "Solicitud de información"
-    priority: 2
-    conditions:
-      operator: OR
-      items:
-        - field: text
-          contains: ["quisiera saber", "necesito información", "me pueden informar", "cuánto cuesta"]
-    actions:
-      set_category: "Petición"
-      add_tags: ["información"]
-      set_priority: "baja"
-
-  - id: "R003"
-    name: "Queja por mal servicio"
-    priority: 1
-    conditions:
-      operator: AND
-      items:
-        - field: text
-          contains: ["pésimo", "terrible", "muy malo", "no sirve"]
-        - field: text
-          contains: ["servicio", "atención", "soporte"]
-    actions:
-      set_category: "Queja"
-      add_tags: ["servicio", "insatisfacción"]
-      set_priority: "alta"
+  # ══════════════════════════════════════════════════════════
+  # PRIORIDAD 0 — Críticas (se evalúan primero)
+  # ══════════════════════════════════════════════════════════
 
   - id: "R004"
     name: "Urgencia crítica"
@@ -47,23 +11,248 @@ rules:
       operator: OR
       items:
         - field: text
-          contains: ["urgente", "emergencia", "inmediatamente", "crítico"]
+          contains: ["urgente", "urgentemente", "emergencia", "inmediatamente",
+                     "de inmediato", "crítico", "gravísimo", "situación grave",
+                     "necesito ayuda ya", "no puede esperar", "lo antes posible",
+                     "cuanto antes", "es una urgencia", "atención inmediata",
+                     "respuesta inmediata", "no aguanta más"]
     actions:
       add_tags: ["urgente"]
       set_priority: "crítica"
 
-  - id: "R005"
-    name: "Problema de acceso"
+  - id: "R004B"
+    name: "Amenaza legal o denuncia"
+    priority: 0
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["voy a demandar", "acción legal", "acción judicial", "abogado",
+                     "superintendencia", "denuncia formal", "ente regulador",
+                     "derechos del consumidor", "protección al consumidor",
+                     "instancia legal", "radicar queja", "queja ante",
+                     "defensoría del consumidor", "SIC", "procuraduría",
+                     "voy a escalar", "esto no se va a quedar así"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["legal", "escalado", "urgente"]
+      set_priority: "crítica"
+
+  - id: "R004C"
+    name: "Fraude o seguridad"
+    priority: 0
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["me robaron", "me estafaron", "fraude", "estafa",
+                     "transacción no reconocida", "compra no autorizada",
+                     "alguien usó mi cuenta", "acceso no autorizado",
+                     "suplantación", "hackeo", "me hackearon",
+                     "cargo fraudulento", "movimiento sospechoso",
+                     "no realicé esta compra", "no reconozco este pago",
+                     "clonaron mi tarjeta", "robo de identidad"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["fraude", "seguridad", "urgente", "escalado"]
+      set_priority: "crítica"
+
+  # ══════════════════════════════════════════════════════════
+  # PRIORIDAD 1 — Reclamos y quejas graves
+  # ══════════════════════════════════════════════════════════
+
+  - id: "R001"
+    name: "Reclamo por facturación"
     priority: 1
     conditions:
       operator: OR
       items:
         - field: text
-          contains: ["no puedo acceder", "no me deja entrar", "contraseña incorrecta", "cuenta bloqueada"]
+          contains: ["cobro incorrecto", "me cobraron de más", "cobro excesivo",
+                     "factura incorrecta", "factura errónea", "error en la factura",
+                     "doble cobro", "cobro duplicado", "cargo no reconocido",
+                     "cargo desconocido", "no autoricé este cobro", "me descontaron",
+                     "débito no autorizado", "pago en exceso", "valor equivocado",
+                     "me están cobrando mal", "cobro adicional", "cobro extra",
+                     "cargaron más de lo acordado", "precio diferente al pactado",
+                     "no corresponde al contrato", "no es lo que contraté"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["facturación", "cobro"]
+      set_priority: "alta"
+
+  - id: "R001B"
+    name: "Problema con pago realizado"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["pagué", "realicé el pago", "hice el pago", "transferí",
+                     "consigné", "pagué por", "ya pagué"]
+        - field: text
+          contains: ["no se reflejó", "no aparece", "no se acreditó", "no lo recibieron",
+                     "no se aplicó", "sigue pendiente", "aún no está", "no actualizaron",
+                     "no han procesado", "figura como deuda", "me siguen cobrando"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["facturación", "pago no aplicado"]
+      set_priority: "alta"
+
+  - id: "R003"
+    name: "Queja por mal servicio"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["pésimo", "terrible", "muy malo", "no sirve", "deficiente",
+                     "deplorable", "inaceptable", "nefasto", "horrible", "fatal",
+                     "decepcionante", "malísimo", "desastroso", "muy mal",
+                     "muy pobre", "deja mucho que desear", "no es aceptable"]
+        - field: text
+          contains: ["servicio", "atención", "soporte", "personal", "empleado",
+                     "asesor", "agente", "técnico", "operador", "ayuda"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["servicio", "insatisfacción"]
+      set_priority: "alta"
+
+  - id: "R003B"
+    name: "Queja por trato inadecuado"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["me trató mal", "me faltó el respeto", "fue grosero",
+                     "fue irrespetuoso", "mala actitud", "actitud negativa",
+                     "me ignoraron", "me dejaron esperando", "no me atendieron",
+                     "me colgaron", "me cortaron la llamada", "no me escucharon"]
+        - field: text
+          contains: ["asesor", "agente", "empleado", "operador", "técnico",
+                     "personal", "funcionario", "representante", "ejecutivo"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["mal trato", "atención al cliente", "insatisfacción"]
+      set_priority: "alta"
+
+  - id: "R003C"
+    name: "Queja por incumplimiento"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["no cumplieron", "incumplieron", "no llegó", "nunca llegó",
+                     "no se realizó", "no ejecutaron", "quedaron en venir",
+                     "prometieron", "no respetaron", "incumplimiento",
+                     "no honraron", "no hicieron lo que dijeron"]
+        - field: text
+          contains: ["plazo", "fecha", "cita", "visita", "entrega", "servicio",
+                     "instalación", "reparación", "acuerdo", "contrato",
+                     "promesa", "compromiso", "hora pactada"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["incumplimiento", "insatisfacción"]
+      set_priority: "alta"
+
+  - id: "R005"
+    name: "Problema de acceso o cuenta"
+    priority: 1
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["no puedo acceder", "no me deja entrar", "no puedo ingresar",
+                     "contraseña incorrecta", "olvidé mi contraseña", "contraseña no funciona",
+                     "cuenta bloqueada", "cuenta suspendida", "cuenta desactivada",
+                     "usuario bloqueado", "no reconoce mi usuario",
+                     "no me permite iniciar sesión", "perfil bloqueado",
+                     "no puedo iniciar sesión", "token expirado", "sesión cerrada"]
     actions:
       set_category: "Queja"
       add_tags: ["acceso", "soporte técnico"]
       set_priority: "alta"
+
+  - id: "R005B"
+    name: "Falla técnica o del sistema"
+    priority: 1
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["no funciona", "dejó de funcionar", "falla", "fallo",
+                     "error del sistema", "sistema caído", "no carga",
+                     "se cae", "no responde", "pantalla en blanco",
+                     "error inesperado", "no abre", "se congela", "se traba",
+                     "problema técnico", "falla técnica", "interrupción del servicio",
+                     "servicio interrumpido", "fuera de línea", "sin servicio",
+                     "aplicación caída", "app no funciona", "página no carga",
+                     "botón no funciona", "no me deja continuar"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["falla técnica", "soporte técnico"]
+      set_priority: "alta"
+
+  # ── Entregas y logística ───────────────────────────────────
+
+  - id: "R013"
+    name: "Pedido no recibido"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["no llegó", "no he recibido", "no me llegó", "no lo recibí",
+                     "nunca llegó", "no fue entregado", "no aparece",
+                     "dónde está mi pedido", "dónde está mi paquete"]
+        - field: text
+          contains: ["pedido", "paquete", "envío", "producto", "compra",
+                     "domicilio", "encomienda", "mercancía", "orden"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["entrega", "logística", "pedido perdido"]
+      set_priority: "alta"
+
+  - id: "R013B"
+    name: "Pedido llegó en mal estado o incorrecto"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["llegó dañado", "llegó roto", "llegó en mal estado",
+                     "producto dañado", "producto defectuoso", "llegó mojado",
+                     "no era lo que pedí", "enviaron algo diferente",
+                     "producto incorrecto", "pedido equivocado",
+                     "faltaron productos", "incompleto", "estaba abierto"]
+        - field: text
+          contains: ["pedido", "paquete", "envío", "producto", "compra",
+                     "domicilio", "encomienda", "caja", "orden"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["entrega", "producto defectuoso", "logística"]
+      set_priority: "alta"
+
+  - id: "R013C"
+    name: "Retraso en la entrega"
+    priority: 1
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["se demoró", "tardó demasiado", "lleva días", "lleva semanas",
+                     "pasó la fecha", "venció el plazo", "no ha llegado todavía",
+                     "demora injustificada", "mucho tiempo", "se está tardando",
+                     "días de retraso", "semanas de retraso"]
+        - field: text
+          contains: ["pedido", "paquete", "envío", "entrega", "domicilio",
+                     "producto", "encomienda", "despacho", "servicio"]
+    actions:
+      set_category: "Queja"
+      add_tags: ["entrega", "retraso", "logística"]
+      set_priority: "media"
 
   - id: "R006"
     name: "Solicitud de cancelación"
@@ -72,10 +261,211 @@ rules:
       operator: OR
       items:
         - field: text
-          contains: ["quiero cancelar", "dar de baja", "cancelar servicio", "cancelar contrato"]
+          contains: ["quiero cancelar", "deseo cancelar", "solicito cancelar",
+                     "dar de baja", "baja del servicio", "cancelar servicio",
+                     "cancelar contrato", "cancelar suscripción", "terminar contrato",
+                     "finalizar servicio", "rescindir", "no quiero renovar",
+                     "no deseo continuar", "quiero darme de baja",
+                     "eliminar mi cuenta", "cerrar mi cuenta",
+                     "desvincularme", "no quiero seguir"]
     actions:
       set_category: "Petición"
       add_tags: ["cancelación"]
       set_priority: "media"
 
-  
+  # ══════════════════════════════════════════════════════════
+  # PRIORIDAD 2 — Peticiones y solicitudes
+  # ══════════════════════════════════════════════════════════
+
+  - id: "R002"
+    name: "Solicitud de información general"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["quisiera saber", "necesito información", "me pueden informar",
+                     "quisiera conocer", "quiero saber", "me gustaría saber",
+                     "cuánto cuesta", "cuál es el precio", "qué precio tiene",
+                     "cómo funciona", "en qué consiste", "me explican",
+                     "podrían indicarme", "podrían decirme", "información sobre",
+                     "más detalles", "requisitos para", "condiciones del servicio",
+                     "términos y condiciones", "política de", "cuáles son los pasos",
+                     "cómo aplico", "cómo hago para", "tengo una duda",
+                     "tengo una pregunta", "me surge una pregunta"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["información"]
+      set_priority: "baja"
+
+  - id: "R007"
+    name: "Solicitud de reembolso o devolución"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["quiero mi dinero", "devuelvan mi dinero", "reembolso",
+                     "devolución de dinero", "devolución del pago", "quiero que me devuelvan",
+                     "reintegro", "compensación económica", "reembolsar",
+                     "reversar el pago", "reversión del cobro",
+                     "quiero la devolución", "solicito reembolso",
+                     "me deben devolver", "devolución del producto",
+                     "retracto", "retractación de compra"]
+    actions:
+      set_category: "Reclamo"
+      add_tags: ["reembolso", "facturación"]
+      set_priority: "alta"
+
+  - id: "R008"
+    name: "Actualización de datos personales"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["actualizar mis datos", "cambiar mis datos", "modificar datos",
+                     "actualizar dirección", "cambiar correo", "cambiar teléfono",
+                     "actualizar información", "corrección de datos",
+                     "cambio de titular", "actualizar cuenta bancaria",
+                     "cambiar número", "cambiar nombre", "corregir mi nombre",
+                     "actualizar mi perfil", "mis datos están incorrectos",
+                     "hay un error en mis datos"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["actualización de datos"]
+      set_priority: "baja"
+
+  - id: "R009"
+    name: "Solicitud de certificado o documento"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["certificado", "constancia", "paz y salvo", "extracto",
+                     "copia de factura", "historial de pagos", "comprobante",
+                     "soporte del pago", "documento oficial", "carta de servicio",
+                     "carta de no deuda", "certificación", "estado de cuenta",
+                     "factura anterior", "factura duplicada", "soporte de compra",
+                     "prueba de compra", "recibo de pago"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["documentos", "certificado"]
+      set_priority: "baja"
+
+  - id: "R010"
+    name: "Solicitud de instalación o visita técnica"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["instalar", "instalación", "visita técnica", "técnico a domicilio",
+                     "agendar visita", "programar visita", "solicito revisión",
+                     "necesito un técnico", "quiero que vengan", "revisión técnica",
+                     "mantenimiento", "reparación a domicilio",
+                     "envíen a alguien", "necesito soporte en sitio",
+                     "soporte presencial", "agendar cita técnica"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["visita técnica", "instalación"]
+      set_priority: "media"
+
+  - id: "R014"
+    name: "Solicitud de cambio o upgrade de servicio"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["quiero cambiar de plan", "cambiar mi plan", "mejorar mi plan",
+                     "actualizar mi plan", "upgrade", "cambiar de servicio",
+                     "quiero un plan mejor", "quiero más capacidad",
+                     "ampliar el servicio", "agregar más", "incluir más",
+                     "añadir servicio", "contratar servicio adicional",
+                     "servicio adicional", "plan más completo"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["cambio de plan", "upgrade"]
+      set_priority: "baja"
+
+  - id: "R015"
+    name: "Seguimiento de solicitud o caso"
+    priority: 2
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["en qué va", "cómo va mi caso", "estado de mi solicitud",
+                     "seguimiento", "me pueden actualizar", "no he recibido respuesta",
+                     "sigo esperando respuesta", "llevan días sin responderme",
+                     "cuánto tiempo más", "ya pasaron", "aún sin solución",
+                     "sin respuesta desde hace", "qué pasó con mi caso",
+                     "número de caso", "radicado", "número de ticket",
+                     "referencia de mi solicitud"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["seguimiento", "sin respuesta"]
+      set_priority: "media"
+
+  - id: "R016"
+    name: "Solicitud de pausa o suspensión temporal"
+    priority: 2
+    conditions:
+      operator: AND
+      items:
+        - field: text
+          contains: ["pausar", "suspender temporalmente", "congelar",
+                     "vacaciones", "viaje", "temporada", "no usaré por un tiempo",
+                     "dejar en pausa", "pausa temporal", "suspensión temporal"]
+        - field: text
+          contains: ["servicio", "suscripción", "cuenta", "plan", "contrato"]
+    actions:
+      set_category: "Petición"
+      add_tags: ["suspensión temporal", "cancelación"]
+      set_priority: "baja"
+
+  # ══════════════════════════════════════════════════════════
+  # PRIORIDAD 3 — Felicitaciones y sugerencias
+  # ══════════════════════════════════════════════════════════
+
+  - id: "R011"
+    name: "Felicitación o satisfacción"
+    priority: 3
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["excelente servicio", "muy buen servicio", "quedé satisfecho",
+                     "muy satisfecho", "felicitaciones", "los felicito", "buen trabajo",
+                     "muy buena atención", "gracias por su ayuda", "resolvieron rápido",
+                     "encantado", "muy contento", "superaron mis expectativas",
+                     "recomendaría", "5 estrellas", "10 de 10",
+                     "servicio impecable", "excelente atención",
+                     "quedé muy bien atendido", "me ayudaron perfectamente",
+                     "solución rápida", "muy eficientes", "los recomiendo"]
+    actions:
+      set_category: "Felicitación"
+      add_tags: ["satisfacción", "positivo"]
+      set_priority: "baja"
+
+  - id: "R012"
+    name: "Sugerencia de mejora"
+    priority: 3
+    conditions:
+      operator: OR
+      items:
+        - field: text
+          contains: ["sugiero", "sería bueno", "podrían mejorar", "propongo",
+                     "recomendaría que", "sería ideal", "estaría bien que",
+                     "una sugerencia", "mejora posible", "les propongo",
+                     "les recomendaría", "considerarían", "han pensado en",
+                     "oportunidad de mejora", "sería conveniente",
+                     "podrían implementar", "sería útil que",
+                     "mejoraría mucho si", "qué bueno sería",
+                     "faltaría que", "le hace falta"]
+    actions:
+      set_category: "Sugerencia"
+      add_tags: ["sugerencia", "mejora"]
+      set_priority: "baja"

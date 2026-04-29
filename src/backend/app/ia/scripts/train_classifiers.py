@@ -10,6 +10,9 @@ Formato esperado del CSV:
     "No puedo acceder","Queja","account_access","alta"
 """
 import argparse
+import hashlib
+import json
+import os
 import joblib
 import numpy as np
 import pandas as pd
@@ -21,11 +24,24 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ── Rutas ──────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent.parent.parent.parent.parent.parent
 MODELS_PATH = BASE_DIR / "data" / "models"
 MODELS_PATH.mkdir(parents=True, exist_ok=True)
+
+MODEL_NAME = os.getenv(
+    "MODEL_NAME",
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+)
+
+# Nombre seguro para el archivo de caché: incluye el modelo para evitar mezclas
+_model_slug = hashlib.md5(MODEL_NAME.encode()).hexdigest()[:8]
+CACHE_PATH = MODELS_PATH / f"embeddings_cache_{_model_slug}.npy"
+CACHE_META_PATH = MODELS_PATH / f"embeddings_cache_{_model_slug}.json"
 
 
 # ── Preprocesamiento ───────────────────────────────────────────────────────────
@@ -50,7 +66,6 @@ def load_data(csv_path: str) -> pd.DataFrame:
     df["text"] = df["text"].apply(clean_text)
     df = df[df["text"].str.len() > 10]
 
-    # Tags: soporta múltiples etiquetas separadas por |
     df["tags_list"] = df["tags"].apply(
         lambda x: x.split("|") if isinstance(x, str) else []
     )
@@ -62,12 +77,58 @@ def load_data(csv_path: str) -> pd.DataFrame:
 
 
 # ── Embeddings ─────────────────────────────────────────────────────────────────
-def generate_embeddings(texts: list[str]) -> np.ndarray:
+def _csv_fingerprint(csv_path: str) -> str:
+    """Hash rápido del CSV para detectar si cambió el dataset."""
+    h = hashlib.md5()
+    with open(csv_path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _cache_is_valid(csv_path: str) -> bool:
+    """
+    La caché es válida solo si el modelo Y el dataset son los mismos
+    que cuando se generó. Si cualquiera cambió, hay que regenerar.
+    """
+    if not CACHE_PATH.exists() or not CACHE_META_PATH.exists():
+        return False
+    try:
+        meta = json.loads(CACHE_META_PATH.read_text())
+        return (
+            meta.get("model") == MODEL_NAME
+            and meta.get("csv_fingerprint") == _csv_fingerprint(csv_path)
+        )
+    except Exception:
+        return False
+
+
+def _save_cache_meta(csv_path: str) -> None:
+    meta = {"model": MODEL_NAME, "csv_fingerprint": _csv_fingerprint(csv_path)}
+    CACHE_META_PATH.write_text(json.dumps(meta, indent=2))
+
+
+def generate_embeddings(texts: list[str], csv_path: str, skip_cache: bool) -> np.ndarray:
     from app.ia.embeddings.generator import EmbeddingGenerator
-    print(f"\nGenerando embeddings para {len(texts)} textos...")
+
+    if skip_cache and _cache_is_valid(csv_path):
+        print(f"\nCargando embeddings desde caché ({MODEL_NAME}): {CACHE_PATH}")
+        return np.load(str(CACHE_PATH))
+
+    if skip_cache and not _cache_is_valid(csv_path):
+        print(
+            "\n⚠ Caché ignorada: el modelo o el dataset cambiaron desde la última generación. "
+            "Regenerando embeddings..."
+        )
+
+    print(f"\nGenerando embeddings con '{MODEL_NAME}' para {len(texts)} textos...")
     generator = EmbeddingGenerator()
     embeddings = generator.generate(texts)
     print(f"Embeddings generados: {embeddings.shape}")
+
+    np.save(str(CACHE_PATH), embeddings)
+    _save_cache_meta(csv_path)
+    print(f"Embeddings guardados en caché: {CACHE_PATH}")
     return embeddings
 
 
@@ -106,11 +167,7 @@ def train_tags(embeddings: np.ndarray, tags_list: list[list[str]]):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    print(classification_report(
-        y_test, y_pred,
-        target_names=mlb.classes_,
-        zero_division=0
-    ))
+    print(classification_report(y_test, y_pred, target_names=mlb.classes_, zero_division=0))
 
     joblib.dump(model, MODELS_PATH / "tags_classifier.pkl")
     joblib.dump(list(mlb.classes_), MODELS_PATH / "tags_labels.pkl")
@@ -142,21 +199,17 @@ def train_priority(embeddings: np.ndarray, labels: list[str]):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entrena los clasificadores PQR")
     parser.add_argument("--data", required=True, help="Ruta al CSV de datos etiquetados")
-    parser.add_argument("--skip-embeddings", action="store_true",
-                        help="Carga embeddings desde disco si ya fueron generados")
+    parser.add_argument(
+        "--skip-embeddings",
+        action="store_true",
+        help="Reutiliza la caché de embeddings si el modelo y el dataset no cambiaron",
+    )
     args = parser.parse_args()
 
+    print(f"Modelo de embeddings: {MODEL_NAME}")
+
     df = load_data(args.data)
-
-    embeddings_path = MODELS_PATH / "embeddings_cache.npy"
-
-    if args.skip_embeddings and embeddings_path.exists():
-        print(f"\nCargando embeddings desde caché: {embeddings_path}")
-        embeddings = np.load(str(embeddings_path))
-    else:
-        embeddings = generate_embeddings(df["text"].tolist())
-        np.save(str(embeddings_path), embeddings)
-        print(f"Embeddings guardados en caché: {embeddings_path}")
+    embeddings = generate_embeddings(df["text"].tolist(), args.data, args.skip_embeddings)
 
     train_category(embeddings, df["category"].tolist())
     train_tags(embeddings, df["tags_list"].tolist())

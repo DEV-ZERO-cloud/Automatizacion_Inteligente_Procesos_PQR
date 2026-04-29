@@ -1,0 +1,12 @@
+# Dependencias para ejecutar los tests unitarios
+
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0
+fastapi>=0.110.0
+python-jose[cryptography]>=3.3.0
+passlib[pbkdf2-sha256]>=1.7.4
+pydantic[email]>=2.0.0
+psycopg2-binary>=2.9.9
+python-multipart>=0.0.9
+python-dotenv>=1.0.0

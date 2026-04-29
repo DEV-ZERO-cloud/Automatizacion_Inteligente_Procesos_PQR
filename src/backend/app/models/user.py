@@ -8,14 +8,14 @@ class UserCreate(BaseModel):
     __entity_name__ = "usuarios"
 
     id: int
-    identificacion: int
+    identificacion: str
     nombre: str
     correo: str
     telefono: str
     contrasena: str
     rol_id: int
     area_id: int
-    activo: Optional[int] = 1
+    activo: Optional[bool] = True
 
     def to_dict(self) -> dict:
         return {
@@ -38,7 +38,7 @@ class UserCreate(BaseModel):
     def get_fields(cls) -> dict:
         return {
             "id": "INTEGER PRIMARY KEY",
-            "identificacion": "INTEGER NOT NULL",
+            "identificacion": "VARCHAR(50) NOT NULL",
             "nombre": "VARCHAR(150) NOT NULL",
             "correo": "VARCHAR(200) NOT NULL",
             "telefono": "VARCHAR(20)",
@@ -55,13 +55,13 @@ class UserOut(BaseModel):
     __entity_name__ = "usuarios"
 
     id: int
-    identificacion: int
+    identificacion: str
     nombre: str
     correo: str
     telefono: Optional[str] = None
     rol_id: int
     area_id: int
-    activo: Optional[int] = 1
+    activo: Optional[bool] = True
     contrasena: Optional[str] = None  # Se incluye solo para autenticación interna
 
     def to_dict(self) -> dict:
