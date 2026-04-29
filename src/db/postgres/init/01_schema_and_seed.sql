@@ -89,7 +89,8 @@ INSERT INTO rol (id, nombre) VALUES
 (2, 'supervisor'),
 (3, 'agente'),
 (4, 'usuario'),
-(5, 'operador')
+(5, 'operador'),
+(6, 'gerente')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO areas (id, nombre, descripcion) VALUES
@@ -105,7 +106,8 @@ INSERT INTO usuarios (id, identificacion, nombre, correo, telefono, rol_id, area
 (2, '1002', 'Laura Supervisora', 'laura@pqr.com', '3000000002', 2, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
 (3, '1003', 'Carlos Agente', 'carlos@pqr.com', '3000000003', 3, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
 (4, '1004', 'Maria Usuario', 'maria@pqr.com', '3000000004', 4, 2, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
-(5, '1005', 'Juan Operador', 'operador@pqr.com', '3000000005', 5, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak')
+(5, '1005', 'Juan Operador', 'operador@pqr.com', '3000000005', 5, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak'),
+(6, '1006', 'Marta Gerente', 'gerente@pqr.com', '3000000006', 6, 3, TRUE, '$pbkdf2-sha256$29000$ifH.v1fq/Z9TCuF87z1nTA$OTJDj8HJuaxeQQMaDOwgBxx/Kdg6z5.CvLGX2amLDak')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));

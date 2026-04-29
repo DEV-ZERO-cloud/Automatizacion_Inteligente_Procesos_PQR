@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 router = APIRouter(prefix="/reports", tags=["Reportes y Dashboard"])
 
 # Scopes autorizados para todos los endpoints de reportes
-REPORT_SCOPES = ["admin", "supervisor", "operador"]
+REPORT_SCOPES = ["admin", "supervisor", "operador", "gerente"]
 
 
 # ══════════════════════════════════════════════════════════════════════════════

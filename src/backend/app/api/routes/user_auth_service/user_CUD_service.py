@@ -23,6 +23,7 @@ ROLE_SCOPE_MAP: dict = {
     3: "agente",
     4: "usuario",
     5: "operador",
+    6: "gerente",
 }
 
 
@@ -45,18 +46,21 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         user = controller.get_by_column(UserOut, "correo", form_data.username)
 
         if not user:
+            logger.warning("[POST /auth/login] Usuario no encontrado: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
             )
 
-        if not user.activo:
+        if user.activo != 1:
+            logger.warning("[POST /auth/login] Usuario inactivo: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Usuario inactivo",
+                detail="Usuario inactivo. Contacte al administrador.",
             )
 
         stored_password = user.contrasena or ""
+        password_ok = False
 
         if is_password_hashed(stored_password):
             password_ok = verify_password(form_data.password, stored_password)
@@ -67,6 +71,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                 controller.update(user)
 
         if not password_ok:
+            logger.warning("[POST /auth/login] Contraseña incorrecta para: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
@@ -76,14 +81,17 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         payload = {"sub": str(user.id), "scope": scope}
         token = encode_token(payload)
 
-        logger.info("[POST /auth/login] Login exitoso user_id=%s scope=%s", user.id, scope)
+        logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.id, scope)
 
-        return {
-            "access_token": token,
-            "token_type": "bearer",
-            "user_id": user.id,
-            "role": scope
-        }
+        return ok_response(
+            data={
+                "access_token": token,
+                "token_type": "bearer",
+                "user_id": user.id,
+                "role": scope,
+            },
+            message="Inicio de sesión exitoso",
+        )
 
     except HTTPException:
         raise
@@ -104,7 +112,7 @@ async def register_user(payload: RegisterRequest):
                 detail="Ya existe un usuario con ese correo.",
             )
 
-        existing_identification = controller.get_by_column(UserOut, "identificacion", str(payload.identificacion))
+        existing_identification = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
         if existing_identification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -116,7 +124,7 @@ async def register_user(payload: RegisterRequest):
 
         user_to_create = UserCreate(
             id=next_id,
-            identificacion=str(payload.identificacion),
+            identificacion=payload.identificacion,
             nombre=payload.nombre,
             correo=str(payload.correo),
             telefono=payload.telefono or "",
@@ -170,7 +178,7 @@ async def create_user(
             )
 
         # Verificar duplicado por identificación
-        existing_id = controller.get_by_column(UserOut, "identificacion", str(payload.identificacion))
+        existing_id = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
         if existing_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

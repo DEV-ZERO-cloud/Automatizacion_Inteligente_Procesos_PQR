@@ -53,7 +53,7 @@ async def get_all_pqrs(
     usuario_id: int | None = Query(default=None),
     search: str | None = Query(default=None),
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "gerente", "agente", "usuario"]
     ),
 ):
     try:
@@ -88,7 +88,7 @@ async def get_all_pqrs(
 async def get_pqr_by_id(
     pqr_id: int,
     current_user: dict = Security(
-        get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]
+        get_current_user, scopes=["admin", "supervisor", "operador", "gerente", "agente", "usuario"]
     ),
 ):
     try:
