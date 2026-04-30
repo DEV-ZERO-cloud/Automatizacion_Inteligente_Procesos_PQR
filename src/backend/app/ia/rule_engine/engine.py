@@ -1,3 +1,19 @@
+"""
+engine.py
+
+Motor de reglas responsable ÚNICAMENTE de:
+  - add_tags:  extraer palabras clave del texto
+  - set_area:  asignar el área de dependencia responsable
+
+La categoría y la prioridad son responsabilidad del modelo ML (classifier.py).
+
+Diseño:
+  - Las reglas se cargan desde rules.yaml y se compilan al iniciar.
+  - Keywords → frozenset para búsqueda O(1).
+  - Regex → re.Pattern precompilado.
+  - Recarga en caliente vía reload() sin reiniciar el servicio.
+"""
+
 import re
 import logging
 import yaml
@@ -10,19 +26,21 @@ logger = logging.getLogger(__name__)
 RULES_PATH = Path(__file__).parent / "rules.yaml"
 
 
+# ── Resultado del motor de reglas ──────────────────────────────────────────────
+
 @dataclass
 class RuleResult:
-    category: str | None = None
-    tags: list[str] = field(default_factory=list)
-    priority: str | None = None
+    area: str | None = None                        # área de dependencia
+    tags: list[str] = field(default_factory=list)  # palabras clave acumuladas
     rules_matched: list[str] = field(default_factory=list)
 
 
+# ── Estructuras internas compiladas ───────────────────────────────────────────
+
 @dataclass
 class _CompiledCondition:
-    """Condición pre-procesada para evaluación rápida."""
-    keywords: frozenset[str] | None  # None si es regex
-    pattern: re.Pattern | None       # None si es contains
+    keywords: frozenset[str] | None   # None si es regex
+    pattern: re.Pattern | None        # None si es contains
 
 
 @dataclass
@@ -30,108 +48,115 @@ class _CompiledRule:
     id: str
     operator: str                          # "AND" | "OR"
     conditions: list[_CompiledCondition]
-    set_category: str | None
-    set_priority: str | None
+    set_area: str | None
     add_tags: list[str]
 
 
+# ── Motor principal ────────────────────────────────────────────────────────────
+
 class RuleEngine:
+    """
+    Motor de reglas para extracción de tags y área de dependencia.
+
+    Uso:
+        engine = RuleEngine()
+        result = engine.evaluate(texto_limpio)
+        # result.area  → "Logística"
+        # result.tags  → ["pedido no entregado", "entrega"]
+    """
+
     def __init__(self, rules_path: Path = RULES_PATH):
         self.rules_path = rules_path
         self._compiled: list[_CompiledRule] = []
         self.load_rules()
 
-    # ──────────────────────────────────────────────
-    # Carga y compilación
-    # ──────────────────────────────────────────────
+    # ── Propiedad pública ──────────────────────────────────────────────────────
+
+    @property
+    def rules(self) -> list[_CompiledRule]:
+        return self._compiled
+
+    # ── Carga y compilación ────────────────────────────────────────────────────
 
     def load_rules(self) -> None:
-        """Carga reglas desde YAML y las compila (keywords→frozenset, regex→re.Pattern)."""
+        """Carga el YAML y compila todas las reglas."""
         with open(self.rules_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         raw_rules: list[dict[str, Any]] = sorted(
-            data["rules"], key=lambda r: r.get("priority", 99)
+            data.get("rules", []),
+            key=lambda r: r.get("priority", 99),
         )
-        self._compiled = [self._compile_rule(r) for r in raw_rules]
-        logger.info("[RuleEngine] %d reglas compiladas.", len(self._compiled))
+        self._compiled = [self._compile(r) for r in raw_rules]
+        logger.info("[RuleEngine] %d reglas compiladas desde %s.", len(self._compiled), self.rules_path.name)
 
     def reload(self) -> None:
         """Recarga reglas en caliente sin reiniciar el servicio."""
         self.load_rules()
+        logger.info("[RuleEngine] Reglas recargadas.")
 
     @staticmethod
-    def _compile_rule(raw: dict[str, Any]) -> _CompiledRule:
-        conditions_block = raw.get("conditions", {})
-        operator = conditions_block.get("operator", "OR").upper()
-        compiled_conditions: list[_CompiledCondition] = []
+    def _compile(raw: dict[str, Any]) -> _CompiledRule:
+        block    = raw.get("conditions", {})
+        operator = block.get("operator", "OR").upper()
 
-        for item in conditions_block.get("items", []):
+        conditions: list[_CompiledCondition] = []
+        for item in block.get("items", []):
             if "contains" in item:
-                # Convertir lista a frozenset de strings en minúsculas para O(1) lookup
-                compiled_conditions.append(
-                    _CompiledCondition(
-                        keywords=frozenset(kw.lower() for kw in item["contains"]),
-                        pattern=None,
-                    )
-                )
+                conditions.append(_CompiledCondition(
+                    keywords=frozenset(kw.lower() for kw in item["contains"]),
+                    pattern=None,
+                ))
             elif "regex" in item:
-                compiled_conditions.append(
-                    _CompiledCondition(
-                        keywords=None,
-                        pattern=re.compile(item["regex"], re.IGNORECASE),
-                    )
-                )
+                conditions.append(_CompiledCondition(
+                    keywords=None,
+                    pattern=re.compile(item["regex"], re.IGNORECASE),
+                ))
 
         actions = raw.get("actions", {})
         return _CompiledRule(
             id=raw["id"],
             operator=operator,
-            conditions=compiled_conditions,
-            set_category=actions.get("set_category"),
-            set_priority=actions.get("set_priority"),
-            add_tags=actions.get("add_tags", []),
+            conditions=conditions,
+            set_area=actions.get("set_area"),       # ← solo área
+            add_tags=actions.get("add_tags", []),   # ← solo tags
         )
 
-    # ──────────────────────────────────────────────
-    # Evaluación
-    # ──────────────────────────────────────────────
+    # ── Evaluación ─────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _eval_condition(cond: _CompiledCondition, text: str) -> bool:
+    def _match_condition(cond: _CompiledCondition, text: str) -> bool:
         if cond.keywords is not None:
-            # Búsqueda de subcadena: cualquier keyword presente en el texto
             return any(kw in text for kw in cond.keywords)
-        # Regex pre-compilado
         return bool(cond.pattern.search(text))  # type: ignore[union-attr]
 
     def evaluate(self, text: str) -> RuleResult:
         """
-        Evalúa todas las reglas sobre el texto (ya debe venir en minúsculas).
-        Devuelve un RuleResult con las acciones acumuladas.
+        Evalúa todas las reglas sobre el texto (debe venir ya limpio/minúsculas).
+
+        Returns:
+            RuleResult con area, tags y rules_matched.
         """
         text_lower = text.lower()
-        result = RuleResult()
+        result     = RuleResult()
         tags_seen: set[str] = set()
 
         for rule in self._compiled:
-            # Cortocircuito AND/OR sin construir lista completa de resultados
             if rule.operator == "AND":
-                matched = all(self._eval_condition(c, text_lower) for c in rule.conditions)
-            else:  # OR
-                matched = any(self._eval_condition(c, text_lower) for c in rule.conditions)
+                matched = all(self._match_condition(c, text_lower) for c in rule.conditions)
+            else:
+                matched = any(self._match_condition(c, text_lower) for c in rule.conditions)
 
             if not matched:
                 continue
 
             result.rules_matched.append(rule.id)
 
-            if rule.set_category and result.category is None:
-                result.category = rule.set_category
+            # Área: primera regla que hace match gana
+            if rule.set_area and result.area is None:
+                result.area = rule.set_area
 
-            if rule.set_priority and result.priority is None:
-                result.priority = rule.set_priority
-
+            # Tags: acumulan sin duplicados
             for tag in rule.add_tags:
                 if tag not in tags_seen:
                     tags_seen.add(tag)

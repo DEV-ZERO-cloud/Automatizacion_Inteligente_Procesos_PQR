@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer
 
 from app.core.config import settings
 
@@ -39,7 +40,8 @@ from app.api.routes.role_service import role_CUD_service, role_query_service
 from app.api.routes.file_service import file_CUD_service, file_query_service
 from app.api.routes.history_service import history_CUD_service, history_query_service
 
-# ── Inicialización de la app ───────────────────────────────────────────────────
+# ── Inicialización de la app ───────────────────────────────────────────────────   
+bearer_scheme = HTTPBearer()
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
@@ -49,6 +51,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    swagger_ui_parameters={"persistAuthorization": True}
 )
 
 # ── CORS ───────────────────────────────────────────────────────────────────────

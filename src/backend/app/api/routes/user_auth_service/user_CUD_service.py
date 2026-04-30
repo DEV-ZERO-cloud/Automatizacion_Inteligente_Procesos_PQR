@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Security, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends
 from pydantic import BaseModel, EmailStr, Field
+from fastapi.responses import JSONResponse
 
 from app.core.auth import encode_token, get_current_user
 from app.core.responses import ok_response
@@ -83,15 +84,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
         logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.id, scope)
 
-        return ok_response(
-            data={
-                "access_token": token,
-                "token_type": "bearer",
-                "user_id": user.id,
-                "role": scope,
-            },
-            message="Inicio de sesión exitoso",
-        )
+        return JSONResponse(content={
+            "access_token": token,
+            "token_type": "bearer",
+            "user_id": user.id,
+            "role": scope,
+        })
 
     except HTTPException:
         raise
