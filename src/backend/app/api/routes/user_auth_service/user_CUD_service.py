@@ -124,7 +124,7 @@ async def register_user(payload: RegisterRequest):
 
         user_to_create = UserCreate(
             id=next_id,
-            identificacion=payload.identificacion,
+            identificacion=str(payload.identificacion),
             nombre=payload.nombre,
             correo=str(payload.correo),
             telefono=payload.telefono or "",

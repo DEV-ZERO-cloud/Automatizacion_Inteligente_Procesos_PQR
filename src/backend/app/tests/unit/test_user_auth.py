@@ -194,9 +194,10 @@ class TestLogin:
             form.password = "password123"
 
             result = await login(form)
-            assert result["access_token"] == "fake.token"
-            assert result["role"] == "admin"
-            assert result["user_id"] == 1
+            body = json.loads(result.body)
+            assert body["data"]["access_token"] == "fake.token"
+            assert body["data"]["role"] == "admin"
+            assert body["data"]["user_id"] == 1
 
     @pytest.mark.asyncio
     async def test_login_usuario_no_existe(self):
@@ -264,7 +265,8 @@ class TestLogin:
                 form.username = "test@pqr.com"
                 form.password = "pass"
                 result = await login(form)
-                assert result["role"] == expected_scope
+                body = json.loads(result.body)
+                assert body["data"]["role"] == expected_scope
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -286,7 +288,7 @@ class TestRegister:
             from app.api.routes.user_auth_service.user_CUD_service import register_user, RegisterRequest
 
             payload = RegisterRequest(
-                identificacion=987654321,
+                identificacion="987654321",
                 nombre="Usuario Nuevo",
                 correo="nuevo@pqr.com",
                 password="password123"
