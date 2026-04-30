@@ -2,6 +2,7 @@
 conftest.py – Configuración global de pytest para pruebas unitarias PQR.
 """
 
+import sys
 import pytest
 from unittest.mock import MagicMock, patch
 
