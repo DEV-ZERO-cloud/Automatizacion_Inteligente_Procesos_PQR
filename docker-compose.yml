@@ -29,6 +29,7 @@ services:
     volumes:
       - ./src/backend:/app
       - ./src/db:/app/db
+      - ./src/data/models:/app/data/models
     container_name: pqr-backend
     ports:
       - "8000:8000"
