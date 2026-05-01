@@ -2,25 +2,29 @@ import os
 import logging
 import httpx
 from dotenv import load_dotenv
-
+#------------------------------------------------------
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-
+#---------------------------------------------------------------------
 from app.ia.embeddings.generator import EmbeddingGenerator
 from app.ia.rule_engine.engine import RuleEngine
 from app.ia.classifiers.classifiers import CategoryClassifier, PriorityClassifier
 from app.ia.preprocessing.cleaner import clean_text
+#--------------------------------------------------------------
 from app.models.pqr import PQRCreate
 from app.models.classify_response import ClassifyResponseIn
 from app.models.classification import ClassificationCreate, PriorityCreate, CategoryCreate
 from app.models.organization import AreaCreate
 from app.models.health_response import HealthResponseIn
 from app.models.reload_response import ReloadResponseIn
+#--------------------------------------------------
 from app.core.auth import get_current_user
+#-------------------------------------------------------
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-
+#-----------------------------------------------------
 load_dotenv()
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -184,6 +188,10 @@ def _resolve_source(rules_matched: bool, cat_ready: bool, pri_ready: bool) -> st
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
+# ══════════════════════════════════════════════════════════════════════════════
+#  POST /classify/{pqr_id}
+# ══════════════════════════════════════════════════════════════════════════════
+
 @router.post("/classify/{pqr_id}", tags=["IA"])
 async def classify(
     pqr_id: int,
@@ -272,25 +280,9 @@ async def classify(
     except Exception:
         logger.exception("Error al clasificar PQR %d", pqr_id)
         raise HTTPException(status_code=500, detail="Error al clasificar la PQR.")
-
-
-@router.get("/health", tags=["IA"])
-async def health():
-    """Estado del servicio IA y sus componentes."""
-    generator = get_embedding_generator()
-    rule_eng  = get_rule_engine()
-    cat_clf   = get_category_classifier()
-    pri_clf   = get_priority_classifier()
-
-    return HealthResponseIn(
-        status       = "ok",
-        model_loaded = generator._model is not None,
-        rules_count  = len(rule_eng.rules),
-        ml_status    = {
-            "category_ready": cat_clf.is_ready(),
-            "priority_ready": pri_clf.is_ready(),
-        },
-    )
+# ══════════════════════════════════════════════════════════════════════════════
+#  POST /reload_rules
+# ══════════════════════════════════════════════════════════════════════════════
 
 
 @router.post("/reload_rules", tags=["IA"])
@@ -307,7 +299,10 @@ async def reload_rules():
     except Exception as exc:
         logger.error("Error recargando reglas: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))
-
+    
+# ══════════════════════════════════════════════════════════════════════════════
+#  POST /reload_models
+# ══════════════════════════════════════════════════════════════════════════════
 
 @router.post("/reload_models", tags=["IA"])
 async def reload_models():
@@ -331,6 +326,9 @@ async def reload_models():
         "message": "Modelos recargados desde disco.",
     }
 
+# ══════════════════════════════════════════════════════════════════════════════
+#  POST /train
+# ══════════════════════════════════════════════════════════════════════════════
 
 @router.post("/train", tags=["IA"])
 async def trigger_training(
@@ -347,7 +345,7 @@ async def trigger_training(
       min_per_class: mínimo de ejemplos por clase
     """
     try:
-        from app.ia.trainer import run_training
+        from app.ia.scripts.train_classifiers import run_training
         result = run_training(csv_path=csv_path, target=target, min_per_class=min_per_class)
 
         # Recargar modelos automáticamente si el entrenamiento fue exitoso
@@ -367,6 +365,31 @@ async def trigger_training(
         logger.exception("Error en entrenamiento")
         raise HTTPException(status_code=500, detail="Error durante el entrenamiento.")
 
+# ══════════════════════════════════════════════════════════════════════════════
+#  GET /health
+# ══════════════════════════════════════════════════════════════════════════════
+
+@router.get("/health", tags=["IA"])
+async def health():
+    """Estado del servicio IA y sus componentes."""
+    generator = get_embedding_generator()
+    rule_eng  = get_rule_engine()
+    cat_clf   = get_category_classifier()
+    pri_clf   = get_priority_classifier()
+
+    return HealthResponseIn(
+        status       = "ok",
+        model_loaded = generator._model is not None,
+        rules_count  = len(rule_eng.rules),
+        ml_status    = {
+            "category_ready": cat_clf.is_ready(),
+            "priority_ready": pri_clf.is_ready(),
+        },
+    )
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  GET /debug/status
+# ══════════════════════════════════════════════════════════════════════════════
 
 @router.get("/debug/status", tags=["IA"])
 async def debug_status():
