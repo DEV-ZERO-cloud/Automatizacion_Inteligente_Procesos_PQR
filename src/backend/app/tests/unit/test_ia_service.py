@@ -760,7 +760,7 @@ class TestTrainEndpoint:
         mock_pri = MagicMock()
 
         with (
-            patch("app.ia.scripts.train_classifiers..run_training", return_value=mock_result),
+            patch("app.ia.scripts.train_classifiers.run_training", return_value=mock_result),
             patch("app.api.routes.ai_service.ai_service.get_category_classifier", return_value=mock_cat),
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
         ):
@@ -770,7 +770,7 @@ class TestTrainEndpoint:
 
     @pytest.mark.asyncio
     async def test_csv_no_encontrado_retorna_404(self):
-        with patch("app.ia.scripts.train_classifiers..run_training", side_effect=FileNotFoundError("CSV no encontrado")):
+        with patch("app.ia.scripts.train_classifiers.run_training", side_effect=FileNotFoundError("CSV no encontrado")):
             from app.api.routes.ai_service.ai_service import trigger_training
             with pytest.raises(HTTPException) as exc:
                 await trigger_training(csv_path="/no/existe.csv")
@@ -778,7 +778,7 @@ class TestTrainEndpoint:
 
     @pytest.mark.asyncio
     async def test_clases_insuficientes_retorna_422(self):
-        with patch("app.ia.scripts.train_classifiers..run_training", side_effect=ValueError("min_per_class no alcanzado")):
+        with patch("app.ia.scripts.train_classifiers.run_training", side_effect=ValueError("min_per_class no alcanzado")):
             from app.api.routes.ai_service.ai_service import trigger_training
             with pytest.raises(HTTPException) as exc:
                 await trigger_training(csv_path="/data/pqr.csv", min_per_class=100)
@@ -786,7 +786,7 @@ class TestTrainEndpoint:
 
     @pytest.mark.asyncio
     async def test_error_generico_retorna_500(self):
-        with patch("app.ia.scripts.train_classifiers..run_training", side_effect=RuntimeError("Error inesperado")):
+        with patch("app.ia.scripts.train_classifiers.run_training", side_effect=RuntimeError("Error inesperado")):
             from app.api.routes.ai_service.ai_service import trigger_training
             with pytest.raises(HTTPException) as exc:
                 await trigger_training(csv_path="/data/pqr.csv")
@@ -800,7 +800,7 @@ class TestTrainEndpoint:
         mock_pri = MagicMock()
 
         with (
-            patch("app.ia.scripts.train_classifiers..run_training", return_value=mock_result),
+            patch("app.ia.scripts.train_classifiers.run_training", return_value=mock_result),
             patch("app.api.routes.ai_service.ai_service.get_category_classifier", return_value=mock_cat) as p_cat,
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri) as p_pri,
         ):
