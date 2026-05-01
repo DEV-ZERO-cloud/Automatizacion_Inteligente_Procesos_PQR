@@ -11,7 +11,7 @@ class ClassifyResponseIn(BaseModel):
     source: str = "rules"
     confianza: Optional[float] = None
     requiere_revision: Optional[bool] = True
-    model: str 
+    model: Optional[str] = None
 
     def to_dict(self):
         return self.model_dump()

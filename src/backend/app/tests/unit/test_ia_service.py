@@ -732,9 +732,17 @@ class TestReloadEndpoints:
         mock_pri = MagicMock()
         mock_pri.is_ready.return_value = True
 
+        def get_cat_side_effect():
+            svc._category_clf = mock_cat
+            return mock_cat
+
+        def get_pri_side_effect():
+            svc._priority_clf = mock_pri
+            return mock_pri
+
         with (
-            patch("app.api.routes.ai_service.ai_service.get_category_classifier", return_value=mock_cat),
-            patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
+            patch("app.api.routes.ai_service.ai_service.get_category_classifier", side_effect=get_cat_side_effect),
+            patch("app.api.routes.ai_service.ai_service.get_priority_classifier", side_effect=get_pri_side_effect),
         ):
             from app.api.routes.ai_service.ai_service import reload_models
             await reload_models()
