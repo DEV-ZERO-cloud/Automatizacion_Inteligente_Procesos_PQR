@@ -1,5 +1,5 @@
 """
-trainer.py
+scripts.train_classifiers..py
 
 Entrena CategoryClassifier y PriorityClassifier sobre embeddings generados
 por paraphrase-multilingual-MiniLM-L12-v2 (transformer congelado).
@@ -16,13 +16,13 @@ Columnas opcionales (se ignoran si no están):
 
 Uso:
   # Entrenamiento completo
-  python -m app.ia.trainer --csv data/training/pqr_etiquetadas.csv
+  python -m app.ia.scripts.train_classifiers. --csv data/training/pqr_etiquetadas.csv
 
   # Solo reentrenar prioridad
-  python -m app.ia.trainer --csv data/training/pqr_etiquetadas.csv --target prioridad
+  python -m app.ia.scripts.train_classifiers. --csv data/training/pqr_etiquetadas.csv --target prioridad
 
   # Con mínimo de ejemplos por clase
-  python -m app.ia.trainer --csv data/training/pqr_etiquetadas.csv --min-per-class 10
+  python -m app.ia.scripts.train_classifiers. --csv data/training/pqr_etiquetadas.csv --min-per-class 10
 
 Después de entrenar, llama a POST /ia/reload_models para que el servicio
 cargue los nuevos .pkl sin reiniciar.
