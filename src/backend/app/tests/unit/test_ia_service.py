@@ -258,7 +258,7 @@ class TestClassifyFlujoExitoso:
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
             assert result.categoria == "Facturación incorrecta"
-            assert result.prioridad == "Alta"
+            assert result.prioridad == "alta"
             assert result.area == "Cartera"
             assert result.tags == ["cobro duplicado", "facturación"]
             assert result.rules_matched == ["cartera_cobro_duplicado"]

@@ -5,7 +5,7 @@ conftest.py – Configuración global de pytest para pruebas unitarias PQR.
 import sys
 import os
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 
 # ── Patch global: evita conexión real a PostgreSQL durante unit tests ──────────
@@ -47,3 +47,16 @@ def patch_environment(monkeypatch):
     monkeypatch.setenv("MODEL_NAME", "test-model-v1.0")
     monkeypatch.setenv("CONFIDENCE_THRESHOLD", "0.7")
     monkeypatch.setenv("RULES_ENABLED", "true")
+    monkeypatch.setenv("BASE_URL", "http://localhost:8000")
+
+
+# ── Patch global: mockea llamadas HTTP a funciones de servicio ──────────────────
+@pytest.fixture(autouse=True)
+def mock_http_calls():
+    """Auto-mockea las llamadas HTTP a _get_category, _get_priority, _post_classification."""
+    with (
+        patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=1)),
+        patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=1)),
+        patch("app.api.routes.ai_service.ai_service._post_classification", new=AsyncMock(return_value=None)),
+    ):
+        yield
