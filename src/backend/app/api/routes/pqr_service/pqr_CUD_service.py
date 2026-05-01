@@ -7,6 +7,12 @@ from pydantic import BaseModel
 from app.core.auth import get_current_user
 from app.core.responses import ok_response
 from app.logic.universal_controller_instance import universal_controller as controller
+from app.models.classification import (
+    CategoryOut,
+    ClassificationCreate,
+    ClassificationOut,
+    PriorityOut,
+)
 from app.models.organization import AreaOut
 from app.models.pqr import PQRCreate, PQROut, PQRUpdate
 from app.models.user import UserOut
@@ -72,6 +78,54 @@ def _current_user_id(current_user: dict) -> int | None:
         return None
 
 
+def _find_category_by_name(name: str) -> CategoryOut | None:
+    target = name.strip().lower()
+    for category in controller.get_all(CategoryOut):
+        if (category.nombre or "").strip().lower() == target:
+            return category
+    return None
+
+
+def _find_priority_by_name(name: str) -> PriorityOut | None:
+    target = name.strip().lower()
+    for priority in controller.get_all(PriorityOut):
+        if (priority.nombre or "").strip().lower() == target:
+            return priority
+    return None
+
+
+def _serialize_pqr_response(pqr: PQROut) -> dict:
+    classification: ClassificationOut | None = controller.get_by_column(ClassificationOut, "pqr_id", pqr.ID)
+
+    category_name = None
+    priority_name = None
+    if classification:
+        category = controller.get_by_id(CategoryOut, classification.categoria_id)
+        priority = controller.get_by_id(PriorityOut, classification.prioridad_id)
+        category_name = category.nombre if category else None
+        priority_name = priority.nombre if priority else None
+
+    created_at = pqr.created_at.isoformat() if callable(getattr(pqr.created_at, "isoformat", None)) else pqr.created_at
+    updated_at = pqr.updated_at.isoformat() if callable(getattr(pqr.updated_at, "isoformat", None)) else pqr.updated_at
+
+    return {
+        "id": pqr.ID,
+        "titulo": pqr.titulo,
+        "descripcion": pqr.descripcion,
+        "tipo": pqr.tipo,
+        "categoria": category_name,
+        "prioridad": priority_name,
+        "estado": pqr.estado,
+        "area_id": pqr.area_id,
+        "usuario_id": pqr.usuario_id,
+        "operador_id": pqr.operador_id,
+        "supervisor_id": pqr.supervisor_id,
+        "clasificacion_id": pqr.clasificacion_id,
+        "created_at": created_at,
+        "updated_at": updated_at,
+    }
+
+
 @router.post("/pqrs", response_model=PQROut, status_code=status.HTTP_201_CREATED)
 async def create_pqr(
     payload: PQRCreate,
@@ -94,7 +148,7 @@ async def create_pqr(
         user_id = _current_user_id(current_user)
         _add_history(created.ID, user_id, "PQR creada", f"Tipo: {created.tipo}, Título: {created.titulo}")
 
-        return ok_response(data=created.to_dict(), message="PQR creada", status_code=201)
+        return ok_response(data=_serialize_pqr_response(created), message="PQR creada", status_code=201)
     except HTTPException:
         raise
     except Exception as exc:
@@ -125,7 +179,7 @@ async def update_pqr(
         if not updated:
             raise HTTPException(status_code=500, detail="No se pudo actualizar la PQR.")
 
-        return ok_response(data=updated.to_dict(), message="PQR actualizada")
+        return ok_response(data=_serialize_pqr_response(updated), message="PQR actualizada")
     except HTTPException:
         raise
     except Exception as exc:
@@ -184,7 +238,7 @@ async def asignar_pqr(
         user_id = _current_user_id(current_user)
         _add_history(pqr_id, user_id, "PQR asignada", f"Asignada al supervisor ID: {payload.supervisor_id}")
 
-        return ok_response(data=updated.to_dict(), message="PQR asignada")
+        return ok_response(data=_serialize_pqr_response(updated), message="PQR asignada")
     except HTTPException:
         raise
     except Exception as exc:
@@ -204,8 +258,47 @@ async def clasificar_pqr(
         if not existing:
             raise HTTPException(status_code=404, detail="PQR no encontrada.")
 
-        existing.categoria = payload.categoria
-        existing.prioridad = payload.prioridad
+        category = _find_category_by_name(payload.categoria)
+        if not category:
+            raise HTTPException(status_code=400, detail="Categoría no válida.")
+
+        priority = _find_priority_by_name(payload.prioridad)
+        if not priority:
+            raise HTTPException(status_code=400, detail="Prioridad no válida.")
+
+        user_id = _current_user_id(current_user)
+        current_classification = controller.get_by_column(ClassificationOut, "pqr_id", pqr_id)
+
+        if current_classification:
+            updated_classification = ClassificationOut(
+                id=current_classification.id,
+                pqr_id=pqr_id,
+                modelo_version=current_classification.modelo_version or "manual-v1",
+                categoria_id=category.id,
+                prioridad_id=priority.id,
+                confianza=current_classification.confianza or 1.0,
+                origen="MANUAL",
+                fue_corregida=True,
+                validado_por=user_id,
+                created_at=current_classification.created_at,
+            )
+            controller.update(updated_classification)
+            existing.clasificacion_id = current_classification.id
+        else:
+            created_classification = controller.add(
+                ClassificationCreate(
+                    pqr_id=pqr_id,
+                    modelo_version="manual-v1",
+                    categoria_id=category.id,
+                    prioridad_id=priority.id,
+                    confianza=1.0,
+                    origen="MANUAL",
+                    fue_corregida=True,
+                    validado_por=user_id,
+                )
+            )
+            existing.clasificacion_id = created_classification.id
+
         existing.estado = "en_proceso"
         existing.updated_at = datetime.utcnow()
 
@@ -213,13 +306,12 @@ async def clasificar_pqr(
         if not updated:
             raise HTTPException(status_code=500, detail="No se pudo clasificar la PQR.")
 
-        user_id = _current_user_id(current_user)
-        detalle = f"Categoría: {payload.categoria}, Prioridad: {payload.prioridad}"
+        detalle = f"Categoría: {category.nombre}, Prioridad: {priority.nombre}"
         if payload.comentario:
             detalle += f". Comentario: {payload.comentario}"
         _add_history(pqr_id, user_id, "PQR clasificada", detalle)
 
-        return ok_response(data=updated.to_dict(), message="PQR clasificada")
+        return ok_response(data=_serialize_pqr_response(updated), message="PQR clasificada")
     except HTTPException:
         raise
     except Exception as exc:
@@ -249,7 +341,7 @@ async def resolver_pqr(
         user_id = _current_user_id(current_user)
         _add_history(pqr_id, user_id, "PQR resuelta", f"Respuesta: {payload.respuesta[:200]}...")
 
-        return ok_response(data=updated.to_dict(), message="PQR resuelta")
+        return ok_response(data=_serialize_pqr_response(updated), message="PQR resuelta")
     except HTTPException:
         raise
     except Exception as exc:
@@ -282,7 +374,7 @@ async def cerrar_pqr(
         user_id = _current_user_id(current_user)
         _add_history(pqr_id, user_id, "PQR cerrada", "El usuario confirmó el cierre de la PQR")
 
-        return ok_response(data=updated.to_dict(), message="PQR cerrada")
+        return ok_response(data=_serialize_pqr_response(updated), message="PQR cerrada")
     except HTTPException:
         raise
     except Exception as exc:

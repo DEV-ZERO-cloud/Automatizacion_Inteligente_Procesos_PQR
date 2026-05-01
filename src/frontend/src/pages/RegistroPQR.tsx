@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { catalogService } from '../services/catalogService';
+import { fileService } from '../services/fileService';
 import { pqrService } from '../services/pqrService';
 
 export function RegistroPQR() {
@@ -92,7 +93,11 @@ export function RegistroPQR() {
         usuario_id: currentUserId,
       });
 
-      setCreatedId(created.id);
+      if (created?.id && adjuntos.length > 0) {
+        await Promise.all(adjuntos.map((file) => fileService.uploadToPqr(created.id, file)));
+      }
+
+      setCreatedId(created?.id ?? null);
       navigate('/mis-pqrs');
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string } } };

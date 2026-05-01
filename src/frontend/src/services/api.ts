@@ -23,7 +23,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const requestUrl = String(error.config?.url || '');
+    const isAuthFormSubmit = /\/auth\/(login|register)\b/.test(requestUrl);
+
+    if (error.response?.status === 401 && !isAuthFormSubmit) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

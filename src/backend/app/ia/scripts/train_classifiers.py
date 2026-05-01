@@ -70,9 +70,6 @@ def load_data(csv_path: str) -> pd.DataFrame:
         lambda x: x.split("|") if isinstance(x, str) else []
     )
 
-    print(f"Registros cargados: {len(df)}")
-    print(f"\nDistribución categorías:\n{df['category'].value_counts()}")
-    print(f"\nDistribución prioridad:\n{df['priority'].value_counts()}")
     return df
 
 
@@ -112,29 +109,18 @@ def generate_embeddings(texts: list[str], csv_path: str, skip_cache: bool) -> np
     from app.ia.embeddings.generator import EmbeddingGenerator
 
     if skip_cache and _cache_is_valid(csv_path):
-        print(f"\nCargando embeddings desde caché ({MODEL_NAME}): {CACHE_PATH}")
         return np.load(str(CACHE_PATH))
 
-    if skip_cache and not _cache_is_valid(csv_path):
-        print(
-            "\n⚠ Caché ignorada: el modelo o el dataset cambiaron desde la última generación. "
-            "Regenerando embeddings..."
-        )
-
-    print(f"\nGenerando embeddings con '{MODEL_NAME}' para {len(texts)} textos...")
     generator = EmbeddingGenerator()
     embeddings = generator.generate(texts)
-    print(f"Embeddings generados: {embeddings.shape}")
 
     np.save(str(CACHE_PATH), embeddings)
     _save_cache_meta(csv_path)
-    print(f"Embeddings guardados en caché: {CACHE_PATH}")
     return embeddings
 
 
 # ── Entrenamiento: Categoría ───────────────────────────────────────────────────
 def train_category(embeddings: np.ndarray, labels: list[str]):
-    print("\n── Entrenando clasificador de categoría ──")
     le = LabelEncoder()
     y = le.fit_transform(labels)
 
@@ -145,17 +131,12 @@ def train_category(embeddings: np.ndarray, labels: list[str]):
     model = LogisticRegression(max_iter=1000, C=1.0, class_weight="balanced")
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
-    print(classification_report(y_test, y_pred, target_names=le.classes_))
-
     joblib.dump(model, MODELS_PATH / "category_classifier.pkl")
     joblib.dump(list(le.classes_), MODELS_PATH / "category_labels.pkl")
-    print(f"Guardado: {MODELS_PATH / 'category_classifier.pkl'}")
 
 
 # ── Entrenamiento: Tags ────────────────────────────────────────────────────────
 def train_tags(embeddings: np.ndarray, tags_list: list[list[str]]):
-    print("\n── Entrenando clasificador de tags ──")
     mlb = MultiLabelBinarizer()
     y = mlb.fit_transform(tags_list)
 
@@ -166,17 +147,12 @@ def train_tags(embeddings: np.ndarray, tags_list: list[list[str]]):
     model = OneVsRestClassifier(LogisticRegression(max_iter=1000, C=1.0))
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
-    print(classification_report(y_test, y_pred, target_names=mlb.classes_, zero_division=0))
-
     joblib.dump(model, MODELS_PATH / "tags_classifier.pkl")
-    joblib.dump(list(mlb.classes_), MODELS_PATH / "tags_labels.pkl")
-    print(f"Guardado: {MODELS_PATH / 'tags_classifier.pkl'}")
+    joblib.dump(mlb.classes_, MODELS_PATH / "tags_classes.pkl")
 
 
 # ── Entrenamiento: Prioridad ───────────────────────────────────────────────────
 def train_priority(embeddings: np.ndarray, labels: list[str]):
-    print("\n── Entrenando clasificador de prioridad ──")
     le = LabelEncoder()
     y = le.fit_transform(labels)
 
@@ -187,12 +163,8 @@ def train_priority(embeddings: np.ndarray, labels: list[str]):
     model = LogisticRegression(max_iter=1000, C=1.0, class_weight="balanced")
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
-    print(classification_report(y_test, y_pred, target_names=le.classes_))
-
     joblib.dump(model, MODELS_PATH / "priority_classifier.pkl")
     joblib.dump(list(le.classes_), MODELS_PATH / "priority_labels.pkl")
-    print(f"Guardado: {MODELS_PATH / 'priority_classifier.pkl'}")
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -206,15 +178,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    print(f"Modelo de embeddings: {MODEL_NAME}")
-
     df = load_data(args.data)
     embeddings = generate_embeddings(df["text"].tolist(), args.data, args.skip_embeddings)
 
     train_category(embeddings, df["category"].tolist())
     train_tags(embeddings, df["tags_list"].tolist())
     train_priority(embeddings, df["priority"].tolist())
-
-    print("\n✓ Entrenamiento completo. Modelos guardados en:", MODELS_PATH)
-    print("\nPara activar los modelos sin reiniciar la API, llama a:")
-    print("  POST http://127.0.0.1:8000/reload_models")

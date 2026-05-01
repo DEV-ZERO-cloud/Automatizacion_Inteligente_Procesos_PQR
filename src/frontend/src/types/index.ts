@@ -25,6 +25,15 @@ export interface PQR {
   usuario_nombre?: string;
 }
 
+export interface PQRFile {
+  id: number;
+  pqr_id: number;
+  nombre: string;
+  ruta?: string;
+  tipo?: string;
+  created_at?: string;
+}
+
 export interface Classification {
   id: string;
   pqr_id: string;

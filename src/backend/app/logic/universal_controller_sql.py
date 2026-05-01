@@ -105,6 +105,19 @@ class UniversalController:
             logger.error("Error en get_by_column(%s.%s=%s): %s", table, column, value, exc)
             raise
 
+    def get_many_by_column(self, cls: Any, column: str, value: Any) -> List[Any]:
+        """Retorna todos los registros que coincidan con column=value."""
+        table = cls.__entity_name__
+        try:
+            with self._cursor() as (_, cursor):
+                cursor.execute(f"SELECT * FROM {table} WHERE {column} = %s ORDER BY id", (value,))
+                rows = cursor.fetchall()
+                description = cursor.description
+            return [cls.from_dict(self._row_to_dict(r, description)) for r in rows]
+        except Exception as exc:
+            logger.error("Error en get_many_by_column(%s.%s=%s): %s", table, column, value, exc)
+            raise
+
     def add(self, obj: Any) -> Any:
         """Inserta un nuevo registro en la tabla."""
         table = self._get_table_name(obj)
@@ -118,11 +131,20 @@ class UniversalController:
 
         columns = ", ".join(data.keys())
         placeholders = ", ".join(["%s" for _ in data])
-        sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+        sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders}) RETURNING id"
 
         try:
             with self._cursor() as (_, cursor):
                 cursor.execute(sql, tuple(data.values()))
+                inserted_row = cursor.fetchone()
+                inserted_id = inserted_row[0] if inserted_row else None
+
+            if inserted_id is not None:
+                if hasattr(obj, "ID"):
+                    setattr(obj, "ID", inserted_id)
+                if hasattr(obj, "id"):
+                    setattr(obj, "id", inserted_id)
+
             logger.info("Registro insertado en %s.", table)
             return obj
         except Exception as exc:
@@ -197,9 +219,11 @@ class UniversalController:
         try:
             with self._cursor() as (_, cursor):
                 cursor.execute("""
-                    SELECT categoria, COUNT(*) AS cantidad
-                    FROM pqrs
-                    GROUP BY categoria
+                    SELECT COALESCE(cat.nombre, 'Sin clasificar') AS categoria, COUNT(*) AS cantidad
+                    FROM pqrs p
+                    LEFT JOIN clasificaciones cl ON cl.pqr_id = p.id
+                    LEFT JOIN categorias cat ON cat.id = cl.categoria_id
+                    GROUP BY COALESCE(cat.nombre, 'Sin clasificar')
                     ORDER BY cantidad DESC
                 """)
                 rows = cursor.fetchall()
@@ -213,9 +237,11 @@ class UniversalController:
         try:
             with self._cursor() as (_, cursor):
                 cursor.execute("""
-                    SELECT prioridad, COUNT(*) AS cantidad
-                    FROM pqrs
-                    GROUP BY prioridad
+                    SELECT COALESCE(pr.nombre, 'Sin clasificar') AS prioridad, COUNT(*) AS cantidad
+                    FROM pqrs p
+                    LEFT JOIN clasificaciones cl ON cl.pqr_id = p.id
+                    LEFT JOIN prioridades pr ON pr.id = cl.prioridad_id
+                    GROUP BY COALESCE(pr.nombre, 'Sin clasificar')
                     ORDER BY cantidad DESC
                 """)
                 rows = cursor.fetchall()

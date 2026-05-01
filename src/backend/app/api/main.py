@@ -64,7 +64,7 @@ app.add_middleware(
 # ── Eventos de ciclo de vida ───────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
-    print("API inicializada. Controlador principal activo en modo SQL.")
+    pass
 
 
 @app.on_event("shutdown")
@@ -75,9 +75,8 @@ async def shutdown_event():
         conn = getattr(universal_controller, "conn", None)
         if conn:
             conn.close()
-            print("Conexión a la base de datos cerrada correctamente.")
-    except Exception as exc:
-        print(f"Error al cerrar la conexión: {exc}")
+    except Exception:
+        pass
 
 
 # ── Registro de routers ────────────────────────────────────────────────────────
@@ -153,7 +152,6 @@ async def validation_exception_handler(_: Request, exc: RequestValidationError):
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(_: Request, exc: Exception):
-    print(f"Unhandled server error: {exc}")
     return JSONResponse(
         status_code=500,
         content={

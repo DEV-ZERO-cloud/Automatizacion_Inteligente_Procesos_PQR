@@ -26,13 +26,12 @@ CREATE TABLE IF NOT EXISTS pqrs (
     titulo VARCHAR(200) NOT NULL,
     descripcion TEXT NOT NULL,
     tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('peticion', 'queja', 'reclamo')),
-    categoria VARCHAR(80),
-    prioridad VARCHAR(30) CHECK (prioridad IS NULL OR prioridad IN ('baja', 'media', 'alta', 'urgente')),
     estado VARCHAR(30) NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_proceso', 'resuelta', 'cerrada')),
     area_id INTEGER REFERENCES areas(id),
     usuario_id INTEGER REFERENCES usuarios(id),
     operador_id INTEGER REFERENCES usuarios(id),
     supervisor_id INTEGER REFERENCES usuarios(id),
+    clasificacion_id INTEGER,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -60,6 +59,20 @@ CREATE TABLE IF NOT EXISTS clasificaciones (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'pqrs_clasificacion_id_fkey'
+    ) THEN
+        ALTER TABLE pqrs
+        ADD CONSTRAINT pqrs_clasificacion_id_fkey
+        FOREIGN KEY (clasificacion_id) REFERENCES clasificaciones(id)
+        ON DELETE SET NULL;
+    END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS archivos (
     id SERIAL PRIMARY KEY,
     pqr_id INTEGER NOT NULL REFERENCES pqrs(id) ON DELETE CASCADE,
@@ -81,6 +94,7 @@ CREATE TABLE IF NOT EXISTS historial (
 CREATE INDEX IF NOT EXISTS idx_pqrs_estado_created_at ON pqrs (estado, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pqrs_supervisor_estado ON pqrs (supervisor_id, estado);
 CREATE INDEX IF NOT EXISTS idx_pqrs_usuario_created_at ON pqrs (usuario_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pqrs_clasificacion_id ON pqrs (clasificacion_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_clasificaciones_unique_pqr ON clasificaciones (pqr_id);
 CREATE INDEX IF NOT EXISTS idx_historial_pqr_created_at ON historial (pqr_id, created_at DESC);
 
@@ -121,10 +135,10 @@ INSERT INTO prioridades (id, nombre) VALUES
 (4, 'urgente')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO pqrs (id, titulo, descripcion, tipo, categoria, prioridad, estado, area_id, usuario_id, operador_id, supervisor_id) VALUES
-(1, 'Factura incorrecta', 'Cobro no corresponde al consumo', 'reclamo', 'Facturacion', 'alta', 'pendiente', 2, 4, 3, 2),
-(2, 'No funciona el portal', 'No permite autenticacion', 'queja', 'Tecnica', 'alta', 'pendiente', 1, 4, 3, 2),
-(3, 'Solicitud de certificado', 'Certificado de paz y salvo', 'peticion', 'Servicio', 'media', 'resuelta', 3, 4, 3, 2)
+INSERT INTO pqrs (id, titulo, descripcion, tipo, estado, area_id, usuario_id, operador_id, supervisor_id) VALUES
+(1, 'Factura incorrecta', 'Cobro no corresponde al consumo', 'reclamo', 'pendiente', 2, 4, 3, 2),
+(2, 'No funciona el portal', 'No permite autenticacion', 'queja', 'pendiente', 1, 4, 3, 2),
+(3, 'Solicitud de certificado', 'Certificado de paz y salvo', 'peticion', 'resuelta', 3, 4, 3, 2)
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('pqrs_id_seq', (SELECT MAX(id) FROM pqrs));
@@ -134,6 +148,12 @@ INSERT INTO clasificaciones (id, pqr_id, modelo_version, categoria_id, prioridad
 (2, 2, 'v2.4.0', 2, 3, 0.9100, 'IA', FALSE, NULL),
 (3, 3, 'v2.4.0', 3, 2, 0.8300, 'MANUAL', TRUE, 2)
 ON CONFLICT (id) DO NOTHING;
+
+UPDATE pqrs p
+SET clasificacion_id = c.id
+FROM clasificaciones c
+WHERE c.pqr_id = p.id
+    AND (p.clasificacion_id IS DISTINCT FROM c.id);
 
 SELECT setval('clasificaciones_id_seq', (SELECT MAX(id) FROM clasificaciones));
 

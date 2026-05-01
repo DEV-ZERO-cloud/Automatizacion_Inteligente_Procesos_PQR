@@ -65,3 +65,6 @@ outputs/
 artifacts/
 checkpoints/
 data/models/hf_cache/
+
+# Adjuntos subidos por usuarios
+src/backend/uploads/

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de Tests - PQR System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #0f1419;
+            --surface: #192734;
+            --surface-hover: #22303c;
+            --border: #38444d;
+            --text: #e7e9ea;
+            --text-muted: #8b98a5;
+            --primary: #1d9bf0;
+            --success: #00ba7c;
+            --skipped: #ffd400;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 320px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+        
+        .refresh-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+        
+        .refresh-btn:hover { background: var(--surface-hover); color: var(--text); }
+        
+        .filters {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 6px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 16px;
+            background: var(--bg);
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover { background: var(--surface-hover); }
+        .filter-btn.active { background: var(--primary); color: white; }
+        
+        .stats-bar {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+        }
+        
+        .stat { display: flex; align-items: center; gap: 6px; }
+        .stat .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .stat .dot.passed { background: var(--success); }
+        .stat .dot.skipped { background: var(--skipped); }
+        
+        .test-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .test-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .test-item:hover { background: var(--surface-hover); }
+        .test-item.active { background: var(--surface-hover); border-left: 3px solid var(--primary); }
+        
+        .test-item-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-item .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .test-item .status-dot.passed { background: var(--success); }
+        .test-item .status-dot.skipped { background: var(--skipped); }
+        
+        .test-item .name {
+            font-size: 13px;
+            font-weight: 500;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .test-item .service-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .test-item .class-name {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            margin-left: 16px;
+        }
+        
+        .main {
+            flex: 1;
+            margin-left: 320px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        
+        .selected-test-name {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .selected-test-name .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.passed { background: rgba(0, 186, 124, 0.15); color: var(--success); }
+        .status-badge.skipped { background: rgba(255, 212, 0, 0.15); color: var(--skipped); }
+        
+        .main-content { flex: 1; padding: 24px; overflow-y: auto; }
+        
+        .code-section { margin-bottom: 24px; }
+        
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .code-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .code-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .code-header .file-path { font-family: 'JetBrains Mono', monospace; }
+        
+        .code-content {
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+            color: #8b98a5;
+        }
+        
+        .code-content .assertion { color: #7ee787; font-weight: 500; }
+        .code-content .result-ok { color: #00ba7c; font-weight: 600; font-size: 14px; }
+        .code-content .string { color: #a5d6ff; }
+        .code-content .function { color: #d2a8ff; }
+        .code-content .comment { color: #5c6773; }
+        .code-content .number { color: #79c0ff; }
+        .code-content .keyword { color: #ff7a72; }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+        }
+        
+        .empty-state .material-symbols-outlined { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>
+                <span class="material-symbols-outlined" style="color: var(--primary);">bug_report</span>
+                Tests
+            </h1>
+            <button class="refresh-btn" onclick="location.reload()">
+                <span class="material-symbols-outlined" style="font-size: 14px;">refresh</span>
+                Actualizar
+            </button>
+        </div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="pqr">PQR</button>
+            <button class="filter-btn" data-filter="history">History</button>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat"><div class="dot passed"></div><span id="passed-count">0</span> Pasados</div>
+            <div class="stat"><div class="dot skipped"></div><span id="skipped-count">0</span> Omitidos</div>
+        </div>
+        
+        <div class="test-list" id="test-list"></div>
+    </aside>
+    
+    <main class="main">
+        <div class="main-header">
+            <div class="selected-test-name" id="selected-name">Selecciona un test</div>
+        </div>
+        
+        <div class="main-content" id="main-content">
+            <div class="empty-state">
+                <span class="material-symbols-outlined">touch_app</span>
+                <p>Selecciona un test del panel izquierdo</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const testData = [{"name": "test_pqrcreate_todict", "service": "pqr", "file": "app/tests/unit/pqr/test_pqr.py", "class": "TestPQRModels", "lineno": 20, "status": "passed", "code": "\n    def test_pqrcreate_todict(self):\n        \"\"\"Verifica que to_dict()返回值correcto.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        pqr = PQRCreate(\n            titulo=\"Test PQR\",\n            descripcion=\"Descripción de prueba\",\n            tipo=\"peticion\",\n            estado=\"pendiente\",\n            usuario_id=1\n        )\n\n        result = pqr.to_dict()\n\n        assert result[\"titulo\"] == \"Test PQR\"\n        assert result[\"descripcion\"] == \"Descripción de prueba\"\n        assert result[\"tipo\"] == \"peticion\"\n        assert result[\"estado\"] == \"pendiente\"\n        assert result[\"usuario_id\"] == 1\n\n    def test_pqrcreate_fromdict(self):\n        \"\"\"Verifica que from_dict() cree对象correctamente.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        data = {\n            \"id\": 1,\n            \"titulo\": \"Desde dict\",\n            \"descripcion\": \"Descripción\",\n            \"tipo\": \"queja\",\n            \"estado\": \"pendiente\",\n            \"usuario_id\": 5\n        }\n\n        pqr = PQRCreate.from_dict(data)\n\n        assert pqr.titulo == \"Desde dict\"\n        assert pqr.tipo == \"queja\"\n        assert pqr.usuario_id == 5\n\n\n### ASSERTIONS ###\nassert result[\"titulo\"] == \"Test PQR\"\nassert result[\"descripcion\"] == \"Descripción de prueba\"\nassert result[\"tipo\"] == \"peticion\"\nassert result[\"estado\"] == \"pendiente\"\nassert result[\"usuario_id\"] == 1\nassert pqr.titulo == \"Desde dict\"\nassert pqr.tipo == \"queja\"\nassert pqr.usuario_id == 5"}, {"name": "test_pqrcreate_fromdict", "service": "pqr", "file": "app/tests/unit/pqr/test_pqr.py", "class": "TestPQRModels", "lineno": 40, "status": "passed", "code": "\n    def test_pqrcreate_fromdict(self):\n        \"\"\"Verifica que from_dict() cree对象correctamente.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        data = {\n            \"id\": 1,\n            \"titulo\": \"Desde dict\",\n            \"descripcion\": \"Descripción\",\n            \"tipo\": \"queja\",\n            \"estado\": \"pendiente\",\n            \"usuario_id\": 5\n        }\n\n        pqr = PQRCreate.from_dict(data)\n\n        assert pqr.titulo == \"Desde dict\"\n        assert pqr.tipo == \"queja\"\n        assert pqr.usuario_id == 5\n\n    def test_pqrcreate_campos_opcionales(self):\n        \"\"\"Verifica que campos opcionales sean None por defecto.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        pqr = PQRCreate(\n            titulo=\"Test\",\n            descripcion=\"Desc\",\n            tipo=\"peticion\"\n        )\n\n        assert pqr.estado == \"pendiente\"\n        assert pqr.operador_id is None\n        assert pqr.supervisor_id is None\n        assert pqr.clasificacion_id is None\n\n    def test_pqrcreate_validacion_tipo(self):\n        \"\"\"Verifica que soloacepte tipos válidos.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        pqr = PQRCreate(\n\n### ASSERTIONS ###\nassert pqr.titulo == \"Desde dict\"\nassert pqr.tipo == \"queja\"\nassert pqr.usuario_id == 5\nassert pqr.estado == \"pendiente\"\nassert pqr.operador_id is None\nassert pqr.supervisor_id is None\nassert pqr.clasificacion_id is None"}, {"name": "test_pqrcreate_campos_opcionales", "service": "pqr", "file": "app/tests/unit/pqr/test_pqr.py", "class": "TestPQRModels", "lineno": 59, "status": "passed", "code": "\n    def test_pqrcreate_campos_opcionales(self):\n        \"\"\"Verifica que campos opcionales sean None por defecto.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        pqr = PQRCreate(\n            titulo=\"Test\",\n            descripcion=\"Desc\",\n            tipo=\"peticion\"\n        )\n\n        assert pqr.estado == \"pendiente\"\n        assert pqr.operador_id is None\n        assert pqr.supervisor_id is None\n        assert pqr.clasificacion_id is None\n\n    def test_pqrcreate_validacion_tipo(self):\n        \"\"\"Verifica que soloacepte tipos válidos.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        pqr = PQRCreate(\n            titulo=\"Test\",\n            descripcion=\"Desc\",\n            tipo=\"reclamo\"\n        )\n\n        assert pqr.tipo in [\"peticion\", \"queja\", \"reclamo\"]\n\n    def test_pqrupdate_campos_opcionales(self):\n        \"\"\"Verifica que PQRUpdate permita campos parciales.\"\"\"\n        from app.models.pqr import PQRUpdate\n\n        update = PQRUpdate(titulo=\"Nuevo título\")\n\n        assert update.titulo == \"Nuevo título\"\n        assert update.descripcion is None\n        assert update.estado is None\n\n\n\n### ASSERTIONS ###\nassert pqr.estado == \"pendiente\"\nassert pqr.operador_id is None\nassert pqr.supervisor_id is None\nassert pqr.clasificacion_id is None\nassert pqr.tipo in [\"peticion\", \"queja\", \"reclamo\"]\nassert update.titulo == \"Nuevo título\"\nassert update.descripcion is None\nassert update.estado is None"}, {"name": "test_pqrcreate_validacion_tipo", "service": "pqr", "file": "app/tests/unit/pqr/test_pqr.py", "class": "TestPQRModels", "lineno": 74, "status": "passed", "code": "\n    def test_pqrcreate_validacion_tipo(self):\n        \"\"\"Verifica que soloacepte tipos válidos.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        pqr = PQRCreate(\n            titulo=\"Test\",\n            descripcion=\"Desc\",\n            tipo=\"reclamo\"\n        )\n\n        assert pqr.tipo in [\"peticion\", \"queja\", \"reclamo\"]\n\n    def test_pqrupdate_campos_opcionales(self):\n        \"\"\"Verifica que PQRUpdate permita campos parciales.\"\"\"\n        from app.models.pqr import PQRUpdate\n\n        update = PQRUpdate(titulo=\"Nuevo título\")\n\n        assert update.titulo == \"Nuevo título\"\n        assert update.descripcion is None\n        assert update.estado is None\n\n\n\n### ASSERTIONS ###\nassert pqr.tipo in [\"peticion\", \"queja\", \"reclamo\"]\nassert update.titulo == \"Nuevo título\"\nassert update.descripcion is None\nassert update.estado is None"}, {"name": "test_pqrupdate_campos_opcionales", "service": "pqr", "file": "app/tests/unit/pqr/test_pqr.py", "class": "TestPQRModels", "lineno": 86, "status": "passed", "code": "\n    def test_pqrupdate_campos_opcionales(self):\n        \"\"\"Verifica que PQRUpdate permita campos parciales.\"\"\"\n        from app.models.pqr import PQRUpdate\n\n        update = PQRUpdate(titulo=\"Nuevo título\")\n\n        assert update.titulo == \"Nuevo título\"\n        assert update.descripcion is None\n        assert update.estado is None\n\n\n\n### ASSERTIONS ###\nassert update.titulo == \"Nuevo título\"\nassert update.descripcion is None\nassert update.estado is None"}, {"name": "test_usuario_puede_crear", "service": "pqr", "file": "app/tests/unit/pqr/test_pqr.py", "class": "TestPQRAccess", "lineno": 136, "status": "skipped", "code": "\n    @pytest.mark.asyncio\n    async def test_usuario_puede_crear(self):\n        \"\"\"Verifica que usuario regular pueda crear PQR.\"\"\"\n        from app.models.pqr import PQRCreate\n\n        with patch(\"app.logic.universal_controller_instance.universal_controller\") as mock_ctrl:\n            mock_ctrl.add.return_value = MagicMock(id=1)\n\n            from app.api.routes.pqr_service.pqr_CUD_service import create_pqr\n\n            pqr = PQRCreate(\n                titulo=\"Test\",\n                descripcion=\"Desc\",\n                tipo=\"peticion\"\n            )\n            result = await create_pqr(pqr, {\"sub\": \"4\", \"scope\": \"usuario\"})\n            assert result.status_code == 201\n\n### ASSERTIONS ###\nassert result.status_code == 201"}, {"name": "test_historycreate_todict", "service": "history", "file": "app/tests/unit/history/test_history.py", "class": "TestHistoryModels", "lineno": 21, "status": "passed", "code": "\n    def test_historycreate_todict(self):\n        \"\"\"Verifica que to_dict()返回值correcto.\"\"\"\n        from app.models.history import HistoryCreate\n\n        history = HistoryCreate(\n            pqr_id=1,\n            usuario_id=1,\n            accion=\"PQR creada\",\n            detalle=\"Nueva PQR registrada\"\n        )\n\n        result = history.to_dict()\n\n        assert result[\"pqr_id\"] == 1\n        assert result[\"usuario_id\"] == 1\n        assert result[\"accion\"] == \"PQR creada\"\n        assert result[\"detalle\"] == \"Nueva PQR registrada\"\n\n    def test_historycreate_fromdict(self):\n        \"\"\"Verifica que from_dict() cree对象correctamente.\"\"\"\n        from app.models.history import HistoryCreate\n\n        data = {\n            \"id\": 5,\n            \"pqr_id\": 10,\n            \"usuario_id\": 2,\n            \"accion\": \"Asignada\",\n            \"detalle\": \"Se asignó a supervisor\"\n        }\n\n        history = HistoryCreate.from_dict(data)\n\n        assert history.pqr_id == 10\n        assert history.accion == \"Asignada\"\n        assert history.usuario_id == 2\n\n    def test_historycreate_campos_opcionales(self):\n        \"\"\"Verifica que campos opcionales sean None.\"\"\"\n        from app.models.history import HistoryCreate\n\n### ASSERTIONS ###\nassert result[\"pqr_id\"] == 1\nassert result[\"usuario_id\"] == 1\nassert result[\"accion\"] == \"PQR creada\"\nassert result[\"detalle\"] == \"Nueva PQR registrada\"\nassert history.pqr_id == 10\nassert history.accion == \"Asignada\"\nassert history.usuario_id == 2"}, {"name": "test_historycreate_fromdict", "service": "history", "file": "app/tests/unit/history/test_history.py", "class": "TestHistoryModels", "lineno": 39, "status": "passed", "code": "\n    def test_historycreate_fromdict(self):\n        \"\"\"Verifica que from_dict() cree对象correctamente.\"\"\"\n        from app.models.history import HistoryCreate\n\n        data = {\n            \"id\": 5,\n            \"pqr_id\": 10,\n            \"usuario_id\": 2,\n            \"accion\": \"Asignada\",\n            \"detalle\": \"Se asignó a supervisor\"\n        }\n\n        history = HistoryCreate.from_dict(data)\n\n        assert history.pqr_id == 10\n        assert history.accion == \"Asignada\"\n        assert history.usuario_id == 2\n\n    def test_historycreate_campos_opcionales(self):\n        \"\"\"Verifica que campos opcionales sean None.\"\"\"\n        from app.models.history import HistoryCreate\n\n        history = HistoryCreate(\n            pqr_id=1,\n            usuario_id=1,\n            accion=\"PQR creada\"\n        )\n\n        assert history.detalle is None\n\n    def test_historyout_todict(self):\n        \"\"\"Verifica que HistoryOut.to_dict() funcione.\"\"\"\n        from app.models.history import HistoryOut\n\n        history = HistoryOut(\n            id=1,\n            pqr_id=1,\n            usuario_id=1,\n            accion=\"PQR creada\",\n\n### ASSERTIONS ###\nassert history.pqr_id == 10\nassert history.accion == \"Asignada\"\nassert history.usuario_id == 2\nassert history.detalle is None"}, {"name": "test_historycreate_campos_opcionales", "service": "history", "file": "app/tests/unit/history/test_history.py", "class": "TestHistoryModels", "lineno": 57, "status": "passed", "code": "\n    def test_historycreate_campos_opcionales(self):\n        \"\"\"Verifica que campos opcionales sean None.\"\"\"\n        from app.models.history import HistoryCreate\n\n        history = HistoryCreate(\n            pqr_id=1,\n            usuario_id=1,\n            accion=\"PQR creada\"\n        )\n\n        assert history.detalle is None\n\n    def test_historyout_todict(self):\n        \"\"\"Verifica que HistoryOut.to_dict() funcione.\"\"\"\n        from app.models.history import HistoryOut\n\n        history = HistoryOut(\n            id=1,\n            pqr_id=1,\n            usuario_id=1,\n            accion=\"PQR creada\",\n            detalle=\"Nueva PQR\"\n        )\n\n        result = history.to_dict()\n\n        assert result[\"id\"] == 1\n        assert result[\"pqr_id\"] == 1\n\n    def test_historyupdate_requires_id(self):\n        \"\"\"Verifica que HistoryUpdate requiera id.\"\"\"\n        from app.models.history import HistoryUpdate\n\n        with pytest.raises(ValidationError):\n            HistoryUpdate(detalle=\"Nuevo detalle\")\n\n\n\n### ASSERTIONS ###\nassert history.detalle is None\nassert result[\"id\"] == 1\nassert result[\"pqr_id\"] == 1"}, {"name": "test_historyout_todict", "service": "history", "file": "app/tests/unit/history/test_history.py", "class": "TestHistoryModels", "lineno": 69, "status": "passed", "code": "\n    def test_historyout_todict(self):\n        \"\"\"Verifica que HistoryOut.to_dict() funcione.\"\"\"\n        from app.models.history import HistoryOut\n\n        history = HistoryOut(\n            id=1,\n            pqr_id=1,\n            usuario_id=1,\n            accion=\"PQR creada\",\n            detalle=\"Nueva PQR\"\n        )\n\n        result = history.to_dict()\n\n        assert result[\"id\"] == 1\n        assert result[\"pqr_id\"] == 1\n\n    def test_historyupdate_requires_id(self):\n        \"\"\"Verifica que HistoryUpdate requiera id.\"\"\"\n        from app.models.history import HistoryUpdate\n\n        with pytest.raises(ValidationError):\n            HistoryUpdate(detalle=\"Nuevo detalle\")\n\n\n\n### ASSERTIONS ###\nassert result[\"id\"] == 1\nassert result[\"pqr_id\"] == 1"}, {"name": "test_historyupdate_requires_id", "service": "history", "file": "app/tests/unit/history/test_history.py", "class": "TestHistoryModels", "lineno": 86, "status": "passed", "code": "\n    def test_historyupdate_requires_id(self):\n        \"\"\"Verifica que HistoryUpdate requiera id.\"\"\"\n        from app.models.history import HistoryUpdate\n\n        with pytest.raises(ValidationError):\n            HistoryUpdate(detalle=\"Nuevo detalle\")\n\n"}];
+        
+        console.log('Test data loaded:', testData.length, 'tests');
+        
+        let selectedTest = null;
+        
+        function syntaxHighlight(code) {
+            code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            code = code.replace(/(def|class|import|from|return|if|else|elif|for|while|with|as|try|except|finally|raise|pass|break|continue|and|or|not|in|is|None|True|False|async|await)/g, '<span class="keyword">$1</span>');
+            code = code.replace(/(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="string">$1$2$1</span>');
+            code = code.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+            code = code.replace(/(#.*)$/gm, '<span class="comment">$1</span>');
+            return code;
+        }
+        
+        function renderTestList(filter) {
+            const filtered = filter === 'all' ? testData : testData.filter(t => t.service === filter);
+            const testList = document.getElementById('test-list');
+            
+            testList.innerHTML = filtered.map((test, idx) => {
+                return '<div class="test-item ' + (selectedTest && selectedTest.name === test.name ? 'active' : '') + '" onclick="selectTest(' + idx + ')">' +
+                    '<div class="test-item-header">' +
+                    '<div class="status-dot ' + test.status + '"></div>' +
+                    '<span class="name">' + test.name + '</span>' +
+                    '<span class="service-badge">' + test.service + '</span></div>' +
+                    '<div class="test-item-header"><span class="class-name">' + test.class + '</span></div></div>';
+            }).join('');
+            
+            document.getElementById('passed-count').textContent = testData.filter(t => t.status === 'passed').length;
+            document.getElementById('skipped-count').textContent = testData.filter(t => t.status === 'skipped').length;
+        }
+        
+        function selectTest(idx) {
+            selectedTest = testData[idx];
+            
+            var newline = String.fromCharCode(10);
+            
+            document.querySelectorAll('.test-item').forEach(function(el, i) {
+                el.classList.toggle('active', i === idx);
+            });
+            
+            var nameEl = document.getElementById('selected-name');
+            nameEl.innerHTML = selectedTest.name + 
+                '<span class="status-badge ' + selectedTest.status + '">' + 
+                (selectedTest.status === 'passed' ? '✓ Pasado' : '○ Omitido') + '</span>';
+            
+            var codeHtml = selectedTest.code;
+            var assertionsHtml = '';
+            
+            if (selectedTest.code && selectedTest.code.indexOf('### ASSERTIONS ###') !== -1) {
+                var parts = selectedTest.code.split('### ASSERTIONS ###');
+                codeHtml = parts[0].trim();
+                assertionsHtml = parts[1].trim();
+            }
+            
+            var assertionsSection = '';
+            if (assertionsHtml) {
+                var assertLines = assertionsHtml.split(newline).filter(function(a) { return a.trim(); });
+                assertionsSection = '<div class="code-section"><div class="section-title"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span>Verificaciones (' + assertLines.length + ')</div><div class="code-block" style="border-color:var(--success);"><div class="code-content">';
+                
+                assertLines.forEach(function(assertion) {
+                    if (assertion.trim()) {
+                        assertionsSection += '<div style="padding:4px 0;border-bottom:1px solid var(--border);color:#7ee787;">✓ ' + assertion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                    }
+                });
+                
+                assertionsSection += '</div></div></div>';
+            }
+            
+            let reasonHtml = '';
+            if (selectedTest.reason) {
+                reasonHtml = '<div class="code-section"><div class="section-title">' +
+                    '<span class="material-symbols-outlined" style="font-size:16px;">info</span>Razón de omisión</div>' +
+                    '<div class="code-block" style="background:rgba(255,212,0,0.1);border-color:rgba(255,212,0,0.3);">' +
+                    '<div class="code-content" style="color:var(--skipped);">' + selectedTest.reason + '</div></div></div>';
+            }
+            
+            document.getElementById('main-content').innerHTML = 
+                '<div class="code-section"><div class="section-title">' +
+                '<span class="material-symbols-outlined" style="font-size:16px;">code</span>Código del Test</div>' +
+                '<div class="code-block"><div class="code-header">' +
+                '<span class="file-path">' + selectedTest.file + ':' + (selectedTest.lineno || '') + '</span>' +
+                '<span>' + selectedTest.class + '</span></div>' +
+                '<div class="code-content">' + syntaxHighlight(codeHtml) + '</div></div></div>' +
+                assertionsSection +
+                reasonHtml;
+        }
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderTestList(this.dataset.filter);
+            });
+        });
+        
+        renderTestList('all');
+        
+        // Debug: show count in header
+        document.querySelector('.sidebar-header h1').innerHTML += ' (' + testData.length + ')';
+    </script>
+</body>
+</html>

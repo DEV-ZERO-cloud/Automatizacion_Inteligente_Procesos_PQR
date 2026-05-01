@@ -82,7 +82,7 @@ class PriorityUpdate(BaseModel):
 class ClassificationCreate(BaseModel):
     __entity_name__ = "clasificaciones"
 
-    id: int
+    id: Optional[int] = None
     pqr_id: int
     modelo_version: str
     categoria_id: int
@@ -104,7 +104,7 @@ class ClassificationCreate(BaseModel):
             "origen": self.origen,
             "fue_corregida": self.fue_corregida,
             "validado_por": self.validado_por,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
     @classmethod
@@ -137,7 +137,7 @@ class ClassificationOut(BaseModel):
             "origen": self.origen,
             "fue_corregida": self.fue_corregida,
             "validado_por": self.validado_por,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
     @classmethod

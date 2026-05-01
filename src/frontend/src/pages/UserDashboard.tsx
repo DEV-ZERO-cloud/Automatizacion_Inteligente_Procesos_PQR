@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { pqrService } from '../services/pqrService';
+import { fileService } from '../services/fileService';
+import { ModalVisualizador } from '../components/visualizador/ModalVisualizador';
 import api from '../services/api';
-import type { PQR } from '../types';
+import type { PQR, PQRFile } from '../types';
 
 interface HistoryEntry {
   id: number;
@@ -68,6 +70,10 @@ export function UserDashboard() {
   const [selectedPqr, setSelectedPqr] = useState<PQR | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [attachments, setAttachments] = useState<PQRFile[]>([]);
+  const [loadingAttachments, setLoadingAttachments] = useState(false);
+  const [showViewer, setShowViewer] = useState(false);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'pendiente' | 'en_proceso' | 'resuelta' | 'cerrada'>('todos');
@@ -144,7 +150,34 @@ export function UserDashboard() {
   const handleVerDetalle = (pqr: PQR) => {
     setSelectedPqr(pqr);
     loadHistory(pqr.id);
+    loadAttachments(pqr.id);
     setShowModal(true);
+  };
+
+  const loadAttachments = async (pqrId: number) => {
+    setLoadingAttachments(true);
+    try {
+      const files = await fileService.getByPqr(pqrId);
+      setAttachments(files);
+    } catch {
+      setAttachments([]);
+    } finally {
+      setLoadingAttachments(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handlePreviewAttachment = (file: PQRFile) => {
+    const index = attachments.findIndex(f => f.id === file.id);
+    setCurrentFileIndex(index >= 0 ? index : 0);
+    setShowViewer(true);
+  };
+
+  const handleViewerFileChange = (index: number) => {
+    setCurrentFileIndex(index);
   };
 
   const handleCerrar = async (pqrId: number) => {
@@ -154,7 +187,7 @@ export function UserDashboard() {
       await pqrService.cerrar(pqrId);
       setPqrs(pqrs.map(p => p.id === pqrId ? { ...p, estado: 'cerrada' } : p));
       setShowModal(false);
-    } catch (err) {
+    } catch {
       alert('No fue posible cerrar la solicitud.');
     }
   };
@@ -187,6 +220,10 @@ export function UserDashboard() {
         estado: 'pendiente',
         usuario_id: currentUserId,
       });
+
+      if (created?.id && adjuntos.length > 0) {
+        await Promise.all(adjuntos.map((file) => fileService.uploadToPqr(created.id, file)));
+      }
 
       setPqrs([created, ...pqrs]);
       setCreateSuccess(`✓ Solicitud #${created.id} enviada correctamente`);
@@ -955,14 +992,14 @@ export function UserDashboard() {
 
       {/* Modal for details */}
       {showModal && selectedPqr && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
             <div className="modal-header" style={{ background: '#f8fafc', borderBottom: '2px solid #e5e7eb' }}>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: '700', margin: '0', color: '#1f2937' }}>Solicitud #{selectedPqr.id}</h3>
                 <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0 0' }}>{selectedPqr.titulo}</p>
               </div>
-              <button className="btn btn-ghost btn-sm" onClick={() => setShowModal(false)}>
+              <button className="btn btn-ghost btn-sm" onClick={handleCloseModal}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -1042,6 +1079,29 @@ export function UserDashboard() {
                 </div>
 
                 <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '16px', color: '#1f2937' }}>Archivos adjuntos</h4>
+                  {loadingAttachments ? (
+                    <p style={{ color: '#6b7280', fontSize: '14px', margin: '0' }}>Cargando adjuntos...</p>
+                  ) : attachments.length === 0 ? (
+                    <p style={{ color: '#6b7280', fontSize: '14px', margin: '0' }}>Sin adjuntos.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gap: '8px', marginBottom: '16px' }}>
+                      {attachments.map((file) => (
+                        <div key={file.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#1f2937', wordBreak: 'break-all' }}>{file.nombre}</p>
+                            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#6b7280' }}>{file.tipo || 'application/octet-stream'}</p>
+                          </div>
+                          <button className="btn btn-sm btn-secondary" onClick={() => handlePreviewAttachment(file)}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px' }}>
                   <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '16px', color: '#1f2937' }}>Historial de cambios</h4>
                   {loadingHistory ? (
                     <p style={{ color: '#6b7280', fontSize: '14px', margin: '0' }}>Cargando historial...</p>
@@ -1072,7 +1132,29 @@ export function UserDashboard() {
                   Cerrar solicitud
                 </button>
               )}
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cerrar</button>
+              <button className="btn btn-secondary" onClick={handleCloseModal}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showViewer && attachments.length > 0 && (
+        <div className="modal-overlay" onClick={() => setShowViewer(false)} style={{ zIndex: 300 }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '90vw', width: '95%', maxHeight: '90vh', margin: '20px' }}>
+            <div className="modal-header" style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Vista previa: {attachments[currentFileIndex]?.nombre}</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowViewer(false)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="modal-body" style={{ padding: 0, height: 'calc(90vh - 80px)', overflow: 'hidden' }}>
+              <ModalVisualizador
+                isOpen={showViewer}
+                onClose={() => setShowViewer(false)}
+                files={attachments}
+                currentFileIndex={currentFileIndex}
+                onFileChange={handleViewerFileChange}
+              />
             </div>
           </div>
         </div>

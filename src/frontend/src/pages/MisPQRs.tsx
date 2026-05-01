@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { fileService } from '../services/fileService';
 import { pqrService } from '../services/pqrService';
-import type { PQR } from '../types';
+import { ModalVisualizador } from '../components/visualizador/ModalVisualizador';
+import type { PQR, PQRFile } from '../types';
 
 interface HistoryEntry {
   id: number;
@@ -44,6 +46,10 @@ export function MisPQRs() {
   const [selectedPqr, setSelectedPqr] = useState<PQR | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [attachments, setAttachments] = useState<PQRFile[]>([]);
+  const [loadingAttachments, setLoadingAttachments] = useState(false);
+  const [showViewer, setShowViewer] = useState(false);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
   const userId = Number(user?.id);
@@ -93,9 +99,36 @@ export function MisPQRs() {
     }
   };
 
+  const loadAttachments = async (pqrId: number) => {
+    setLoadingAttachments(true);
+    try {
+      const files = await fileService.getByPqr(pqrId);
+      setAttachments(files);
+    } catch {
+      setAttachments([]);
+    } finally {
+      setLoadingAttachments(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handlePreviewAttachment = (file: PQRFile) => {
+    const index = attachments.findIndex(f => f.id === file.id);
+    setCurrentFileIndex(index >= 0 ? index : 0);
+    setShowViewer(true);
+  };
+
+  const handleFileChange = (index: number) => {
+    setCurrentFileIndex(index);
+  };
+
   const handleVerDetalle = (pqr: PQR) => {
     setSelectedPqr(pqr);
     loadHistory(pqr.id);
+    loadAttachments(pqr.id);
     setShowModal(true);
   };
 
@@ -106,7 +139,7 @@ export function MisPQRs() {
       await pqrService.cerrar(pqrId);
       setPqrs(pqrs.map(p => p.id === pqrId ? { ...p, estado: 'cerrada' } : p));
       setShowModal(false);
-    } catch (err) {
+    } catch {
       alert('No fue posible cerrar la PQR.');
     }
   };
@@ -186,11 +219,11 @@ export function MisPQRs() {
       )}
 
       {showModal && selectedPqr && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>PQR #{selectedPqr.id}</h3>
-              <button className="btn btn-ghost btn-sm" onClick={() => setShowModal(false)}>
+              <button className="btn btn-ghost btn-sm" onClick={handleCloseModal}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -209,6 +242,29 @@ export function MisPQRs() {
                   <span className="badge badge-primary">{selectedPqr.categoria || 'Sin categoria'}</span>
                   <span className="badge badge-warning">{selectedPqr.prioridad || 'Sin prioridad'}</span>
                   <span className={`badge badge-${getEstadoBadge(selectedPqr.estado)}`}>{selectedPqr.estado}</span>
+                </div>
+
+                <div style={{ marginTop: '16px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px' }}>Archivos adjuntos</h4>
+                  {loadingAttachments ? (
+                    <p style={{ color: '#6b7280' }}>Cargando adjuntos...</p>
+                  ) : attachments.length === 0 ? (
+                    <p style={{ color: '#6b7280' }}>Sin adjuntos.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gap: '8px' }}>
+                      {attachments.map((file) => (
+                        <div key={file.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', wordBreak: 'break-all' }}>{file.nombre}</p>
+                            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#6b7280' }}>{file.tipo || 'application/octet-stream'}</p>
+                          </div>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handlePreviewAttachment(file)}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ marginTop: '16px' }}>
@@ -239,7 +295,29 @@ export function MisPQRs() {
                   Cerrar PQR
                 </button>
               )}
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cerrar</button>
+              <button className="btn btn-secondary" onClick={handleCloseModal}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showViewer && attachments.length > 0 && (
+        <div className="modal-overlay" onClick={() => setShowViewer(false)} style={{ zIndex: 300 }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '90vw', width: '95%', maxHeight: '90vh', margin: '20px' }}>
+            <div className="modal-header" style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Vista previa: {attachments[currentFileIndex]?.nombre}</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowViewer(false)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="modal-body" style={{ padding: 0, height: 'calc(90vh - 80px)', overflow: 'hidden' }}>
+              <ModalVisualizador
+                isOpen={showViewer}
+                onClose={() => setShowViewer(false)}
+                files={attachments}
+                currentFileIndex={currentFileIndex}
+                onFileChange={handleFileChange}
+              />
             </div>
           </div>
         </div>
