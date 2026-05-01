@@ -1,45 +1,3 @@
-"""
-ai_service.py
-
-Pipeline híbrido de clasificación de PQR:
-
-  ┌─────────────────────────────────────────────────────┐
-  │  Texto de la PQR                                    │
-  └────────────────────┬────────────────────────────────┘
-                       │ clean_text()
-                       ▼
-  ┌─────────────────────────────────────────────────────┐
-  │  RuleEngine (engine.py)                             │
-  │  → area de dependencia                              │
-  │  → tags / palabras clave                            │
-  └────────────────────┬────────────────────────────────┘
-                       │ generate_one()
-                       ▼
-  ┌─────────────────────────────────────────────────────┐
-  │  EmbeddingGenerator                                 │
-  │  paraphrase-multilingual-MiniLM-L12-v2              │
-  └──────────┬──────────────────────┬───────────────────┘
-             │                      │
-             ▼                      ▼
-  ┌──────────────────┐   ┌──────────────────────────────┐
-  │ CategoryClassifier│   │ PriorityClassifier           │
-  │ (LogReg sobre    │   │ (LogReg sobre embeddings)    │
-  │  embeddings)     │   │                              │
-  └────────┬─────────┘   └─────────────┬────────────────┘
-           │                           │
-           └──────────────┬────────────┘
-                          ▼
-  ┌─────────────────────────────────────────────────────┐
-  │  ClassifyResponse                                   │
-  │  { tipo, categoria, prioridad, area, tags,          │
-  │    confianza, source, requiere_revision }           │
-  └─────────────────────────────────────────────────────┘
-
-Responsabilidades:
-  - RuleEngine   → area + tags        (reglas explícitas en rules.yaml)
-  - ML models    → categoria + prioridad (aprendizaje supervisado sobre embeddings)
-"""
-
 import os
 import logging
 import httpx
@@ -54,9 +12,13 @@ from app.ia.classifiers.classifiers import CategoryClassifier, PriorityClassifie
 from app.ia.preprocessing.cleaner import clean_text
 from app.models.pqr import PQRCreate
 from app.models.classify_response import ClassifyResponseIn
+from app.models.classification import ClassificationCreate, PriorityCreate, CategoryCreate
+from app.models.organization import AreaCreate
 from app.models.health_response import HealthResponseIn
 from app.models.reload_response import ReloadResponseIn
 from app.core.auth import get_current_user
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -68,7 +30,7 @@ BASE_URL      = os.getenv("BASE_URL", "")
 
 # Umbral mínimo de confianza para no marcar como requiere_revision
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.60"))
-
+_executor = ThreadPoolExecutor(max_workers=4)
 
 # ── Instancias lazy ────────────────────────────────────────────────────────────
 
@@ -76,7 +38,13 @@ _rule_engine:        RuleEngine | None         = None
 _embedding_generator: EmbeddingGenerator | None = None
 _category_clf:       CategoryClassifier | None  = None
 _priority_clf:       PriorityClassifier | None  = None
+_http_client: httpx.AsyncClient | None = None
 
+def get_http_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(timeout=10.0)
+    return _http_client
 
 def get_rule_engine() -> RuleEngine:
     global _rule_engine
@@ -107,19 +75,101 @@ def get_priority_classifier() -> PriorityClassifier:
         _priority_clf.load()
     return _priority_clf
 
+def create_classification(classify_response: ClassifyResponseIn) ->ClassificationCreate:
+    classification = ClassificationCreate(
+        #id=,
+        pqr_id=classify_response.id,
+        modelo_version=classify_response.model,
+        #categoria_id=,
+        #prioridad_id=,
+        confianza=classify_response.confianza,
+        origen="IA",
+        fue_corregida=False
+    )
+    return classification
+
 
 # ── Helper HTTP ────────────────────────────────────────────────────────────────
 
+async def _predict_parallel(embedding, cat_clf, pri_clf):
+    loop = asyncio.get_event_loop()
+
+    cat_future = loop.run_in_executor(_executor, cat_clf.predict, embedding)
+    pri_future = loop.run_in_executor(_executor, pri_clf.predict, embedding)
+
+    (categoria, cat_conf), (prioridad, pri_conf) = await asyncio.gather(
+        cat_future, pri_future
+    )
+    return categoria, cat_conf, prioridad, pri_conf
+
 async def _get_pqr(pqr_id: int, token: str) -> PQRCreate:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
+    client = get_http_client()
+    response = await client.get(
             f"{BASE_URL}/pqrs/{pqr_id}",
             headers={"Authorization": f"Bearer {token}"},
         )
-        response.raise_for_status()
-        return PQRCreate.from_dict(response.json().get("data"))
+    response.raise_for_status()
+    return PQRCreate.from_dict(response.json().get("data"))
 
+async def _get_category(category_name: str, token: str) -> CategoryCreate:
+    client = get_http_client()
+    response = await client.get(
+            f"{BASE_URL}/categories/name",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"cat_name":category_name}
+    )
+    response.raise_for_status()
+    
+    data = response.json().get("data")
+    return data["id"] 
+    
+async def _get_priority(priority_name: str, token: str) -> PriorityCreate:
+    client = get_http_client()
+    response = await client.get(
+            f"{BASE_URL}/priorities/name",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"prio_name":priority_name}
+    )
+    response.raise_for_status()
+    
+    data = response.json().get("data")
+    return data["id"] 
 
+async def _get_area(area_name: str, token: str) -> AreaCreate:
+    client = get_http_client()
+    response = await client.get(
+            f"{BASE_URL}/areas/name",
+            headers={"Authorization": f"Bearer {token}"},
+             params={"nombre":area_name}
+    )
+    response.raise_for_status()
+    return AreaCreate.from_dict(response.json().get("data"))
+    
+
+# ── Agregar Clasificacion hacia Tabla Classificacion
+async def _post_classification(
+        classify_response: ClassifyResponseIn, 
+        category_id: int,
+        priority_id: int,
+        token: str
+        ) -> ClassificationCreate:
+    client = get_http_client()
+    response = await client.post(
+            f"{BASE_URL}/classifications/create",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "pqr_id":            classify_response.id,
+                "modelo_version":    classify_response.model,
+                "categoria_id":         category_id,
+                "prioridad_id":         priority_id,
+                "confianza":         classify_response.confianza,
+                "origen": "IA",
+                "fue_corregida": False
+            }
+    )
+    response.raise_for_status()
+    return ClassificationCreate.from_dict(response.json().get("data"))
+    
 # ── Lógica de fuente ───────────────────────────────────────────────────────────
 
 def _resolve_source(rules_matched: bool, cat_ready: bool, pri_ready: bool) -> str:
@@ -168,9 +218,9 @@ async def classify(
         cat_clf = get_category_classifier()
         pri_clf = get_priority_classifier()
 
-        categoria,   cat_conf = cat_clf.predict(embedding)
-        prioridad,   pri_conf = pri_clf.predict(embedding)
-
+        categoria, cat_conf, prioridad, pri_conf = await _predict_parallel(
+            embedding, cat_clf, pri_clf
+        )
         # ── 4. Confianza global y flag de revisión ─────────────────────────────
         confidences = [c for c in [cat_conf, pri_conf] if c is not None]
         confianza   = round(sum(confidences) / len(confidences), 4) if confidences else None
@@ -193,10 +243,10 @@ async def classify(
             pqr_id, rule_result.area, categoria, prioridad, confianza or 0, source,
         )
 
-        return ClassifyResponseIn(
+        classify_response = ClassifyResponseIn(
             id                = pqr.ID,
             categoria         = categoria,
-            prioridad         = prioridad,
+            prioridad         = prioridad.lower() if prioridad else None,
             area              = rule_result.area,
             tags              = rule_result.tags,
             rules_matched     = rule_result.rules_matched,
@@ -205,6 +255,19 @@ async def classify(
             requiere_revision = requiere_revision,
             model             = os.getenv("MODEL_NAME"),
         )
+        # ── 6. Post a tabla Classificacion ─────────────────────────────
+        categoria_id, prioridad_id = await asyncio.gather(
+            _get_category(category_name=classify_response.categoria, token=token),
+             _get_priority(priority_name=classify_response.prioridad, token=token)
+        )
+
+        await _post_classification(
+            classify_response=classify_response,
+            category_id=categoria_id,
+            priority_id=prioridad_id,
+            token=token
+            )
+        return classify_response
 
     except Exception:
         logger.exception("Error al clasificar PQR %d", pqr_id)

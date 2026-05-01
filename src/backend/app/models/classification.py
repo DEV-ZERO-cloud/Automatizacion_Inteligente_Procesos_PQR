@@ -8,7 +8,7 @@ from datetime import datetime
 class CategoryCreate(BaseModel):
     __entity_name__ = "categorias"
 
-    id: int
+    id: Optional[int] = None
     nombre: str
 
     def to_dict(self) -> dict:
@@ -82,7 +82,7 @@ class PriorityUpdate(BaseModel):
 class ClassificationCreate(BaseModel):
     __entity_name__ = "clasificaciones"
 
-    id: int
+    id: Optional[int] = None
     pqr_id: int
     modelo_version: str
     categoria_id: int

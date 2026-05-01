@@ -86,3 +86,15 @@ async def get_area_by_id(
     except Exception as exc:
         logger.error("[GET /areas/%s] Error: %s", area_id, exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@router.get("/areas/name")
+async def get_priority_by_name(
+    area_name: str,
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
+):
+    try:
+        obj: AreaOut | None = controller.get_by_column(AreaOut, column="nombre", value=area_name)
+        if not obj: raise HTTPException(status_code=404, detail="No encontrada")
+        return ok_response(data=obj.to_dict(), message="Categoría consultada")
+    except HTTPException: raise
+    except Exception: raise HTTPException(status_code=500, detail="Error interno")
