@@ -172,8 +172,15 @@ async def _post_classification(
             }
     )
     response.raise_for_status()
-    return ClassificationCreate.from_dict(response.json().get("data"))
-    
+    return ClassificationCreate(
+        pqr_id=classify_response.id,
+        modelo_version=classify_response.model,
+        categoria_id=category_id,
+        prioridad_id=priority_id,
+        confianza=classify_response.confianza,
+        origen="IA",
+        fue_corregida=False
+    )
 # ── Lógica de fuente ───────────────────────────────────────────────────────────
 
 def _resolve_source(rules_matched: bool, cat_ready: bool, pri_ready: bool) -> str:
