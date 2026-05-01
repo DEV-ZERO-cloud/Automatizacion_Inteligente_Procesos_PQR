@@ -7,7 +7,9 @@ unit_tests/
 ├── conftest.py                  # Fixtures globales (mock DB, mock settings)
 ├── requirements-test.txt        # Dependencias
 ├── test_user_auth.py            # Tests de Autenticación y Usuarios
-└── test_reports_dashboard.py    # Tests de Reportes y Dashboard
+├── test_reports_dashboard.py    # Tests de Reportes y Dashboard
+├── test_organization_service.py # Tests de Organización (Áreas)
+└── test_classifications_service.py # Tests de Clasificaciones, Categorías y Prioridades
 ```
 
 ## Módulos cubiertos
@@ -31,6 +33,24 @@ unit_tests/
 | `TestByPriority` | alta/media/baja, totales positivos, 500 |
 | `TestByArea` | áreas, vacío, 500 |
 | `TestReportAccessControl` | admin/supervisor OK, agente/usuario 403, sin token 401 |
+
+### `test_organization_service.py` (17 tests)
+| Clase | Qué prueba |
+|---|---|
+| `TestCreateArea` | creación exitosa, error por nombre duplicado, 500 DB Crash |
+| `TestUpdateArea` | actualización correcta, error 404 (no existe), 500 DB Crash |
+| `TestDeleteArea` | eliminación exitosa, error 404 (no existe), 500 DB Crash |
+| `TestQueryAreas` | listado, listas vacías, consulta por ID, 404, 500 |
+| `TestOrganizationAccessControl` | Verificación de acceso por roles (ej. operador OK, agente 403) |
+
+### `test_classifications_service.py` (30 tests)
+| Clase | Qué prueba |
+|---|---|
+| `TestClassificationsCUD` | creación, duplicados, validación manual (fue_corregida), actualización, eliminación (incluye 404s y 500s) |
+| `TestClassificationsQuery` | listado, consulta por ID, consulta por PQR (incluye listas vacías, 404s y 500s) |
+| `TestCategories` | creación, actualización, eliminación y listado de categorías (con errores 404 y 500) |
+| `TestPriorities` | creación, actualización y listado de prioridades (con errores 404 y 500) |
+| `TestClassificationAccessControl`| Verificación de acceso por roles (ej. agente OK, usuario 403) |
 
 ## Instalación y ejecución
 

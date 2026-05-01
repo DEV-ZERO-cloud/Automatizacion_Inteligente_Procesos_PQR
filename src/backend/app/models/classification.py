@@ -8,7 +8,7 @@ from datetime import datetime
 class CategoryCreate(BaseModel):
     __entity_name__ = "categorias"
 
-    id: int
+    id: Optional[int] = None
     nombre: str
 
     def to_dict(self) -> dict:

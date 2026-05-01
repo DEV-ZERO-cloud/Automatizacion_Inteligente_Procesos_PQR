@@ -18,7 +18,7 @@ router = APIRouter(tags=["Organizacional"])
 @router.post("/areas/create", status_code=status.HTTP_201_CREATED)
 async def create_area(
     payload: AreaCreate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     """
     Crea un área nueva en el sistema.
@@ -58,7 +58,7 @@ async def create_area(
 @router.put("/areas/update")
 async def update_area(
     payload: AreaUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     """
     Actualiza los datos de un área existente.

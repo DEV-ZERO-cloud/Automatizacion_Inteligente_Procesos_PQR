@@ -241,6 +241,7 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Sora', sans-serif; }
 /* Animations */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -712,3 +713,286 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Sora', sans-serif; }
     flex-wrap: wrap;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   GERENTE LAYOUT — Vista Ejecutiva Exclusiva
+   ═══════════════════════════════════════════════ */
+
+.gerente-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(14, 165, 233, 0.07), transparent 28%),
+    radial-gradient(circle at 90% 5%, rgba(37, 99, 235, 0.07), transparent 32%),
+    linear-gradient(180deg, #f4f8ff 0%, #edf3fb 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Topbar ejecutiva ── */
+.gerente-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: linear-gradient(135deg, #0b3b7a 0%, #1553a1 55%, #0f766e 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+  box-shadow: 0 4px 24px rgba(11, 59, 122, 0.4);
+}
+
+/* Marca / Logo */
+.gerente-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gerente-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.gerente-brand-icon .material-symbols-outlined { font-size: 22px; }
+
+.gerente-brand-name {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.gerente-brand-sub {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Fecha central */
+.gerente-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+}
+
+/* Zona de acciones derecha */
+.gerente-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Badge de rol */
+.gerente-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Botón de usuario */
+.gerente-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #fff;
+}
+
+.gerente-user-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.gerente-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.gerente-user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.gerente-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.gerente-user-email {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.2;
+}
+
+/* Dropdown */
+.gerente-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(11, 59, 122, 0.2);
+  border: 1px solid rgba(115, 118, 133, 0.1);
+  min-width: 220px;
+  overflow: hidden;
+  animation: fadeIn 0.18s ease;
+  z-index: 200;
+}
+
+.gerente-dropdown-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f2f4f7;
+  background: #f8fafc;
+}
+
+.gerente-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #191c1e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.gerente-dropdown-item:hover { background: #f2f4f7; }
+.gerente-dropdown-item.danger { color: #b91c1c; }
+.gerente-dropdown-item.danger:hover { background: #fee2e2; }
+
+/* ── Contenido principal ── */
+.gerente-main {
+  margin-top: 68px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Banda de bienvenida */
+.gerente-welcome-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 32px;
+  background: linear-gradient(90deg, #ecf4ff 0%, #f4f9ff 60%, #edfaf7 100%);
+  border-bottom: 1px solid rgba(21, 83, 161, 0.1);
+}
+
+.gerente-welcome-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gerente-welcome-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1553a1, #0f766e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.gerente-welcome-icon .material-symbols-outlined { font-size: 24px; }
+
+.gerente-welcome-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0b3b7a;
+  margin-bottom: 2px;
+}
+
+.gerente-welcome-sub {
+  font-size: 13px;
+  color: #525f73;
+}
+
+.gerente-welcome-right { flex-shrink: 0; }
+
+.gerente-kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: rgba(21, 83, 161, 0.08);
+  border: 1px solid rgba(21, 83, 161, 0.15);
+  font-size: 12px;
+  font-weight: 600;
+  color: #1553a1;
+}
+
+/* Área de la página activa */
+.gerente-content {
+  padding: 32px;
+  flex: 1;
+}
+
+/* ── Responsive gerente ── */
+@media (max-width: 900px) {
+  .gerente-topbar { padding: 0 16px; }
+  .gerente-date { display: none; }
+  .gerente-welcome-banner { flex-direction: column; align-items: flex-start; padding: 16px 20px; }
+  .gerente-content { padding: 20px; }
+}
+
+@media (max-width: 640px) {
+  .gerente-user-info { display: none; }
+  .gerente-role-badge { display: none; }
+}
+

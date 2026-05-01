@@ -3,12 +3,14 @@ from typing import List, Optional
 
 class ClassifyResponseIn(BaseModel):
     id: Optional[int] = None
-    category: Optional[str] = None
+    categoria: Optional[str] = None
     tags: List[str] = []
-    priority: Optional[str] = None
+    prioridad: Optional[str] = None
     rules_matched: List[str] = []
+    area: Optional[str] = None
     source: str = "rules"
-    confidence: Optional[float] = None
+    confianza: Optional[float] = None
+    requiere_revision: Optional[bool] = True
     model: str 
 
     def to_dict(self):

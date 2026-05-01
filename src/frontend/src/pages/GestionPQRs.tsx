@@ -47,7 +47,7 @@ const estadoVisual: Record<string, { color: string; bg: string }> = {
 export function GestionPQRs() {
   const { user } = useAuthStore();
   const isAdmin = user?.rol_id === 'admin';
-  const isSupervisor = user?.rol_id === 'supervisor';
+  const isSupervisor = user?.rol_id === 'supervisor' || user?.rol_id === 'operador';
   
   const [pqrs, setPqrs] = useState<PQR[]>([]);
   const [supervisors, setSupervisors] = useState<UserListItem[]>([]);

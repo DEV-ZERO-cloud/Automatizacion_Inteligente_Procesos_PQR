@@ -108,4 +108,4 @@ export interface LoginResponse {
   user: User;
 }
 
-export type Role = 'admin' | 'supervisor' | 'agente' | 'usuario';
+export type Role = 'admin' | 'supervisor' | 'agente' | 'usuario' | 'operador';

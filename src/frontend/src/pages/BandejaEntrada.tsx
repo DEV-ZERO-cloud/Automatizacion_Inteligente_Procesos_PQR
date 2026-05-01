@@ -44,8 +44,11 @@ export function BandejaEntrada() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [drawerCategoria, setDrawerCategoria] = useState('');
+  const [drawerPrioridad, setDrawerPrioridad] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const canValidate = ['admin', 'supervisor', 'agente'].includes(user?.rol_id || '');
+  const canValidate = ['admin', 'supervisor', 'operador', 'agente'].includes(user?.rol_id || '');
 
   useEffect(() => {
     let isMounted = true;
@@ -191,7 +194,19 @@ export function BandejaEntrada() {
 
   const openDetail = (pqr: PQR) => {
     setSelectedPQR(pqr);
+    setDrawerCategoria(pqr.categoria || '');
+    setDrawerPrioridad(pqr.prioridad || '');
+    setShowConfirm(false);
     setShowModal(true);
+  };
+
+  const handleQuickUpdate = async (pqrId: number, field: 'categoria' | 'prioridad', value: string) => {
+    try {
+      await pqrService.update(pqrId, { [field]: value });
+      setPqrs((prev) => prev.map(p => p.id === pqrId ? { ...p, [field]: value } : p));
+    } catch {
+      setError(`Error actualizando ${field} para la PQR #${pqrId}`);
+    }
   };
 
   const handleValidate = async (pqr: PQR) => {
@@ -321,8 +336,8 @@ export function BandejaEntrada() {
                         <p style={{ fontWeight: '500', marginBottom: '4px' }}>{pqr.titulo}</p>
                         <p style={{ fontSize: '12px', color: '#94a3b8' }}>Usuario: {pqr.usuario_nombre || pqr.usuario_id || '-'}</p>
                       </td>
-                      <td><span className="badge badge-neutral">{pqr.categoria || 'N/D'}</span></td>
-                      <td><span className={getPriorityBadge(pqr.prioridad || 'media')}>{pqr.prioridad || 'N/D'}</span></td>
+                        <td><span className="badge badge-neutral">{pqr.categoria || 'N/D'}</span></td>
+                        <td><span className={getPriorityBadge(pqr.prioridad || 'media')}>{(pqr.prioridad || 'N/D').toUpperCase()}</span></td>
                       <td>
                         {confidence !== null ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -337,12 +352,10 @@ export function BandejaEntrada() {
                       </td>
                       <td><span className={getBadgeClass(pqr.estado)}>{pqr.estado.replace('_', ' ')}</span></td>
                       <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '8px' }}>
-                          {activeTab === 'pendientes' && canValidate && classification ? (
-                            <button className="btn btn-sm btn-primary" onClick={() => handleValidate(pqr)}>Validar</button>
-                          ) : null}
-                          <button className="btn btn-sm btn-secondary" onClick={() => openDetail(pqr)}>Ver</button>
-                        </div>
+                        <button className="btn btn-sm btn-primary" style={{ gap: '6px' }} onClick={() => openDetail(pqr)}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>open_in_new</span>
+                          Ver detalle
+                        </button>
                       </td>
                     </tr>
                   );
@@ -366,54 +379,218 @@ export function BandejaEntrada() {
         </div>
       </div>
 
+      {/* ── Drawer lateral ── */}
       {showModal && selectedPQR && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Detalle de PQR</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>
+        <>
+          {/* Backdrop */}
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(3px)', zIndex: 190 }}
+            onClick={() => { setShowModal(false); setShowConfirm(false); }}
+          />
+
+          {/* Panel */}
+          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(480px, 100vw)', background: '#fff', zIndex: 200, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(0,0,0,0.18)', animation: 'slideInRight 0.25s ease' }}>
+
+            {/* Header del drawer */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg,#0b3b7a,#1553a1)', color: '#fff' }}>
+              <div>
+                <p style={{ fontSize: '11px', opacity: 0.7, marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Detalle de solicitud</p>
+                <h2 style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'Sora,sans-serif' }}>PQR #{selectedPQR.id}</h2>
+              </div>
+              <button onClick={() => { setShowModal(false); setShowConfirm(false); }} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '8px', width: '36px', height: '36px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="modal-grid-two">
-                <div>
-                  <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>ID</p>
-                  <p style={{ fontWeight: '600', fontFamily: 'monospace' }}>#{selectedPQR.id}</p>
-                </div>
-                <div>
-                  <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Tipo</p>
-                  <span className="badge badge-neutral" style={{ textTransform: 'capitalize' }}>{selectedPQR.tipo}</span>
-                </div>
-                <div>
-                  <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Categoria</p>
-                  <span className="badge badge-primary">{selectedPQR.categoria || 'N/D'}</span>
-                </div>
-                <div>
-                  <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Prioridad</p>
-                  <span className={getPriorityBadge(selectedPQR.prioridad || 'media')}>{selectedPQR.prioridad || 'N/D'}</span>
-                </div>
+
+            {/* Cuerpo scrolleable */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+              {/* Info básica */}
+              <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {[
+                  { label: 'ID', value: `#${selectedPQR.id}`, mono: true },
+                  { label: 'Tipo', value: selectedPQR.tipo },
+                  { label: 'Usuario', value: selectedPQR.usuario_nombre || String(selectedPQR.usuario_id || '-') },
+                  { label: 'Fecha', value: formatDateLabel(selectedPQR.created_at || selectedPQR.updated_at) },
+                ].map(({ label, value, mono }) => (
+                  <div key={label}>
+                    <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', fontWeight: 700 }}>{label}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, fontFamily: mono ? 'monospace' : undefined, color: '#0f172a', textTransform: 'capitalize' }}>{value}</p>
+                  </div>
+                ))}
               </div>
+
+              {/* Título y descripción */}
               <div>
-                <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Descripción</p>
-                <p style={{ padding: '12px', background: '#f8fafc', borderRadius: '10px', fontSize: '14px' }}>{selectedPQR.descripcion}</p>
+                <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontWeight: 700 }}>Título</p>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>{selectedPQR.titulo}</p>
+                <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontWeight: 700 }}>Descripción</p>
+                <p style={{ fontSize: '14px', color: '#334155', lineHeight: '1.6', background: '#f8fafc', padding: '12px', borderRadius: '10px' }}>{selectedPQR.descripcion}</p>
               </div>
+
+              {/* Estado */}
               <div>
-                <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Estado actual</p>
+                <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontWeight: 700 }}>Estado</p>
                 <span className={getBadgeClass(selectedPQR.estado)}>{selectedPQR.estado.replace('_', ' ')}</span>
               </div>
+
+              {/* Clasificación IA */}
               {classificationByPqr[selectedPQR.id] && (
-                <div>
-                  <p style={{ fontSize: '11px', color: '#525f73', marginBottom: '4px' }}>Clasificacion IA</p>
-                  <p style={{ fontSize: '14px', color: '#334155' }}>
-                    Modelo {classificationByPqr[selectedPQR.id]?.modelo_version} | Confianza {getConfidencePercent(classificationByPqr[selectedPQR.id]?.confianza || 0)}%
-                  </p>
+                <div style={{ background: 'linear-gradient(135deg,#ecf4ff,#f4f9ff)', borderRadius: '12px', padding: '14px 16px', border: '1px solid rgba(21,83,161,0.12)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#1553a1' }}>psychology</span>
+                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#1553a1', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Clasificación IA</p>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Modelo</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600 }}>{classificationByPqr[selectedPQR.id]?.modelo_version || 'N/D'}</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Confianza</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#047857' }}>{getConfidencePercent(classificationByPqr[selectedPQR.id]?.confianza || 0)}%</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Categoría sugerida</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600 }}>{classificationByPqr[selectedPQR.id]?.categoria_nombre || 'N/D'}</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Prioridad sugerida</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600 }}>{classificationByPqr[selectedPQR.id]?.prioridad_nombre || 'N/D'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Edición de clasificación */}
+              {canValidate && activeTab === 'pendientes' && (
+                <div style={{ border: '2px solid #e6e8eb', borderRadius: '14px', padding: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#003d9b' }}>edit_note</span>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Ajustar clasificación</p>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#525f73', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Categoría</label>
+                      <select className="select" value={drawerCategoria} onChange={e => setDrawerCategoria(e.target.value)}>
+                        <option value="">N/D</option>
+                        {categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#525f73', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Prioridad</label>
+                      <select className="select" value={drawerPrioridad} onChange={e => setDrawerPrioridad(e.target.value)}>
+                        <option value="">N/D</option>
+                        {prioridades.map(pri => <option key={pri} value={pri}>{pri}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {(drawerCategoria !== (selectedPQR.categoria || '') || drawerPrioridad !== (selectedPQR.prioridad || '')) && (
+                    <div style={{ marginTop: '12px', padding: '10px 12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a', fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
+                      Tienes cambios sin guardar
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+
+            {/* Footer con acciones */}
+            {canValidate && activeTab === 'pendientes' && (
+              <div style={{ padding: '16px 24px', borderTop: '1px solid #f2f4f7', display: 'flex', gap: '12px', background: '#fafbfc' }}>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setShowModal(false); setShowConfirm(false); }}>
+                  Cancelar
+                </button>
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 2 }}
+                  disabled={drawerCategoria === (selectedPQR.categoria || '') && drawerPrioridad === (selectedPQR.prioridad || '')}
+                  onClick={() => setShowConfirm(true)}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>save</span>
+                  Guardar cambios
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+
+          {/* ── Modal de confirmación flotante ── */}
+          {showConfirm && (
+            <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300 }}>
+              <div style={{ background: '#fff', borderRadius: '20px', padding: '32px', maxWidth: '420px', width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', animation: 'fadeIn 0.2s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ color: '#d97706', fontSize: '24px' }}>warning</span>
+                  </div>
+                  <div>
+                    <h3 style={{ fontFamily: 'Sora,sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '2px' }}>Confirmar cambios</h3>
+                    <p style={{ fontSize: '13px', color: '#64748b' }}>PQR #{selectedPQR.id} — {selectedPQR.titulo}</p>
+                  </div>
+                </div>
+
+                <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '14px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {drawerCategoria !== (selectedPQR.categoria || '') && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#64748b' }}>category</span>
+                      <div>
+                        <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Categoría</p>
+                        <p style={{ fontSize: '13px' }}>
+                          <span style={{ color: '#b91c1c', textDecoration: 'line-through' }}>{selectedPQR.categoria || 'N/D'}</span>
+                          {' → '}
+                          <span style={{ color: '#047857', fontWeight: 700 }}>{drawerCategoria}</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {drawerPrioridad !== (selectedPQR.prioridad || '') && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#64748b' }}>flag</span>
+                      <div>
+                        <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Prioridad</p>
+                        <p style={{ fontSize: '13px' }}>
+                          <span style={{ color: '#b91c1c', textDecoration: 'line-through' }}>{selectedPQR.prioridad || 'N/D'}</span>
+                          {' → '}
+                          <span style={{ color: '#047857', fontWeight: 700 }}>{drawerPrioridad}</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowConfirm(false)}>
+                    Volver
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    style={{ flex: 2 }}
+                    onClick={async () => {
+                      const updates: Partial<{ categoria: string; prioridad: string }> = {};
+                      if (drawerCategoria !== (selectedPQR.categoria || '')) updates.categoria = drawerCategoria;
+                      if (drawerPrioridad !== (selectedPQR.prioridad || '')) updates.prioridad = drawerPrioridad;
+                      try {
+                        await pqrService.update(selectedPQR.id, updates);
+                        setPqrs(prev => prev.map(p => p.id === selectedPQR.id ? { ...p, ...updates } : p));
+                        setSelectedPQR({ ...selectedPQR, ...updates });
+                        setShowConfirm(false);
+                        setShowModal(false);
+                      } catch {
+                        setError('No fue posible guardar los cambios.');
+                        setShowConfirm(false);
+                      }
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>check_circle</span>
+                    Confirmar y guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
+
+

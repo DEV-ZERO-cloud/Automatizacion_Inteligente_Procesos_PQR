@@ -1,12 +1,12 @@
 from pydantic import BaseModel
-
+from typing import Optional
 
 class AreaCreate(BaseModel):
     """Modelo para crear un área nueva."""
 
     __entity_name__ = "areas"
 
-    id: int
+    id: Optional[int] = None
     nombre: str
     descripcion: str
 

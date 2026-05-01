@@ -18,7 +18,7 @@ router = APIRouter(tags=["Gestión de Clasificación"])
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/classifications")
 async def get_all_classifications(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     try:
         results = controller.get_all(ClassificationOut)
@@ -34,7 +34,7 @@ async def get_all_classifications(
 @router.get("/classifications/{class_id}")
 async def get_classification_by_id(
     class_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: ClassificationOut | None = controller.get_by_id(ClassificationOut, class_id)
@@ -51,7 +51,7 @@ async def get_classification_by_id(
 @router.get("/classifications/pqr/{pqr_id}")
 async def get_classification_by_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: ClassificationOut | None = controller.get_by_column(ClassificationOut, "pqr_id", pqr_id)
@@ -67,7 +67,7 @@ async def get_classification_by_pqr(
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/categories")
 async def get_all_categories(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         results = controller.get_all(CategoryOut)
@@ -76,12 +76,28 @@ async def get_all_categories(
     except Exception as exc: raise HTTPException(status_code=500, detail="Error interno")
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  7.3 GET /categories/{id}
+#  7.3 GET /categories/name
+# ══════════════════════════════════════════════════════════════════════════════
+@router.get("/categories/name")
+async def get_category_by_name(
+    cat_name: str,
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
+):
+    try:
+        obj: CategoryOut | None = controller.get_by_column(CategoryOut, column="nombre", value=cat_name)
+        if not obj: raise HTTPException(status_code=404, detail="No encontrada")
+        return ok_response(data=obj.to_dict(), message="Categoría consultada")
+    except HTTPException: raise
+    except Exception: raise HTTPException(status_code=500, detail="Error interno")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  7.4 GET /categories/{id}
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/categories/{cat_id}")
 async def get_category_by_id(
     cat_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: CategoryOut | None = controller.get_by_id(CategoryOut, cat_id)
@@ -96,7 +112,7 @@ async def get_category_by_id(
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/priorities")
 async def get_all_priorities(
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         results = controller.get_all(PriorityOut)
@@ -105,12 +121,28 @@ async def get_all_priorities(
     except Exception as exc: raise HTTPException(status_code=500, detail="Error interno")
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  8.2 GET /priorities/name
+# ══════════════════════════════════════════════════════════════════════════════
+@router.get("/priorities/name")
+async def get_priority_by_name(
+    prio_name: str,
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
+):
+    try:
+        obj: PriorityOut | None = controller.get_by_column(PriorityOut, column="nombre", value=prio_name)
+        if not obj: raise HTTPException(status_code=404, detail="No encontrada")
+        return ok_response(data=obj.to_dict(), message="Prioridad consultada")
+    except HTTPException: raise
+    except Exception: raise HTTPException(status_code=500, detail="Error interno")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  8.3 GET /priorities/{id}
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/priorities/{prio_id}")
 async def get_priority_by_id(
     prio_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         obj: PriorityOut | None = controller.get_by_id(PriorityOut, prio_id)

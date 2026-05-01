@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { GerenteLayout } from './components/GerenteLayout';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
@@ -23,6 +24,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Bloquea al gerente fuera de /reportes
+function StaffRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.rol_id === 'gerente') return <Navigate to="/reportes" replace />;
+  return <>{children}</>;
+}
+
+// /reportes: gerente → GerenteLayout, otros roles → Layout estándar con sidebar
+function ReportesRoute() {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.rol_id === 'gerente') return <GerenteLayout />;
+  return <Layout />;
+}
+
 function HomeRouter() {
   const { user } = useAuthStore();
 
@@ -31,7 +48,12 @@ function HomeRouter() {
     return <UserDashboard />;
   }
 
-  // Admin, supervisor, agente go to full dashboard
+  // Gerente goes straight to reports
+  if (user?.rol_id === 'gerente') {
+    return <Navigate to="/reportes" replace />;
+  }
+
+  // Admin, supervisor, operador, agente go to full dashboard
   return <Navigate to="/dashboard" replace />;
 }
 
@@ -122,13 +144,19 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<ProtectedRoute><HomeRouter /></ProtectedRoute>} />
-        <Route path="*" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+
+        {/* ── /reportes: GerenteLayout para gerente, Layout estándar para otros roles ── */}
+        <Route path="/reportes" element={<ReportesRoute />}>
+          <Route index element={<Reportes />} />
+        </Route>
+
+        {/* ── Rutas para staff (admin, supervisor, operador, agente, usuario) ── */}
+        <Route path="*" element={<StaffRoute><Layout /></StaffRoute>}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="bandeja-entrada" element={<BandejaEntrada />} />
           <Route path="registro-pqr" element={<RegistroPQR />} />
           <Route path="mis-pqrs" element={<MisPQRs />} />
           <Route path="gestion-pqrs" element={<GestionPQRs />} />
-          <Route path="reportes" element={<Reportes />} />
           <Route path="usuarios" element={<GestionUsuarios />} />
           <Route path="gestion-ia" element={<GestionIA />} />
           <Route path="ajustes" element={<Ajustes />} />

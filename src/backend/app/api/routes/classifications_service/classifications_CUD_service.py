@@ -22,7 +22,7 @@ router = APIRouter(tags=["Gestión de Clasificación"])
 @router.post("/classifications/create", status_code=status.HTTP_201_CREATED)
 async def create_classification(
     payload: ClassificationCreate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     try:
         logger.info("[POST /classifications/create] Creando clasificación para PQR=%s", payload.pqr_id)
@@ -54,7 +54,7 @@ async def create_classification(
 @router.post("/classifications/validate")
 async def validate_classification(
     payload: ClassificationUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     try:
         logger.info("[POST /classifications/validate] Validando clasificación ID=%s", payload.id)
@@ -91,7 +91,7 @@ async def validate_classification(
 @router.put("/classifications/update")
 async def update_classification(
     payload: ClassificationUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     try:
         logger.info("[PUT /classifications/update] Actualizando clasificación ID=%s", payload.id)

@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Security, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends
 from pydantic import BaseModel, EmailStr, Field
+from fastapi.responses import JSONResponse
 
 from app.core.auth import encode_token, get_current_user
 from app.core.responses import ok_response
@@ -22,6 +23,8 @@ ROLE_SCOPE_MAP: dict = {
     2: "supervisor",
     3: "agente",
     4: "usuario",
+    5: "operador",
+    6: "gerente",
 }
 
 
@@ -44,18 +47,21 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         user = controller.get_by_column(UserOut, "correo", form_data.username)
 
         if not user:
+            logger.warning("[POST /auth/login] Usuario no encontrado: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
             )
 
-        if not user.activo:
+        if user.activo != 1:
+            logger.warning("[POST /auth/login] Usuario inactivo: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Usuario inactivo",
+                detail="Usuario inactivo. Contacte al administrador.",
             )
 
         stored_password = user.contrasena or ""
+        password_ok = False
 
         if is_password_hashed(stored_password):
             password_ok = verify_password(form_data.password, stored_password)
@@ -66,6 +72,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                 controller.update(user)
 
         if not password_ok:
+            logger.warning("[POST /auth/login] Contraseña incorrecta para: %s", form_data.username)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
@@ -75,14 +82,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         payload = {"sub": str(user.id), "scope": scope}
         token = encode_token(payload)
 
-        logger.info("[POST /auth/login] Login exitoso user_id=%s scope=%s", user.id, scope)
+        logger.info("[POST /auth/login] Login exitoso para user_id=%s scope=%s", user.id, scope)
 
-        return {
+        return JSONResponse(content={
             "access_token": token,
             "token_type": "bearer",
             "user_id": user.id,
-            "role": scope
-        }
+            "role": scope,
+        })
 
     except HTTPException:
         raise
@@ -103,7 +110,7 @@ async def register_user(payload: RegisterRequest):
                 detail="Ya existe un usuario con ese correo.",
             )
 
-        existing_identification = controller.get_by_column(UserOut, "identificacion", str(payload.identificacion))
+        existing_identification = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
         if existing_identification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -150,7 +157,7 @@ async def register_user(payload: RegisterRequest):
 @router.post("/users/create", status_code=status.HTTP_201_CREATED)
 async def create_user(
     payload: UserCreate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     """
     Crea un nuevo usuario en el sistema.
@@ -169,7 +176,7 @@ async def create_user(
             )
 
         # Verificar duplicado por identificación
-        existing_id = controller.get_by_column(UserOut, "identificacion", str(payload.identificacion))
+        existing_id = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
         if existing_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -202,7 +209,7 @@ async def create_user(
 @router.put("/users/update")
 async def update_user(
     payload: UserUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     """
     Actualiza los datos de un usuario existente.

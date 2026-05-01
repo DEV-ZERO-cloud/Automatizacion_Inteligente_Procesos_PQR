@@ -129,7 +129,7 @@ def _serialize_pqr_response(pqr: PQROut) -> dict:
 @router.post("/pqrs", response_model=PQROut, status_code=status.HTTP_201_CREATED)
 async def create_pqr(
     payload: PQRCreate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
         _ensure_related_entities(payload)
@@ -160,7 +160,7 @@ async def create_pqr(
 async def update_pqr(
     pqr_id: int,
     payload: PQRUpdate,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "agente"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente"]),
 ):
     try:
         existing = controller.get_by_id(PQROut, pqr_id)
@@ -190,7 +190,7 @@ async def update_pqr(
 @router.delete("/pqrs/{pqr_id}")
 async def delete_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     try:
         existing = controller.get_by_id(PQROut, pqr_id)
@@ -250,7 +250,7 @@ async def asignar_pqr(
 async def clasificar_pqr(
     pqr_id: int,
     payload: PQRClasificarPayload,
-    current_user: dict = Security(get_current_user, scopes=["supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["supervisor", "operador"]),
 ):
     """Supervisor: Clasifica una PQR (categoría y prioridad)."""
     try:
@@ -323,7 +323,7 @@ async def clasificar_pqr(
 async def resolver_pqr(
     pqr_id: int,
     payload: PQRResolverPayload,
-    current_user: dict = Security(get_current_user, scopes=["supervisor"]),
+    current_user: dict = Security(get_current_user, scopes=["supervisor", "operador"]),
 ):
     """Supervisor: Resuelve una PQR."""
     try:
@@ -353,7 +353,7 @@ async def resolver_pqr(
 async def cerrar_pqr(
     pqr_id: int,
     payload: PQRCerrarPayload,
-    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "usuario"]),
+    current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "usuario"]),
 ):
     """Usuario/Admin/Supervisor: Cierra una PQR."""
     try:

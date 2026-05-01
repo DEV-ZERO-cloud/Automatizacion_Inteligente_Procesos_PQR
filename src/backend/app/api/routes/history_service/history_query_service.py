@@ -18,7 +18,7 @@ router = APIRouter(tags=["Historial"])
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/historial", status_code=status.HTTP_200_OK)
 async def list_history(
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna todo el historial registrado."""
     try:
@@ -40,7 +40,7 @@ async def list_history(
 @router.get("/historial/{history_id}", status_code=status.HTTP_200_OK)
 async def get_history(
     history_id: int,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna un evento específico del historial por ID."""
     try:
@@ -69,7 +69,7 @@ async def get_history(
 @router.get("/historial/pqr/{pqr_id}", status_code=status.HTTP_200_OK)
 async def get_history_by_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna todo el historial asociado a una PQR específica."""
     try:
