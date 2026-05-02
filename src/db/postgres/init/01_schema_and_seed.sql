@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS prioridades (
 CREATE TABLE IF NOT EXISTS clasificaciones (
     id SERIAL PRIMARY KEY,
     pqr_id INTEGER NOT NULL REFERENCES pqrs(id) ON DELETE CASCADE,
-    modelo_version VARCHAR(30) NOT NULL,
+    modelo_version VARCHAR(150) NOT NULL,
     categoria_id INTEGER NOT NULL REFERENCES categorias(id),
     prioridad_id INTEGER NOT NULL REFERENCES prioridades(id),
     confianza NUMERIC(5,4) NOT NULL CHECK (confianza >= 0 AND confianza <= 1),
