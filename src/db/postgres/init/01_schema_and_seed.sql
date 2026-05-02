@@ -118,7 +118,7 @@ INSERT INTO areas (id, nombre, descripcion) VALUES
 (8, 'Garantías', 'Atención de productos defectuosos, fallas técnicas y solicitudes de garantía del fabricante.'),
 (9, 'Atención al cliente', 'Quejas sobre agentes, tiempos de espera, casos sin resolver y actualización de datos personales.'),
 (10, 'Fidelización', 'Gestión del programa de puntos, beneficios, niveles de membresía y programa de referidos.'),
-(11, 'Comercial', 'Gestión de promociones, precios, descuentos y pedidos empresariales.');
+(11, 'Comercial', 'Gestión de promociones, precios, descuentos y pedidos empresariales.')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('areas_id_seq', (SELECT MAX(id) FROM areas));
