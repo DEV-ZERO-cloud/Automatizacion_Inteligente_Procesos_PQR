@@ -41,7 +41,7 @@ services:
       PG_USER: pqr_user
       PG_PASSWORD: pqr_password
       MODEL_NAME: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-      HF_HOME: data/models/hf_cache
+      HF_HOME: /data/models/hf_cache 
       BASE_URL: http://localhost:8000
     depends_on:
       - postgres
