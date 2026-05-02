@@ -108,9 +108,17 @@ INSERT INTO rol (id, nombre) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO areas (id, nombre, descripcion) VALUES
-(1, 'Tecnologia', 'Incidentes y soporte tecnico'),
+(1, 'Administracion', 'Administracion'),
 (2, 'Facturacion', 'Cobros y cartera'),
-(3, 'Servicio al cliente', 'Atencion general')
+(3, 'Servicio al cliente', 'Atencion general'),
+(4, 'Fraude y seguridad', 'Gestión de cargos no autorizados, cuentas comprometidas, phishing y reportes de fraude.'),
+(5, 'Servicios legales', 'Atención de tutelas, derechos de petición, demandas y acciones ante entes de control.'),
+(6, 'Cartera', 'Gestión de cobros incorrectos, reembolsos, devoluciones de dinero y facturación.'),
+(7, 'Logística', 'Seguimiento de pedidos, entregas, devoluciones físicas y coordinación con transportadoras.'),
+(8, 'Garantías', 'Atención de productos defectuosos, fallas técnicas y solicitudes de garantía del fabricante.'),
+(9, 'Atención al cliente', 'Quejas sobre agentes, tiempos de espera, casos sin resolver y actualización de datos personales.'),
+(10, 'Fidelización', 'Gestión del programa de puntos, beneficios, niveles de membresía y programa de referidos.'),
+(11, 'Comercial', 'Gestión de promociones, precios, descuentos y pedidos empresariales.');
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('areas_id_seq', (SELECT MAX(id) FROM areas));
@@ -129,14 +137,33 @@ SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));
 INSERT INTO categorias (id, nombre) VALUES
 (1, 'Facturacion'),
 (2, 'Tecnica'),
-(3, 'Servicio')
+(3, 'Servicio'),
+(4, 'Atención al cliente'),
+(5, 'Cambio de datos'),
+(6, 'Cancelación de pedido'),
+(7, 'Devolución y reembolso'),
+(8, 'Entrega tardía'),
+(9, 'Estado de pedido'),
+(10, 'Experiencia de compra'),
+(11, 'Factura y documentos'),
+(12, 'Facturación incorrecta'),
+(13, 'Fraude / seguridad'),
+(14, 'Garantía'),
+(15, 'Información de producto'),
+(16, 'Logística y entrega'),
+(17, 'Pedido no entregado'),
+(18, 'Producto defectuoso'),
+(19, 'Producto incorrecto'),
+(20, 'Programa de fidelización'),
+(21, 'Publicidad engañosa')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO prioridades (id, nombre) VALUES
 (1, 'baja'),
 (2, 'media'),
 (3, 'alta'),
-(4, 'urgente')
+(4, 'urgente'),
+(5, 'crítico')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO pqrs (id, titulo, descripcion, tipo, estado, area_id, usuario_id, operador_id, supervisor_id) VALUES
