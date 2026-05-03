@@ -72,7 +72,7 @@ Usa estos datos en el login de la API/app (usuario = correo, password = contrase
 |---|---|---|---|
 | Admin | admin@pqr.com | 123456 | Activo |
 | Supervisor | laura@pqr.com | 123456 | Activo |
-| Agente | carlos@pqr.com | agente789 | Activo |
+| Agente | carlos@pqr.com | 123456 | Activo |
 | Usuario | maria@pqr.com | 123456 | Activo |
 | Usuario | pedro@pqr.com | 123456 | Inactivo |
 
