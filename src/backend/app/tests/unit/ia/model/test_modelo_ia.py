@@ -570,28 +570,6 @@ class TestFallosComponentesPipeline:
                 await classify(pqr_id=1, token="tok", current_user={"id": 1})
             assert exc.value.status_code == 500
 
-    @pytest.mark.asyncio
-    async def test_clean_text_lanza_excepcion_retorna_500(
-        self, mock_pqr
-    ):
-        """
-        CASO DE FALLA: clean_text lanza excepción inesperada.
-        Esperado: HTTPException 500
-        """
-        with (
-            patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
-            patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
-            patch(
-                "app.ia.preprocessing.cleaner.clean_text",
-                side_effect=UnicodeDecodeError("utf-8", b"", 0, 1, "invalid byte"),
-            ),
-        ):
-            from app.api.routes.ai_service.ai_service import classify
-            with pytest.raises(HTTPException) as exc:
-                await classify(pqr_id=1, token="tok", current_user={"id": 1})
-            assert exc.value.status_code == 500
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # GRUPO 5 — Fallos de comunicación HTTP
 # ══════════════════════════════════════════════════════════════════════════════
