@@ -70,11 +70,11 @@ Usa estos datos en el login de la API/app (usuario = correo, password = contrase
 
 | Rol | Correo | Contrasena | Estado |
 |---|---|---|---|
-| Admin | admin@pqr.com | admin123 | Activo |
-| Supervisor | laura@pqr.com | super456 | Activo |
+| Admin | admin@pqr.com | 123456 | Activo |
+| Supervisor | laura@pqr.com | 123456 | Activo |
 | Agente | carlos@pqr.com | agente789 | Activo |
-| Usuario | maria@pqr.com | user000 | Activo |
-| Usuario | pedro@pqr.com | inact111 | Inactivo |
+| Usuario | maria@pqr.com | 123456 | Activo |
+| Usuario | pedro@pqr.com | 123456 | Inactivo |
 
 <a id="adminer-keys"></a>
 
