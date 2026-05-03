@@ -1,0 +1,122 @@
+[
+  {
+    "pqr_id": 1,
+    "text": "Mi factura llegó con un cobro adicional que no reconozco, exijo que me devuelvan el dinero de inmediato.",
+    "category": "Facturación incorrecta",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 2,
+    "text": "Solicito información detallada sobre los nuevos planes de servicios disponibles para empresas medianas.",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 3,
+    "text": "El técnico no llegó a la cita programada para el día de ayer y nadie me avisó del cambio.",
+    "category": "Técnica",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 4,
+    "text": "El producto llegó completamente dañado. El empaque estaba roto y faltaban piezas. Quiero solución inmediata.",
+    "category": "Producto defectuoso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 5,
+    "text": "¿Cuáles son los requisitos para acceder al programa de mantenimiento preventivo trimestral?",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 6,
+    "text": "Llevo dos semanas sin resolver mi caso y ya voy para la tercera llamada sin ninguna respuesta concreta.",
+    "category": "Atención al cliente",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 7,
+    "text": "Sugiero que implementen notificaciones automáticas por WhatsApp para el seguimiento de solicitudes.",
+    "category": "Atención al cliente",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 8,
+    "text": "Me cobraron el doble en el último ciclo de facturación. Necesito que corrijan este error urgente.",
+    "category": "Facturación incorrecta",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 9,
+    "text": "Necesito el certificado de garantía y las actas de entrega de los equipos instalados el mes pasado.",
+    "category": "Factura y documentos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 10,
+    "text": "El servicio de internet lleva tres días fallando en horario laboral, afectando gravemente nuestras operaciones.",
+    "category": "Servicio",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 11,
+    "text": "Quiero cancelar el contrato de servicio porque no estoy satisfecho con la calidad de la atención.",
+    "category": "Cancelación de pedido",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 12,
+    "text": "Por favor envíen el manual de usuario del equipo modelo XR-200 que adquirimos la semana pasada.",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 13,
+    "text": "El servicio prometido en el contrato no corresponde a lo que realmente están prestando. Exijo cumplimiento.",
+    "category": "Servicio",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 14,
+    "text": "El tiempo de espera en la línea de atención supera los 45 minutos. Esto afecta la experiencia del cliente.",
+    "category": "Atención al cliente",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 15,
+    "text": "Propongo que habiliten un canal de autogestión en línea para cambios de dirección de facturación.",
+    "category": "Cambio de datos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 16,
+    "text": "Solicito copia de todos los contratos vigentes entre mi empresa y la suya para auditoría interna.",
+    "category": "Factura y documentos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 17,
+    "text": "La aplicación móvil sigue crasheando cuando intento ver el historial de pagos. Ya lo reporté hace un mes.",
+    "category": "Servicio",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 18,
+    "text": "Me están cobrando por un servicio que di de baja hace tres meses. Exijo la devolución total.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 19,
+    "text": "¿Tienen planes especiales para instituciones educativas? Somos una universidad pública.",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 20,
+    "text": "El personal de soporte fue muy amable y resolvió mi problema en menos de una hora. Muchas gracias.",
+    "category": "Atención al cliente",
+    "priority": "baja"
+  }
+]
