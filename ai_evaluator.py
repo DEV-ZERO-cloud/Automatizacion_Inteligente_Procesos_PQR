@@ -13,6 +13,8 @@ Métricas evaluadas:
   2. Tiempo de procesamiento        → Meta: ≤ 30 segundos por solicitud
   3. Tiempo de validación humana    → Meta: < 10 segundos por caso
   4. Capacidad de carga             → Meta: ≥ 3.000 solicitudes/mes sin degradación
+  5. Métricas ML por campo          → Accuracy, Precision, Recall (TPR), F1-Score
+                                       (macro y weighted) + Matriz de Confusión
 
 Uso:
   python ai_evaluator.py --host http://localhost:8000 --mode interactive
@@ -452,6 +454,96 @@ def save_results(results: list[dict]):
 
 # ── Métricas ───────────────────────────────────────────────────────────────────
 
+def compute_ml_metrics(results: list[dict], field_pred: str, field_true: str) -> dict:
+    """
+    Calcula métricas ML clásicas (multiclase) para un campo de predicción.
+
+    Retorna un dict con:
+      - accuracy            : fracción de predicciones correctas
+      - macro_precision     : promedio no ponderado de precisión por clase
+      - macro_recall        : promedio no ponderado de recall por clase
+      - macro_f1            : promedio no ponderado de F1 por clase
+      - weighted_precision  : promedio ponderado (por soporte) de precisión
+      - weighted_recall     : promedio ponderado (por soporte) de recall
+      - weighted_f1         : promedio ponderado (por soporte) de F1
+      - per_class           : dict clase → {precision, recall, f1, support}
+      - confusion_matrix    : dict (true_label, pred_label) → count
+      - labels              : lista ordenada de etiquetas únicas
+    """
+    validated = [
+        r for r in results
+        if r.get(field_pred) is not None and r.get(field_true) is not None
+        and r.get("both_correct") is not None
+    ]
+    if not validated:
+        return {}
+
+    y_true = [r[field_true] for r in validated]
+    y_pred = [r[field_pred] for r in validated]
+    labels = sorted(set(y_true) | set(y_pred))
+    n      = len(validated)
+
+    # Matriz de confusión: cm[true][pred]
+    cm: dict[str, dict[str, int]] = {lbl: {l: 0 for l in labels} for lbl in labels}
+    for yt, yp in zip(y_true, y_pred):
+        if yt not in cm:
+            cm[yt] = {l: 0 for l in labels}
+        if yp not in cm[yt]:
+            cm[yt][yp] = 0
+        cm[yt][yp] += 1
+
+    # Métricas por clase
+    per_class: dict[str, dict] = {}
+    for lbl in labels:
+        tp = cm.get(lbl, {}).get(lbl, 0)
+        fp = sum(cm.get(other, {}).get(lbl, 0) for other in labels if other != lbl)
+        fn = sum(cm.get(lbl, {}).get(other, 0) for other in labels if other != lbl)
+        support = tp + fn
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1        = (2 * precision * recall / (precision + recall)
+                     if (precision + recall) > 0 else 0.0)
+        per_class[lbl] = {
+            "precision": round(precision, 4),
+            "recall":    round(recall,    4),
+            "f1":        round(f1,        4),
+            "support":   support,
+        }
+
+    accuracy          = sum(1 for yt, yp in zip(y_true, y_pred) if yt == yp) / n
+    supports          = [per_class[lbl]["support"] for lbl in labels]
+    total_support     = sum(supports) or 1
+    macro_precision   = sum(per_class[l]["precision"] for l in labels) / len(labels)
+    macro_recall      = sum(per_class[l]["recall"]    for l in labels) / len(labels)
+    macro_f1          = sum(per_class[l]["f1"]        for l in labels) / len(labels)
+    weighted_precision= sum(per_class[l]["precision"] * per_class[l]["support"] for l in labels) / total_support
+    weighted_recall   = sum(per_class[l]["recall"]    * per_class[l]["support"] for l in labels) / total_support
+    weighted_f1       = sum(per_class[l]["f1"]        * per_class[l]["support"] for l in labels) / total_support
+
+    # Serializar confusion_matrix como lista de dicts para JSON
+    confusion_matrix_list = [
+        {"true": yt, "predicted": yp, "count": cm[yt][yp]}
+        for yt in labels for yp in labels
+        if cm.get(yt, {}).get(yp, 0) > 0
+    ]
+
+    return {
+        "accuracy":           round(accuracy,           4),
+        "macro_precision":    round(macro_precision,    4),
+        "macro_recall":       round(macro_recall,       4),
+        "macro_f1":           round(macro_f1,           4),
+        "weighted_precision": round(weighted_precision, 4),
+        "weighted_recall":    round(weighted_recall,    4),
+        "weighted_f1":        round(weighted_f1,        4),
+        "per_class":          per_class,
+        "confusion_matrix":   confusion_matrix_list,
+        "labels":             labels,
+        "n_samples":          n,
+        "_cm_raw":            cm,   # solo para uso interno
+    }
+
+
 def compute_metrics(results: list[dict]) -> dict:
     """Calcula métricas agregadas a partir de resultados guardados."""
     validated = [r for r in results if r.get("both_correct") is not None]
@@ -472,6 +564,10 @@ def compute_metrics(results: list[dict]) -> dict:
         s = r.get("source", "unknown")
         sources[s] = sources.get(s, 0) + 1
 
+    # ── Métricas ML ─────────────────────────────────────────────────────────
+    ml_category = compute_ml_metrics(validated, "predicted_categoria", "expert_category")
+    ml_priority = compute_ml_metrics(validated, "predicted_prioridad",  "expert_priority")
+
     return {
         "total_evaluated":        total,
         "precision_category_pct": round(correct_cat  / total * 100, 1),
@@ -487,6 +583,9 @@ def compute_metrics(results: list[dict]) -> dict:
         "sla_precision_ok":       (correct_both / total * 100) >= SLA_PRECISION_PCT if total else False,
         "sla_processing_ok":      (max(proc_times) <= SLA_PROCESS_MS) if proc_times else None,
         "sla_validation_ok":      (max(val_times) <= SLA_VALIDATION_S) if val_times else None,
+        # Nuevas métricas ML
+        "ml_category":            ml_category,
+        "ml_priority":            ml_priority,
     }
 
 
@@ -1048,6 +1147,95 @@ def run_report():
     print()
 
 
+def _print_ml_metrics(m: dict):
+    """Imprime sección 6 con métricas ML: Accuracy, Precision, Recall, F1 y Confusion Matrix."""
+
+    def _render_block(title: str, ml: dict):
+        if not ml:
+            return
+        acc  = ml.get("accuracy", 0)
+        mp   = ml.get("macro_precision", 0)
+        mr   = ml.get("macro_recall", 0)
+        mf1  = ml.get("macro_f1", 0)
+        wp   = ml.get("weighted_precision", 0)
+        wr   = ml.get("weighted_recall", 0)
+        wf1  = ml.get("weighted_f1", 0)
+        n    = ml.get("n_samples", 0)
+
+        print(f"""
+  {BOLD}6.{title}{RESET}
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  Muestras evaluadas : {n}
+  │
+  │  {BOLD}Métricas globales:{RESET}
+  │    Accuracy (exactitud)           : {GREEN if acc >= 0.7 else RED}{acc*100:>6.1f}%{RESET}
+  │
+  │    {DIM}── Macro (promedio no ponderado) ──────────────────────{RESET}
+  │    Precision  (macro)             : {mp*100:>6.1f}%
+  │    Recall     (macro / TPR)       : {mr*100:>6.1f}%
+  │    F1-Score   (macro)             : {mf1*100:>6.1f}%
+  │
+  │    {DIM}── Weighted (ponderado por soporte) ─────────────────{RESET}
+  │    Precision  (weighted)          : {wp*100:>6.1f}%
+  │    Recall     (weighted / TPR)    : {wr*100:>6.1f}%
+  │    F1-Score   (weighted)          : {wf1*100:>6.1f}%
+  └────────────────────────────────────────────────────────────────────┘""")
+
+        # ── Tabla por clase ──────────────────────────────────────────────
+        per_class = ml.get("per_class", {})
+        if per_class:
+            col_w = max((len(lbl) for lbl in per_class), default=12)
+            col_w = max(col_w, 12)
+            header = f"  {'Clase':>{col_w}}  {'Precision':>10}  {'Recall':>8}  {'F1':>8}  {'Soporte':>8}"
+            sep    = f"  {'─'*col_w}  {'─'*10}  {'─'*8}  {'─'*8}  {'─'*8}"
+            print(f"\n  {BOLD}  Detalle por clase:{RESET}")
+            print(header)
+            print(sep)
+            for lbl, stats in sorted(per_class.items()):
+                p   = stats["precision"]
+                r   = stats["recall"]
+                f1  = stats["f1"]
+                sup = stats["support"]
+                p_c = GREEN if p  >= 0.7 else (YELLOW if p  >= 0.5 else RED)
+                r_c = GREEN if r  >= 0.7 else (YELLOW if r  >= 0.5 else RED)
+                f_c = GREEN if f1 >= 0.7 else (YELLOW if f1 >= 0.5 else RED)
+                print(
+                    f"  {lbl:>{col_w}}  "
+                    f"{p_c}{p*100:>9.1f}%{RESET}  "
+                    f"{r_c}{r*100:>7.1f}%{RESET}  "
+                    f"{f_c}{f1*100:>7.1f}%{RESET}  "
+                    f"{sup:>8}"
+                )
+
+        # ── Matriz de confusión ─────────────────────────────────────────
+        cm_raw = ml.get("_cm_raw", {})
+        labels = ml.get("labels", [])
+        if cm_raw and labels:
+            col_w2 = max((len(lbl) for lbl in labels), default=8)
+            col_w2 = max(col_w2, 8)
+            print(f"\n  {BOLD}  Matriz de Confusión (filas=real, columnas=predicho):{RESET}")
+            # Cabecera
+            header_cm = f"  {' '*col_w2}  " + "  ".join(f"{lbl[:col_w2]:>{col_w2}}" for lbl in labels)
+            print(header_cm)
+            print(f"  {'─'*(col_w2 + (col_w2+2)*len(labels))}")
+            for true_lbl in labels:
+                row_vals = []
+                for pred_lbl in labels:
+                    cnt = cm_raw.get(true_lbl, {}).get(pred_lbl, 0)
+                    if true_lbl == pred_lbl:
+                        cell = f"{GREEN}{cnt:>{col_w2}}{RESET}"
+                    elif cnt > 0:
+                        cell = f"{RED}{cnt:>{col_w2}}{RESET}"
+                    else:
+                        cell = f"{' '*col_w2}"
+                    row_vals.append(cell)
+                print(f"  {true_lbl:>{col_w2}}  " + "  ".join(row_vals))
+            print()
+
+    _render_block(" MÉTRICAS ML – CATEGORÍA", m.get("ml_category", {}))
+    _render_block(" MÉTRICAS ML – PRIORIDAD", m.get("ml_priority", {}))
+
+
 def _print_summary(m: dict):
     """Imprime resumen de métricas con badges SLA."""
     if not m:
@@ -1107,6 +1295,9 @@ def _print_summary(m: dict):
   ┌────────────────────────────────────────────────────────┐
   │  Total errores del agente : {RED+str(err)+RESET if err else GREEN+'0'+RESET}
   └────────────────────────────────────────────────────────┘""")
+
+    # ── Sección 6: Métricas ML ─────────────────────────────────────────────
+    _print_ml_metrics(m)
 
     all_ok = m.get("sla_precision_ok") and (m.get("sla_processing_ok") is not False) and (m.get("sla_validation_ok") is not False)
     status_color = GREEN if all_ok else RED
