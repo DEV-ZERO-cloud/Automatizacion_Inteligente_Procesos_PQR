@@ -1,8 +1,15 @@
 import logging
 from datetime import datetime
+import httpx
+import os
+from dotenv import load_dotenv
 
-from fastapi import APIRouter, HTTPException, Security, status
+from app.core.conf import token_agente
+
+from fastapi import APIRouter, HTTPException, Security, status, Depends
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
+from fastapi import BackgroundTasks
 
 from app.core.auth import get_current_user
 from app.core.responses import ok_response
@@ -18,8 +25,14 @@ from app.models.pqr import PQRCreate, PQROut, PQRUpdate
 from app.models.user import UserOut
 from app.models.history import HistoryCreate
 
+load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+_http_client: httpx.AsyncClient | None = None
+BASE_URL      = os.getenv("BASE_URL", "")
+
 
 router = APIRouter(tags=["Gestión de PQR"])
 
@@ -41,6 +54,12 @@ class PQRResolverPayload(BaseModel):
 class PQRCerrarPayload(BaseModel):
     confirmacion: bool = True
 
+
+def get_http_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(timeout=10.0)
+    return _http_client
 
 def _ensure_related_entities(payload: PQRCreate | PQRUpdate):
     if payload.area_id is not None:
@@ -125,10 +144,24 @@ def _serialize_pqr_response(pqr: PQROut) -> dict:
         "updated_at": updated_at,
     }
 
+async def _post_classification(pqr_id: int, token: str) -> ClassificationCreate:
+    client = get_http_client()
+    response = await client.post(
+            f"{BASE_URL}/classify/{pqr_id}",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"pqr_id": pqr_id}
+    )
+    response.raise_for_status()
+    
+    data = response.json().get("data")
+    return data["id"] 
+
 
 @router.post("/pqrs", response_model=PQROut, status_code=status.HTTP_201_CREATED)
 async def create_pqr(
     payload: PQRCreate,
+    background_tasks: BackgroundTasks,
+    token: str = Depends(oauth2_scheme),
     current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador", "agente", "usuario"]),
 ):
     try:
@@ -148,13 +181,19 @@ async def create_pqr(
         user_id = _current_user_id(current_user)
         _add_history(created.ID, user_id, "PQR creada", f"Tipo: {created.tipo}, Título: {created.titulo}")
 
-        return ok_response(data=_serialize_pqr_response(created), message="PQR creada", status_code=201)
+        background_tasks.add_task(_post_classification, created.ID, token_agente)
+
+        return ok_response(
+            data=_serialize_pqr_response(created),
+            message="PQR creada",
+            status_code=201
+        )
+
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("[POST /pqrs] Error: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno del servidor")
-
 
 @router.put("/pqrs/{pqr_id}", response_model=PQROut)
 async def update_pqr(
