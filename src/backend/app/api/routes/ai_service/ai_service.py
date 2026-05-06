@@ -19,6 +19,7 @@ from app.models.health_response import HealthResponseIn
 from app.models.reload_response import ReloadResponseIn
 #--------------------------------------------------
 from app.core.auth import get_current_user
+from app.core.responses import ok_response
 #-------------------------------------------------------
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -157,6 +158,7 @@ async def _post_classification(
         priority_id: int,
         token: str
         ) -> ClassificationCreate:
+    
     client = get_http_client()
     response = await client.post(
             f"{BASE_URL}/classifications/create",
@@ -171,16 +173,7 @@ async def _post_classification(
                 "fue_corregida": False
             }
     )
-    response.raise_for_status()
-    return ClassificationCreate(
-        pqr_id=classify_response.id,
-        modelo_version=classify_response.model,
-        categoria_id=category_id,
-        prioridad_id=priority_id,
-        confianza=classify_response.confianza,
-        origen="IA",
-        fue_corregida=False
-    )
+    return response.raise_for_status()
 # ── Lógica de fuente ───────────────────────────────────────────────────────────
 
 def _resolve_source(rules_matched: bool, cat_ready: bool, pri_ready: bool) -> str:
@@ -276,13 +269,18 @@ async def classify(
              _get_priority(priority_name=classify_response.prioridad, token=token)
         )
 
-        await _post_classification(
+        response_classification = await _post_classification(
             classify_response=classify_response,
             category_id=categoria_id,
             priority_id=prioridad_id,
             token=token
-            )
-        return classify_response
+        )
+
+        if response_classification:
+            return ok_response(data="Clasificado Correctamente", message="Clasificacion realizada")
+        
+        else:
+            raise HTTPException(status_code=500, detail="Error al agregar clasificacion final")
 
     except Exception:
         logger.exception("Error al clasificar PQR %d", pqr_id)

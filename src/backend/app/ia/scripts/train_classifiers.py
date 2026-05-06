@@ -37,6 +37,7 @@ from pathlib import Path
 from collections import Counter
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.utils import shuffle
@@ -171,13 +172,14 @@ def train_single(
     labels  = list(encoder.classes_)
 
     # Modelo
-    model = LogisticRegression(
-        max_iter=1000,
-        C=1.0,
-        class_weight="balanced",   # maneja desequilibrio de clases
-        solver="lbfgs",            # lbfgs maneja multiclase nativamente desde sklearn 1.5
-        random_state=42,
+    model = SVC(
+        kernel="rbf",          # el más usado por defecto
+        C=1.0,                 # similar al C de LogisticRegression (control de castigo)
+        class_weight="balanced",  # mismo manejo de desbalance
+        probability=True,      # necesario si quieres predict_proba
+        random_state=42
     )
+
     model.fit(emb_filt, y)
 
     # Cross-validation

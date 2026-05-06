@@ -152,9 +152,6 @@ async def _post_classification(pqr_id: int, token: str) -> ClassificationCreate:
             params={"pqr_id": pqr_id}
     )
     response.raise_for_status()
-    
-    data = response.json().get("data")
-    return data["id"] 
 
 
 @router.post("/pqrs", response_model=PQROut, status_code=status.HTTP_201_CREATED)
