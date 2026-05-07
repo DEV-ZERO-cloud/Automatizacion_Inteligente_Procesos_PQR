@@ -31,7 +31,7 @@ import statistics
 import sys
 import time
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -339,7 +339,7 @@ def build_pqr_payload(case: dict, clasificacion_id=None) -> dict:
     Si la columna es NOT NULL, pasa un ID válido via --clasificacion_id.
     """
     tipo = CATEGORY_TO_TIPO.get(case.get("category"), "reclamo")
-    now  = datetime.utcnow().isoformat() + "Z"
+    now  = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     payload = {
         "titulo":        case["text"][:120].strip(),
         "descripcion":   case["text"].strip(),
@@ -380,18 +380,20 @@ def create_pqr(host: str, case: dict, token: Optional[str] = None, clasificacion
 def extract_system_id(pqr_resp: dict, fallback: int) -> int:
     """
     Extrae el ID asignado por la BD desde la respuesta de POST /pqrs.
-    Estructura esperada: {"success": true, "data": {"id": 166, ...}}
+    Estructura del backend: ok_response → {"success": true, "data": {"id": N, ...}}
+    El campo en PQROut es `ID` (mayúscula) pero _serialize_pqr_response lo expone como `id`.
     """
-    # Estructura estándar: {"data": {"id": N}}
+    # Estructura estándar del backend: {"data": {"id": N}}
     data = pqr_resp.get("data")
     if isinstance(data, dict):
         sid = data.get("id") or data.get("ID") or data.get("pqr_id")
         if sid:
             return int(sid)
-    # Estructura plana: {"id": N} o {"ID": N}
+    # Estructura plana por si ok_response cambia: {"id": N}
     sid = pqr_resp.get("id") or pqr_resp.get("ID") or pqr_resp.get("pqr_id")
     if sid:
         return int(sid)
+    logger.warning("extract_system_id: no se encontró 'id' en la respuesta %s — usando fallback %d", pqr_resp, fallback)
     return fallback
 
 
@@ -959,23 +961,54 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
             new_results.append(asdict(result))
             continue
 
-        # ── PASO 2: Clasificar ─────────────────────────────────────────────
-        try:
-            time.sleep(18)
-            response_request, elapsed_ms = call_classify(host, system_id, token)
+        # ── PASO 2: Clasificar (con retry — el backend clasifica en background task) ──
+        # El POST /pqrs dispara _post_classification como BackgroundTask,
+        # así que /classifications/pqr/{id} puede tardar varios segundos en estar listo.
+        MAX_RETRIES   = 5
+        RETRY_DELAYS  = [3, 6, 12, 20, 30]   # backoff progresivo en segundos
+        classify_resp = None
+        elapsed_ms    = None
 
-            response = response_request["data"]
+        for attempt, delay in enumerate(RETRY_DELAYS[:MAX_RETRIES], 1):
+            try:
+                time.sleep(delay)
+                classify_resp, elapsed_ms = call_classify(host, system_id, token)
+                break   # éxito — salir del loop
+            except requests.exceptions.HTTPError as http_err:
+                if http_err.response is not None and http_err.response.status_code == 404:
+                    if attempt < MAX_RETRIES:
+                        next_delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else RETRY_DELAYS[-1]
+                        print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {YELLOW}404 – reintento {attempt}/{MAX_RETRIES-1} en {next_delay}s…{RESET}")
+                        continue
+                    # Agotados los reintentos
+                    result.error = f"classify: {http_err}"
+                    print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {'–':>8}  {RED}ERROR classify: {http_err}{RESET}")
+                    new_results.append(asdict(result))
+                    break
+                else:
+                    raise   # otro error HTTP — propagar
+            except Exception as exc:
+                result.error = f"classify: {exc}"
+                print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {'–':>8}  {RED}ERROR classify: {exc}{RESET}")
+                new_results.append(asdict(result))
+                break
+
+        if result.error or classify_resp is None:
+            continue
+
+        try:
+            response = classify_resp["data"]
             
             # Normalizar campos de la respuesta
-            result.processing_ms       = round(elapsed_ms, 1)
+            result.processing_ms          = round(elapsed_ms, 1)
             result.predicted_categoria_id = (response.get("categoria_id") or "")
-            result.predicted_prioridad_id        = (response.get("prioridad_id") or "")
-            result.predicted_tags      = response.get("tags", [])
-            result.predicted_area      = response.get("area")
-            result.confianza           = response.get("confianza")
-            result.source              = response.get("source")
-            result.rules_matched       = response.get("rules_matched", [])
-            result.requiere_revision   = response.get("requiere_revision")
+            result.predicted_prioridad_id = (response.get("prioridad_id") or "")
+            result.predicted_tags         = response.get("tags", [])
+            result.predicted_area         = response.get("area")
+            result.confianza              = response.get("confianza")
+            result.source                 = response.get("source")
+            result.rules_matched          = response.get("rules_matched", [])
+            result.requiere_revision      = response.get("requiere_revision")
 
             result.predicted_categoria = categorias[result.predicted_categoria_id]
             result.predicted_prioridad = prioridades[result.predicted_prioridad_id]
@@ -998,9 +1031,10 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
                 f"{fmt_ms(elapsed_ms):>8}  "
                 f"{cat_str:>18}  {pri_str:>7}  {conf_str:>6}  {verdict}"
             )
+
         except Exception as e:
             result.error = str(e)
-            print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  –  {RED}ERROR classify: {e}{RESET}")
+            print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  –  {RED}ERROR classify parse: {e}{RESET}")
 
         new_results.append(asdict(result))
 
