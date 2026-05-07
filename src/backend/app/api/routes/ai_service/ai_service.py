@@ -48,7 +48,7 @@ _http_client: httpx.AsyncClient | None = None
 def get_http_client() -> httpx.AsyncClient:
     global _http_client
     if _http_client is None or _http_client.is_closed:
-        _http_client = httpx.AsyncClient(timeout=10.0)
+        _http_client = httpx.AsyncClient(timeout=120.0)  # embedding + predicción en CPU puede tardar
     return _http_client
 
 def get_rule_engine() -> RuleEngine:
@@ -157,7 +157,7 @@ async def _post_classification(
         category_id: int,
         priority_id: int,
         token: str
-        ) -> ClassificationCreate:
+        ) -> bool:
     
     client = get_http_client()
     response = await client.post(
@@ -173,7 +173,8 @@ async def _post_classification(
                 "fue_corregida": False
             }
     )
-    return response.raise_for_status()
+    response.raise_for_status()
+    return True
 # ── Lógica de fuente ───────────────────────────────────────────────────────────
 
 def _resolve_source(rules_matched: bool, cat_ready: bool, pri_ready: bool) -> str:

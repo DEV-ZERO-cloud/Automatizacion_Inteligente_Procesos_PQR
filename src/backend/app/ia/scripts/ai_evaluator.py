@@ -954,6 +954,8 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
             result.system_pqr_id   = system_id
             result.pqr_created     = True
             result.pqr_creation_ms = round(creation_ms, 1)
+            # Pausa tras crear el PQR para que el background task de clasificación arranque
+            time.sleep(30)
 
         except Exception as e:
             result.error = f"Creación PQR: {e}"
@@ -962,23 +964,24 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
             continue
 
         # ── PASO 2: Clasificar (con retry — el backend clasifica en background task) ──
+        
         # El POST /pqrs dispara _post_classification como BackgroundTask,
         # así que /classifications/pqr/{id} puede tardar varios segundos en estar listo.
         MAX_RETRIES   = 5
-        RETRY_DELAYS  = [3, 6, 12, 20, 30]   # backoff progresivo en segundos
+        RETRY_DELAYS  = [3, 6, 12, 20, 30]   # backoff progresivo en segundos (solo tras 404)
         classify_resp = None
         elapsed_ms    = None
 
-        for attempt, delay in enumerate(RETRY_DELAYS[:MAX_RETRIES], 1):
+        for attempt in range(1, MAX_RETRIES + 1):
             try:
-                time.sleep(delay)
                 classify_resp, elapsed_ms = call_classify(host, system_id, token)
                 break   # éxito — salir del loop
             except requests.exceptions.HTTPError as http_err:
                 if http_err.response is not None and http_err.response.status_code == 404:
                     if attempt < MAX_RETRIES:
-                        next_delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else RETRY_DELAYS[-1]
-                        print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {YELLOW}404 – reintento {attempt}/{MAX_RETRIES-1} en {next_delay}s…{RESET}")
+                        delay = RETRY_DELAYS[attempt - 1]
+                        print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {YELLOW}404 – reintento {attempt}/{MAX_RETRIES} en {delay}s…{RESET}")
+                        time.sleep(delay)
                         continue
                     # Agotados los reintentos
                     result.error = f"classify: {http_err}"
@@ -1038,7 +1041,6 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
 
         new_results.append(asdict(result))
 
-    results.extend(new_results)
     save_results(results)
 
     print(f"\n{BOLD}{CYAN}{'═'*60}")

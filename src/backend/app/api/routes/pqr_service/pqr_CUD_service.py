@@ -58,7 +58,7 @@ class PQRCerrarPayload(BaseModel):
 def get_http_client() -> httpx.AsyncClient:
     global _http_client
     if _http_client is None or _http_client.is_closed:
-        _http_client = httpx.AsyncClient(timeout=10.0)
+        _http_client = httpx.AsyncClient(timeout=None)
     return _http_client
 
 def _ensure_related_entities(payload: PQRCreate | PQRUpdate):
@@ -150,7 +150,6 @@ async def _post_classification(pqr_id: int, token: str) -> ClassificationCreate:
         response = await client.post(
             f"{BASE_URL}/classify/{pqr_id}",
             headers={"Authorization": f"Bearer {token}"},
-            params={"pqr_id": pqr_id}
         )
         response.raise_for_status()
     except Exception as e:
