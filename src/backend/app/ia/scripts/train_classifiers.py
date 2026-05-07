@@ -39,7 +39,7 @@ from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearchCV
 from sklearn.utils import shuffle
 
 logger = logging.getLogger(__name__)
@@ -171,31 +171,41 @@ def train_single(
     y       = encoder.fit_transform(lab_filt)
     labels  = list(encoder.classes_)
 
-    # Modelo
-    model = SVC(
-        kernel="rbf",          # el más usado por defecto
-        C=1.0,                 # similar al C de LogisticRegression (control de castigo)
-        class_weight="balanced",  # mismo manejo de desbalance
-        probability=True,      # necesario si quieres predict_proba
-        random_state=42
+    # Cross-validation config (basado en la clase minoritaria)
+    min_class_count = min(counts[c] for c in valid_classes)
+    n_splits = max(2, min(5, min_class_count))
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+
+    # Búsqueda de hiperparámetros con GridSearchCV
+    logger.info("[%s] Buscando mejores hiperparámetros (GridSearchCV %d-fold)...", name, n_splits)
+    param_grid = {
+        "C":      [0.1, 1, 10, 100],
+        "kernel": ["rbf", "linear"],
+        "gamma":  ["scale", "auto"],   # solo aplica a rbf, linear lo ignora
+    }
+    grid_search = GridSearchCV(
+        SVC(class_weight="balanced", probability=True, random_state=42),
+        param_grid,
+        cv=cv,
+        scoring="f1_macro",   # macro penaliza más los errores en clases minoritarias
+        n_jobs=-1,
+        verbose=1,
     )
+    grid_search.fit(emb_filt, y)
+    model = grid_search.best_estimator_
+    logger.info("[%s] Mejores parámetros: %s", name, grid_search.best_params_)
 
-    model.fit(emb_filt, y)
-
-    # Cross-validation
+    # Cross-validation con el mejor modelo
     if len(lab_filt) >= CV_MIN_SAMPLES:
-        n_splits = min(5, counts[min(counts, key=counts.get)])  # no más splits que ejemplos de la clase menor
-        n_splits = max(2, n_splits)
-        cv       = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
-        scores   = cross_val_score(model, emb_filt, y, cv=cv, scoring="f1_weighted")
+        scores = cross_val_score(model, emb_filt, y, cv=cv, scoring="f1_macro")
         logger.info(
-            "[%s] F1 CV (%d-fold): %.3f ± %.3f | clases: %d | ejemplos: %d",
+            "[%s] F1-macro CV (%d-fold): %.3f ± %.3f | clases: %d | ejemplos: %d",
             name, n_splits, scores.mean(), scores.std(), len(labels), len(lab_filt),
         )
     else:
         logger.info(
-            "[%s] Entrenado con %d ejemplos (pocos para CV). Clases: %s",
-            name, len(lab_filt), labels,
+            "[%s] Entrenado con %d ejemplos (pocos para CV). Clases: %s | Parámetros: %s",
+            name, len(lab_filt), labels, grid_search.best_params_,
         )
 
     return model, labels

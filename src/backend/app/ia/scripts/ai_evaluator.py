@@ -38,7 +38,7 @@ from typing import Optional
 import requests
 
 # ── Configuración ──────────────────────────────────────────────────────────────
-BASE_URL           = "http://127.0.0.1:8000"
+BASE_URL           = "http://localhost:8000"
 CREATE_PQR_ENDPOINT = "/pqrs"
 CLASSIFY_ENDPOINT  = "/classifications/pqr/{pqr_id}"
 CATEGORY_ENDPOINT  = "/categories/"
@@ -693,6 +693,9 @@ def run_interactive(host: str, token: Optional[str] = None, clasificacion_id=Non
     results         = load_existing_results()
     session_results = []
     case_num        = len([r for r in results if r.get("both_correct") is not None]) + 1
+    
+    categorias  = build_catalog_dict(host, CATEGORY_ENDPOINT, token=token)
+    prioridades = build_catalog_dict(host, PRIORITY_ENDPOINT, token=token)
 
     while True:
         print(f"{CYAN}{'─'*60}{RESET}")
@@ -736,18 +739,26 @@ def run_interactive(host: str, token: Optional[str] = None, clasificacion_id=Non
         # ── PASO 2: Clasificar ─────────────────────────────────────────────
         print(f"{DIM}Clasificando con agente IA...{RESET}", end="", flush=True)
         try:
-            response, elapsed_ms = call_classify(host, system_id, token)
-            data = response.get("data", {})
+            time.sleep(10)
+            response_request, elapsed_ms = call_classify(host, system_id, token)
+
+            response = response_request["data"]
+            
+            # Normalizar campos de la respuesta
             result.processing_ms       = round(elapsed_ms, 1)
-            result.predicted_categoria = (response.get("categoria") or "").lower().strip()
-            raw_pred_pri               = (response.get("prioridad") or "").lower().strip()
-            result.predicted_prioridad = PRIORITY_NORMALIZATION.get(raw_pred_pri, raw_pred_pri)
+            result.predicted_categoria_id = (response.get("categoria_id") or "")
+            result.predicted_prioridad_id        = (response.get("prioridad_id") or "")
             result.predicted_tags      = response.get("tags", [])
             result.predicted_area      = response.get("area")
             result.confianza           = response.get("confianza")
             result.source              = response.get("source")
             result.rules_matched       = response.get("rules_matched", [])
             result.requiere_revision   = response.get("requiere_revision")
+
+            result.predicted_categoria = categorias[result.predicted_categoria_id].lower()
+            result.predicted_prioridad = prioridades[result.predicted_prioridad_id]
+            
+
             print(f" {fmt_ms(elapsed_ms)}")
         except Exception as e:
             result.error = str(e)
@@ -950,7 +961,7 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
 
         # ── PASO 2: Clasificar ─────────────────────────────────────────────
         try:
-            time.sleep(8)
+            time.sleep(18)
             response_request, elapsed_ms = call_classify(host, system_id, token)
 
             response = response_request["data"]
