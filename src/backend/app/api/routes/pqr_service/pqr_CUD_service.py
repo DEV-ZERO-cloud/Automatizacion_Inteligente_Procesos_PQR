@@ -146,13 +146,15 @@ def _serialize_pqr_response(pqr: PQROut) -> dict:
 
 async def _post_classification(pqr_id: int, token: str) -> ClassificationCreate:
     client = get_http_client()
-    response = await client.post(
+    try:
+        response = await client.post(
             f"{BASE_URL}/classify/{pqr_id}",
             headers={"Authorization": f"Bearer {token}"},
             params={"pqr_id": pqr_id}
-    )
-    response.raise_for_status()
-
+        )
+        response.raise_for_status()
+    except Exception as e:
+        logger.error("[BackgroundTask] _post_classification FALLÓ para pqr_id=%d: %s", pqr_id, e, exc_info=True)
 
 @router.post("/pqrs", response_model=PQROut, status_code=status.HTTP_201_CREATED)
 async def create_pqr(
