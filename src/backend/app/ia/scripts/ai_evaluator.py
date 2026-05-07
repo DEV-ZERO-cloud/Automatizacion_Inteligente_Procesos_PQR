@@ -179,10 +179,10 @@ VALID_PRIORITIES = {"alta", "media", "baja", "urgente", "crítico", "critico"}
 # canónico de la tabla `prioridades`. La API puede devolver "crítica" (femenino)
 # o "critica" (sin tilde) que deben mapearse a "crítico".
 PRIORITY_NORMALIZATION = {
-    "critica":  "crítico",
-    "crítica":  "crítico",
-    "critico":  "crítico",
-    "crítico":  "crítico",
+    "critica":  "crítica",
+    "crítica":  "crítica",
+    "critico":  "crítica",
+    "crítico":  "crítica",
     "urgente":  "urgente",
     "alta":     "alta",
     "media":    "media",
@@ -935,7 +935,10 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
         raw_cat   = case.get("category", "")
         truth_cat = CATEGORY_NORMALIZATION.get(raw_cat, raw_cat.lower()).strip()
         raw_pri   = case.get("priority", "").lower().strip()
-        truth_pri = PRIORITY_NORMALIZATION.get(raw_pri, raw_pri)
+        truth_pri = PRIORITY_NORMALIZATION.get(
+            raw_pri.lower().strip(),
+            raw_pri.lower().strip()
+        )
 
         result = CaseResult(
             pqr_id=pqr_id,
@@ -955,7 +958,6 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
             result.pqr_created     = True
             result.pqr_creation_ms = round(creation_ms, 1)
             # Pausa tras crear el PQR para que el background task de clasificación arranque
-            time.sleep(30)
 
         except Exception as e:
             result.error = f"Creación PQR: {e}"
@@ -963,42 +965,85 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
             new_results.append(asdict(result))
             continue
 
-        # ── PASO 2: Clasificar (con retry — el backend clasifica en background task) ──
-        
-        # El POST /pqrs dispara _post_classification como BackgroundTask,
-        # así que /classifications/pqr/{id} puede tardar varios segundos en estar listo.
-        MAX_RETRIES   = 5
-        RETRY_DELAYS  = [3, 6, 12, 20, 30]   # backoff progresivo en segundos (solo tras 404)
+        # ── PASO 2: Esperar clasificación async ──────────────────────────
+        # El backend crea la clasificación mediante BackgroundTask.
+        # Por eso el endpoint puede responder 404 temporalmente hasta que
+        # la clasificación exista en BD.
+
+        MAX_WAIT_SECONDS = 90
+        POLL_INTERVAL    = 2
+
         classify_resp = None
         elapsed_ms    = None
 
-        for attempt in range(1, MAX_RETRIES + 1):
+        start_wait = time.time()
+
+        while True:
+
             try:
-                classify_resp, elapsed_ms = call_classify(host, system_id, token)
-                break   # éxito — salir del loop
+                classify_resp, elapsed_ms = call_classify(
+                    host,
+                    system_id,
+                    token
+                )
+
+                # clasificación disponible
+                break
+
             except requests.exceptions.HTTPError as http_err:
-                if http_err.response is not None and http_err.response.status_code == 404:
-                    if attempt < MAX_RETRIES:
-                        delay = RETRY_DELAYS[attempt - 1]
-                        print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {YELLOW}404 – reintento {attempt}/{MAX_RETRIES} en {delay}s…{RESET}")
-                        time.sleep(delay)
-                        continue
-                    # Agotados los reintentos
-                    result.error = f"classify: {http_err}"
-                    print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {'–':>8}  {RED}ERROR classify: {http_err}{RESET}")
-                    new_results.append(asdict(result))
-                    break
-                else:
-                    raise   # otro error HTTP — propagar
+
+                status_code = (
+                    http_err.response.status_code
+                    if http_err.response is not None
+                    else None
+                )
+
+                # 404 = clasificación aún no creada
+                if status_code == 404:
+
+                    waited = time.time() - start_wait
+
+                    if waited >= MAX_WAIT_SECONDS:
+
+                        result.error = (
+                            f"Timeout esperando clasificación "
+                            f"(>{MAX_WAIT_SECONDS}s)"
+                        )
+
+                        print(
+                            f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  "
+                            f"{RED}TIMEOUT clasificación async{RESET}"
+                        )
+
+                        new_results.append(asdict(result))
+                        break
+
+                    print(
+                        f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  "
+                        f"{YELLOW}esperando clasificación "
+                        f"({waited:.0f}s){RESET}"
+                    )
+
+                    time.sleep(POLL_INTERVAL)
+                    continue
+
+                # otros errores HTTP sí son reales
+                raise
+
             except Exception as exc:
+
                 result.error = f"classify: {exc}"
-                print(f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  {'–':>8}  {RED}ERROR classify: {exc}{RESET}")
+
+                print(
+                    f"  {i:>5}  {pqr_id:>8}  {system_id:>8}  "
+                    f"{RED}ERROR classify: {exc}{RESET}"
+                )
+
                 new_results.append(asdict(result))
                 break
 
         if result.error or classify_resp is None:
             continue
-
         try:
             response = classify_resp["data"]
             
@@ -1041,7 +1086,7 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
 
         new_results.append(asdict(result))
 
-    save_results(results)
+    save_results(new_results)
 
     print(f"\n{BOLD}{CYAN}{'═'*60}")
     print(f"  RESULTADOS BATCH ({total} casos)")

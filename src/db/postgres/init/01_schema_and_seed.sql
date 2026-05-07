@@ -163,7 +163,7 @@ INSERT INTO prioridades (id, nombre) VALUES
 (2, 'media'),
 (3, 'alta'),
 (4, 'urgente'),
-(5, 'crítico')
+(5, 'crítica')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO pqrs (id, titulo, descripcion, tipo, estado, area_id, usuario_id, operador_id, supervisor_id) VALUES
