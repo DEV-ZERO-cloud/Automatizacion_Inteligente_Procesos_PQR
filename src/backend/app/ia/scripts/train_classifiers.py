@@ -1,31 +1,25 @@
 """
-scripts.train_classifiers..py
+scripts.train_classifiers.py  (versión optimizada)
+
+Cambios vs versión original:
+  - Reemplaza SVC (O(n²~³)) por LogisticRegression (O(n)) → 10-50x más rápido
+  - GridSearchCV reducido: cv=3, param_grid pequeño, n_jobs=2
+  - Submuestreo para GridSearch (max 200/clase) → búsqueda rápida, fit final con todos
+  - Cross-validation final separada del GridSearch → no duplica trabajo
+  - Memoria controlada: sin n_jobs=-1 que multiplica copias de la matriz
 
 Entrena CategoryClassifier y PriorityClassifier sobre embeddings generados
 por paraphrase-multilingual-MiniLM-L12-v2 (transformer congelado).
-
-Fuente de datos: CSV con PQR etiquetadas por humanos.
 
 Columnas requeridas en el CSV:
   - texto      → descripción de la PQR (texto libre)
   - categoria  → etiqueta de categoría (ej: "Pedido no entregado")
   - prioridad  → etiqueta de prioridad ("Crítica" | "Alta" | "Media" | "Baja")
 
-Columnas opcionales (se ignoran si no están):
-  - id, tipo, area, tags, etc.
-
 Uso:
-  # Entrenamiento completo
-  python -m app.ia.scripts.train_classifiers. --csv data/training/pqr_etiquetadas.csv
-
-  # Solo reentrenar prioridad
-  python -m app.ia.scripts.train_classifiers. --csv data/training/pqr_etiquetadas.csv --target prioridad
-
-  # Con mínimo de ejemplos por clase
-  python -m app.ia.scripts.train_classifiers. --csv data/training/pqr_etiquetadas.csv --min-per-class 10
-
-Después de entrenar, llama a POST /ia/reload_models para que el servicio
-cargue los nuevos .pkl sin reiniciar.
+  python -m app.ia.scripts.train_classifiers --csv data/training/pqr_etiquetadas.csv
+  python -m app.ia.scripts.train_classifiers --csv data/training/pqr_etiquetadas.csv --target prioridad
+  python -m app.ia.scripts.train_classifiers --csv data/training/pqr_etiquetadas.csv --min-per-class 10
 """
 
 import argparse
@@ -37,7 +31,6 @@ from pathlib import Path
 from collections import Counter
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearchCV
 from sklearn.utils import shuffle
@@ -47,10 +40,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 # ── Configuración ──────────────────────────────────────────────────────────────
 
-CSV_REQUIRED_COLS = {"texto", "categoria", "prioridad"}
-MODELS_DIR        = Path(__file__).parent.parent.parent.parent.parent / "data" / "models"
+CSV_REQUIRED_COLS     = {"texto", "categoria", "prioridad"}
+MODELS_DIR            = Path(__file__).parent.parent.parent.parent.parent / "data" / "models"
 MIN_PER_CLASS_DEFAULT = 5
-CV_MIN_SAMPLES        = 30   # mínimo de ejemplos para hacer cross-validation
+CV_MIN_SAMPLES        = 30    # mínimo de ejemplos para hacer cross-validation
+GRIDSEARCH_MAX_PER_CLASS = 200  # submuestreo para búsqueda de hiperparámetros
 
 
 # ── Carga del CSV ──────────────────────────────────────────────────────────────
@@ -58,27 +52,17 @@ CV_MIN_SAMPLES        = 30   # mínimo de ejemplos para hacer cross-validation
 def load_csv(csv_path: str | Path) -> list[dict]:
     """
     Carga el CSV de entrenamiento y valida columnas requeridas.
-
-    Args:
-        csv_path: ruta al CSV. Acepta separador coma o punto y coma.
-
-    Returns:
-        Lista de dicts con al menos las claves: texto, categoria, prioridad.
-
-    Raises:
-        ValueError: si faltan columnas requeridas o el archivo está vacío.
+    Acepta separador coma o punto y coma automáticamente.
     """
     path = Path(csv_path)
     if not path.exists():
         raise FileNotFoundError(f"CSV no encontrado: {path}")
 
-    rows: list[dict] = []
-
-    # Detectar separador automáticamente
     with open(path, encoding="utf-8-sig") as f:
         sample = f.read(2048)
         sep = ";" if sample.count(";") > sample.count(",") else ","
 
+    rows: list[dict] = []
     with open(path, encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f, delimiter=sep)
         headers = set(reader.fieldnames or [])
@@ -93,16 +77,9 @@ def load_csv(csv_path: str | Path) -> list[dict]:
             texto     = (row.get("texto") or "").strip()
             categoria = (row.get("categoria") or "").strip()
             prioridad = (row.get("prioridad") or "").strip()
-
-            # Ignorar filas incompletas
             if not texto or not categoria or not prioridad:
                 continue
-
-            rows.append({
-                "texto":     texto,
-                "categoria": categoria,
-                "prioridad": prioridad,
-            })
+            rows.append({"texto": texto, "categoria": categoria, "prioridad": prioridad})
 
     if not rows:
         raise ValueError("El CSV no tiene filas válidas después del filtrado.")
@@ -116,7 +93,7 @@ def load_csv(csv_path: str | Path) -> list[dict]:
 def generate_embeddings(texts: list[str]) -> np.ndarray:
     """
     Genera embeddings usando EmbeddingGenerator (transformer congelado).
-    El modelo se mantiene en memoria vía Singleton — no se recarga entre llamadas.
+    El modelo se mantiene en memoria vía Singleton.
     """
     from app.ia.embeddings.generator import EmbeddingGenerator
     generator = EmbeddingGenerator()
@@ -126,6 +103,32 @@ def generate_embeddings(texts: list[str]) -> np.ndarray:
     return embeddings
 
 
+# ── Submuestreo estratificado para GridSearch ──────────────────────────────────
+
+def subsample_for_gridsearch(
+    embeddings: np.ndarray,
+    labels: list,
+    max_per_class: int,
+    random_state: int = 42,
+) -> tuple[np.ndarray, list]:
+    """
+    Toma hasta max_per_class ejemplos por clase para hacer GridSearch rápido.
+    El fit final siempre usa todos los datos.
+    """
+    rng = np.random.RandomState(random_state)
+    indices = []
+    label_array = np.array(labels)
+
+    for cls in np.unique(label_array):
+        cls_idx = np.where(label_array == cls)[0]
+        if len(cls_idx) > max_per_class:
+            cls_idx = rng.choice(cls_idx, size=max_per_class, replace=False)
+        indices.extend(cls_idx.tolist())
+
+    indices = sorted(indices)
+    return embeddings[indices], [labels[i] for i in indices]
+
+
 # ── Entrenamiento de un clasificador ──────────────────────────────────────────
 
 def train_single(
@@ -133,17 +136,18 @@ def train_single(
     labels_raw: list[str],
     name: str,
     min_per_class: int = MIN_PER_CLASS_DEFAULT,
-) -> tuple[LogisticRegression, list[str]] | None:
+) -> tuple | None:
     """
-    Entrena una LogisticRegression para un campo (categoria o prioridad).
+    Entrena un LogisticRegression para un campo (categoria o prioridad).
 
-    Filtra clases con menos de min_per_class ejemplos para evitar overfitting.
-    Ejecuta cross-validation si hay suficientes datos.
+    Estrategia de velocidad:
+      1. GridSearchCV con submuestreo (max 200/clase) y cv=3  → rápido
+      2. Fit final con TODOS los datos y los mejores parámetros → preciso
+      3. Cross-validation final para reportar métricas reales
 
     Returns:
         (modelo, lista_de_clases) o None si no hay suficientes datos.
     """
-    # Conteo por clase
     counts = Counter(labels_raw)
     logger.info("[%s] Distribución de clases: %s", name, dict(counts))
 
@@ -155,57 +159,76 @@ def train_single(
         )
         return None
 
-    # Filtrar filas de clases con pocos ejemplos
-    mask       = [l in valid_classes for l in labels_raw]
-    emb_filt   = embeddings[mask]
-    lab_filt   = [l for l, m in zip(labels_raw, mask) if m]
-    dropped    = len(labels_raw) - len(lab_filt)
-
+    # Filtrar clases con pocos ejemplos
+    mask     = [l in valid_classes for l in labels_raw]
+    emb_full = embeddings[mask]
+    lab_full = [l for l, m in zip(labels_raw, mask) if m]
+    dropped  = len(labels_raw) - len(lab_full)
     if dropped:
-        logger.warning("[%s] %d filas descartadas por clases con < %d ejemplos.", name, dropped, min_per_class)
+        logger.warning("[%s] %d filas descartadas (clases con < %d ejemplos).", name, dropped, min_per_class)
 
-    emb_filt, lab_filt = shuffle(emb_filt, lab_filt, random_state=42)
+    emb_full, lab_full = shuffle(emb_full, lab_full, random_state=42)
 
     # Codificación de etiquetas
-    encoder = LabelEncoder()
-    y       = encoder.fit_transform(lab_filt)
-    labels  = list(encoder.classes_)
+    encoder   = LabelEncoder()
+    y_full    = encoder.fit_transform(lab_full)
+    labels    = list(encoder.classes_)
 
-    # Cross-validation config (basado en la clase minoritaria)
+    # ── Paso 1: GridSearch sobre submuestreo ───────────────────────────────────
     min_class_count = min(counts[c] for c in valid_classes)
-    n_splits = max(2, min(5, min_class_count))
-    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+    gs_max          = min(GRIDSEARCH_MAX_PER_CLASS, min_class_count)
+    emb_gs, lab_gs  = subsample_for_gridsearch(emb_full, lab_full, max_per_class=gs_max)
+    y_gs            = encoder.transform(lab_gs)
 
-    # Búsqueda de hiperparámetros con GridSearchCV
-    logger.info("[%s] Buscando mejores hiperparámetros (GridSearchCV %d-fold)...", name, n_splits)
-    param_grid = {
-        "C":      [0.1, 1, 10, 100],
-        "kernel": ["rbf", "linear"],
-        "gamma":  ["scale", "auto"],   # solo aplica a rbf, linear lo ignora
-    }
-    grid_search = GridSearchCV(
-        SVC(class_weight="balanced", probability=True, random_state=42),
-        param_grid,
-        cv=cv,
-        scoring="f1_macro",   # macro penaliza más los errores en clases minoritarias
-        n_jobs=-1,
-        verbose=1,
+    logger.info(
+        "[%s] GridSearch sobre %d muestras (max %d/clase, %d clases)...",
+        name, len(lab_gs), gs_max, len(labels),
     )
-    grid_search.fit(emb_filt, y)
-    model = grid_search.best_estimator_
-    logger.info("[%s] Mejores parámetros: %s", name, grid_search.best_params_)
 
-    # Cross-validation con el mejor modelo
-    if len(lab_filt) >= CV_MIN_SAMPLES:
-        scores = cross_val_score(model, emb_filt, y, cv=cv, scoring="f1_macro")
+    # LogisticRegression: lineal, O(n), perfecto para embeddings densos de alta dimensión
+    param_grid = {
+        "C":        [0.01, 0.1, 1, 10],
+        "solver":   ["lbfgs"],   # saga es más lento en datasets < 50k, lbfgs es suficiente
+        "max_iter": [1000],
+    }
+    cv_gs = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+    grid_search = GridSearchCV(
+        LogisticRegression(class_weight="balanced", random_state=42),
+        param_grid,
+        cv=cv_gs,
+        scoring="f1_macro",
+        n_jobs=2,       # 2 workers: paralelismo controlado sin explotar RAM
+        verbose=1,
+        refit=False,    # no reentrenar aquí; lo hacemos con todos los datos abajo
+    )
+    grid_search.fit(emb_gs, y_gs)
+    best_params = grid_search.best_params_
+    logger.info("[%s] Mejores parámetros: %s", name, best_params)
+
+    # ── Paso 2: Fit final con TODOS los datos ──────────────────────────────────
+    logger.info("[%s] Entrenando modelo final con %d muestras...", name, len(lab_full))
+    best_params_clean = {k: v for k, v in best_params.items() if k != "max_iter"}
+    model = LogisticRegression(
+        class_weight="balanced",
+        random_state=42,
+        max_iter=1000,
+        **best_params_clean,
+    )
+    model.fit(emb_full, y_full)
+
+    # ── Paso 3: Cross-validation de métricas ──────────────────────────────────
+    if len(lab_full) >= CV_MIN_SAMPLES:
+        n_splits_cv = max(2, min(5, min_class_count))
+        cv_final    = StratifiedKFold(n_splits=n_splits_cv, shuffle=True, random_state=42)
+        scores      = cross_val_score(model, emb_full, y_full, cv=cv_final, scoring="f1_macro", n_jobs=2)
         logger.info(
             "[%s] F1-macro CV (%d-fold): %.3f ± %.3f | clases: %d | ejemplos: %d",
-            name, n_splits, scores.mean(), scores.std(), len(labels), len(lab_filt),
+            name, n_splits_cv, scores.mean(), scores.std(), len(labels), len(lab_full),
         )
     else:
         logger.info(
-            "[%s] Entrenado con %d ejemplos (pocos para CV). Clases: %s | Parámetros: %s",
-            name, len(lab_filt), labels, grid_search.best_params_,
+            "[%s] Entrenado con %d ejemplos (pocos para CV). Clases: %s",
+            name, len(lab_full), labels,
         )
 
     return model, labels
@@ -233,26 +256,15 @@ def run_training(
       2. Genera embeddings (transformer congelado)
       3. Entrena CategoryClassifier y/o PriorityClassifier
       4. Guarda .pkl en data/models/
-
-    Args:
-        csv_path:      ruta al CSV de entrenamiento.
-        target:        "all" | "categoria" | "prioridad"
-        min_per_class: mínimo de ejemplos por clase para incluirla.
-
-    Returns:
-        dict con estado de cada clasificador entrenado.
     """
     logger.info("=== Iniciando entrenamiento ===")
     logger.info("CSV: %s | target: %s | min_per_class: %d", csv_path, target, min_per_class)
 
-    rows  = load_csv(csv_path)
-    texts = [r["texto"] for r in rows]
-
+    rows       = load_csv(csv_path)
+    texts      = [r["texto"] for r in rows]
     embeddings = generate_embeddings(texts)
-
     results: dict[str, str] = {}
 
-    # ── Categoría ──────────────────────────────────────────────────────────────
     if target in ("all", "categoria"):
         labels_cat = [r["categoria"] for r in rows]
         pair = train_single(embeddings, labels_cat, "CategoryClassifier", min_per_class)
@@ -262,7 +274,6 @@ def run_training(
         else:
             results["categoria"] = "skipped (datos insuficientes)"
 
-    # ── Prioridad ──────────────────────────────────────────────────────────────
     if target in ("all", "prioridad"):
         labels_pri = [r["prioridad"] for r in rows]
         pair = train_single(embeddings, labels_pri, "PriorityClassifier", min_per_class)

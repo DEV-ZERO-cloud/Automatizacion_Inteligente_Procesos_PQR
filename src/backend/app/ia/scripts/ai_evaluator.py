@@ -179,10 +179,10 @@ VALID_PRIORITIES = {"alta", "media", "baja", "urgente", "crítico", "critico"}
 # canónico de la tabla `prioridades`. La API puede devolver "crítica" (femenino)
 # o "critica" (sin tilde) que deben mapearse a "crítico".
 PRIORITY_NORMALIZATION = {
-    "critica":  "crítica",
-    "crítica":  "crítica",
-    "critico":  "crítica",
-    "crítico":  "crítica",
+    "critica":  "crítico",
+    "crítica":  "crítico",
+    "critico":  "crítico",
+    "crítico":  "crítico",
     "urgente":  "urgente",
     "alta":     "alta",
     "media":    "media",
@@ -501,16 +501,26 @@ def compute_ml_metrics(results: list[dict], field_pred: str, field_true: str) ->
     """
     validated = [
         r for r in results
-        if r.get(field_pred) is not None and r.get(field_true) is not None
+        if r.get(field_pred) is not None
+        and r.get(field_true) is not None
         and r.get("both_correct") is not None
     ]
+
     if not validated:
         return {}
 
-    y_true = [r[field_true] for r in validated]
-    y_pred = [r[field_pred] for r in validated]
+    y_true = [
+        str(r[field_true]).lower().strip()
+        for r in validated
+    ]
+
+    y_pred = [
+        str(r[field_pred]).lower().strip()
+        for r in validated
+    ]
+
     labels = sorted(set(y_true) | set(y_pred))
-    n      = len(validated)
+    n = len(validated)
 
     # Matriz de confusión: cm[true][pred]
     cm: dict[str, dict[str, int]] = {lbl: {l: 0 for l in labels} for lbl in labels}
@@ -933,7 +943,12 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
         pqr_id    = case["pqr_id"]
         text      = case["text"]
         raw_cat   = case.get("category", "")
-        truth_cat = CATEGORY_NORMALIZATION.get(raw_cat, raw_cat.lower()).strip()
+        raw_cat = (case.get("category") or "").strip()
+        truth_cat = CATEGORY_NORMALIZATION.get(
+            raw_cat,
+            raw_cat.lower()
+        ).lower().strip()
+
         raw_pri   = case.get("priority", "").lower().strip()
         truth_pri = PRIORITY_NORMALIZATION.get(
             raw_pri.lower().strip(),
@@ -1046,25 +1061,64 @@ def run_batch(host: str, filepath: str, token: Optional[str] = None, clasificaci
             continue
         try:
             response = classify_resp["data"]
-            
-            # Normalizar campos de la respuesta
-            result.processing_ms          = round(elapsed_ms, 1)
-            result.predicted_categoria_id = (response.get("categoria_id") or "")
-            result.predicted_prioridad_id = (response.get("prioridad_id") or "")
-            result.predicted_tags         = response.get("tags", [])
-            result.predicted_area         = response.get("area")
-            result.confianza              = response.get("confianza")
-            result.source                 = response.get("source")
-            result.rules_matched          = response.get("rules_matched", [])
-            result.requiere_revision      = response.get("requiere_revision")
 
-            result.predicted_categoria = categorias[result.predicted_categoria_id]
-            result.predicted_prioridad = prioridades[result.predicted_prioridad_id]
+            # IDs predichos
+            result.predicted_categoria_id = response.get("categoria_id")
+            result.predicted_prioridad_id = response.get("prioridad_id")
 
-            # Veredicto: comparar en minúscula normalizada
-            result.category_correct = (result.predicted_categoria == truth_cat)
-            result.priority_correct  = (result.predicted_prioridad  == truth_pri)
-            result.both_correct      = result.category_correct and result.priority_correct
+            # Otros campos
+            result.processing_ms     = round(elapsed_ms, 1)
+            result.predicted_tags    = response.get("tags", [])
+            result.predicted_area    = response.get("area")
+            result.confianza         = response.get("confianza")
+            result.source            = response.get("source")
+            result.rules_matched     = response.get("rules_matched", [])
+            result.requiere_revision = response.get("requiere_revision")
+
+            # Obtener nombres desde catálogo
+            result.predicted_categoria = (
+                categorias.get(
+                    result.predicted_categoria_id,
+                    "unknown"
+                )
+                .lower()
+                .strip()
+            )
+
+            result.predicted_prioridad = (
+                prioridades.get(
+                    result.predicted_prioridad_id,
+                    "unknown"
+                )
+                .lower()
+                .strip()
+            )
+
+            # Normalización
+            pred_cat_norm = (
+                (result.predicted_categoria or "")
+                .lower()
+                .strip()
+            )
+
+            pred_pri_norm = (
+                (result.predicted_prioridad or "")
+                .lower()
+                .strip()
+            )
+
+            # Comparación
+            result.category_correct = (
+                pred_cat_norm == truth_cat
+            )
+
+            result.priority_correct = (
+                pred_pri_norm == truth_pri
+            )
+
+            result.both_correct = (
+                result.category_correct and result.priority_correct
+            )
 
             verdict = f"{GREEN}✓{RESET}" if result.both_correct else (
                 f"{YELLOW}~{RESET}" if (result.category_correct or result.priority_correct) else f"{RED}✗{RESET}"
@@ -1418,8 +1472,12 @@ def _print_summary(m: dict):
   ┌────────────────────────────────────────────────────────┐""")
     for src, cnt in sorted(sources.items(), key=lambda x: -x[1]):
         pct_s = cnt / total_s * 100
-        print(f"  │  {src:>10}: {cnt:>4} casos ({pct_s:>5.1f}%)")
-    print("  └────────────────────────────────────────────────────────┘")
+
+        src_str = str(src or "unknown")
+
+        print(
+            f"  │  {src_str:>10}: {cnt:>4} casos ({pct_s:>5.1f}%)"
+        )
 
     err = m.get("error_count", 0)
     print(f"""
