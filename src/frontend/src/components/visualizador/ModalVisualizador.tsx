@@ -27,7 +27,9 @@ export function ModalVisualizador({ isOpen, onClose, files, currentFileIndex, on
       setZoom(1);
       try {
         const blob = await fileService.getFileBlob(currentFile.id);
-        const url = URL.createObjectURL(blob);
+        // CRÍTICO: Asegurar que el blob tenga el tipo MIME correcto para que el navegador sepa cómo renderizarlo
+        const typedBlob = new Blob([blob], { type: currentFile.tipo || 'application/octet-stream' });
+        const url = URL.createObjectURL(typedBlob);
         setPreviewUrl(url);
       } catch {
         setError(true);
@@ -44,7 +46,7 @@ export function ModalVisualizador({ isOpen, onClose, files, currentFileIndex, on
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [isOpen, currentFile, currentFileIndex]);
+  }, [isOpen, currentFile]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -97,101 +99,128 @@ export function ModalVisualizador({ isOpen, onClose, files, currentFileIndex, on
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-      {/* Toolbar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {currentFile.nombre}
-          </span>
-          <span style={{ fontSize: '11px', color: '#6b7280', flexShrink: 0 }}>
-            ({currentFileIndex + 1} / {files.length})
-          </span>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', backgroundColor: '#ffffff', color: '#1e293b' }}>
+      {/* Toolbar Superior */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '8px', backgroundColor: isImage ? '#e0f2fe' : isPdf ? '#fee2e2' : '#e0e7ff', color: isImage ? '#0ea5e9' : isPdf ? '#ef4444' : '#6366f1' }}>
+             <span className="material-symbols-outlined">{isImage ? 'image' : isPdf ? 'picture_as_pdf' : 'insert_drive_file'}</span>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentFile.nombre}
+            </h3>
+            <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+              Archivo {currentFileIndex + 1} de {files.length} • {currentFile.tipo || 'Desconocido'}
+            </p>
+          </div>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {isImage && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginRight: '8px' }}>
-              <button onClick={handleZoomOut} style={{ padding: '4px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }} title="Alejar">
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>remove</span>
+            <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #e2e8f0' }}>
+              <button onClick={handleZoomOut} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Alejar">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
               </button>
-              <button onClick={handleZoomReset} style={{ padding: '2px 6px', fontSize: '11px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }} title="Restablecer zoom">
+              <span style={{ padding: '0 10px', fontSize: '13px', fontWeight: 600, color: '#334155', minWidth: '4ch', textAlign: 'center' }}>
                 {Math.round(zoom * 100)}%
+              </span>
+              <button onClick={handleZoomIn} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Acercar">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
               </button>
-              <button onClick={handleZoomIn} style={{ padding: '4px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }} title="Acercar">
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+              <div style={{ width: '1px', height: '20px', background: '#cbd5e1', margin: '0 4px' }}></div>
+              <button onClick={handleZoomReset} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Ajustar a pantalla">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>fit_screen</span>
               </button>
             </div>
           )}
           
-          <button onClick={handleDownload} style={{ padding: '4px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }} title="Descargar">
+          <button onClick={handleDownload} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#0f172a', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', transition: 'background 0.2s' }} title="Descargar">
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
+            Descargar
           </button>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f3f4f6', padding: '8px', overflow: 'auto', minHeight: 0 }}>
+      {/* Área de Visualización */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: '#f1f5f9', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
-            <span className="material-symbols-outlined animate-spin">sync</span>
-            Cargando...
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', color: '#64748b' }}>
+            <span className="material-symbols-outlined animate-spin" style={{ fontSize: '40px', color: '#0ea5e9' }}>sync</span>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 500 }}>Preparando vista previa...</p>
           </div>
         ) : error ? (
-          <div style={{ textAlign: 'center', color: '#ef4444', padding: '16px' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '36px' }}>error</span>
-            <p>Error al cargar la vista previa</p>
-            <button onClick={handleDownload} className="mt-2 btn btn-primary btn-sm">Descargar archivo</button>
+          <div style={{ textAlign: 'center', color: '#ef4444', padding: '24px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', maxWidth: '400px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px', marginBottom: '12px' }}>broken_image</span>
+            <h3 style={{ margin: '0 0 8px', fontSize: '16px', color: '#1e293b' }}>No se pudo cargar la vista previa</h3>
+            <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#64748b' }}>El archivo puede estar corrupto o el formato no es compatible con el navegador.</p>
+            <button onClick={handleDownload} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#0f172a', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Descargar para ver</button>
           </div>
         ) : isImage && previewUrl ? (
-          <img
-            src={previewUrl}
-            alt={currentFile.nombre}
-            style={{
-              transform: `scale(${zoom})`,
-              transformOrigin: 'center center',
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain'
-            }}
-          />
+          <div style={{ width: '100%', height: '100%', overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <img
+              src={previewUrl}
+              alt={currentFile.nombre}
+              style={{
+                transform: `scale(${zoom})`,
+                transformOrigin: 'center center',
+                transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                borderRadius: '8px',
+                backgroundColor: '#ffffff'
+              }}
+            />
+          </div>
         ) : isPdf && previewUrl ? (
-          <iframe src={previewUrl} title={currentFile.nombre} style={{ width: '100%', height: '100%', border: 'none' }} />
+          <iframe 
+            src={previewUrl} 
+            title={currentFile.nombre} 
+            style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#fff' }} 
+          />
         ) : (
-          <div style={{ textAlign: 'center', color: '#6b7280', padding: '16px' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '36px' }}>description</span>
-            <p>Vista previa no disponible</p>
-            <button onClick={handleDownload} className="mt-2 btn btn-primary btn-sm">Descargar archivo</button>
+          <div style={{ textAlign: 'center', color: '#64748b', padding: '32px', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '64px', marginBottom: '16px', color: '#94a3b8' }}>file_present</span>
+            <h3 style={{ margin: '0 0 8px', fontSize: '18px', color: '#1e293b' }}>Vista previa no disponible</h3>
+            <p style={{ margin: '0 0 24px', fontSize: '14px', maxWidth: '300px' }}>Para ver el contenido de este tipo de archivo ({currentFile.tipo || 'desconocido'}), necesitas descargarlo.</p>
+            <button onClick={handleDownload} style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#0f172a', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>download</span>
+              Descargar Archivo
+            </button>
           </div>
         )}
       </div>
 
-      {/* Navigation */}
+      {/* Navegación Inferior */}
       {files.length > 1 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderTop: '1px solid #e2e8f0', backgroundColor: '#f8fafc', flexShrink: 0 }}>
           <button
             onClick={handlePrev}
             disabled={currentFileIndex === 0}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: currentFileIndex === 0 ? 'transparent' : 'transparent', color: currentFileIndex === 0 ? '#d1d5db' : '#4b5563', cursor: currentFileIndex === 0 ? 'not-allowed' : 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: currentFileIndex === 0 ? '#94a3b8' : '#334155', cursor: currentFileIndex === 0 ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_back</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>navigate_before</span>
             Anterior
           </button>
           
-          <div style={{ display: 'flex', gap: '4px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             {files.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => onFileChange(idx)}
                 style={{
-                  width: '8px',
-                  height: '8px',
+                  width: '10px',
+                  height: '10px',
                   borderRadius: '50%',
                   border: 'none',
-                  background: idx === currentFileIndex ? '#2563eb' : '#d1d5db',
-                  cursor: 'pointer'
+                  background: idx === currentFileIndex ? '#0ea5e9' : '#cbd5e1',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  transform: idx === currentFileIndex ? 'scale(1.2)' : 'scale(1)'
                 }}
-                title={`Archivo ${idx + 1}`}
+                title={`Ver archivo ${idx + 1}`}
               />
             ))}
           </div>
@@ -199,10 +228,10 @@ export function ModalVisualizador({ isOpen, onClose, files, currentFileIndex, on
           <button
             onClick={handleNext}
             disabled={currentFileIndex === files.length - 1}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: 'transparent', color: currentFileIndex === files.length - 1 ? '#d1d5db' : '#4b5563', cursor: currentFileIndex === files.length - 1 ? 'not-allowed' : 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: currentFileIndex === files.length - 1 ? '#94a3b8' : '#334155', cursor: currentFileIndex === files.length - 1 ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
           >
             Siguiente
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>navigate_next</span>
           </button>
         </div>
       )}

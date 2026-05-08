@@ -69,7 +69,7 @@ async def get_history(
 @router.get("/historial/pqr/{pqr_id}", status_code=status.HTTP_200_OK)
 async def get_history_by_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["usuario", "agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna todo el historial asociado a una PQR específica."""
     try:

@@ -1,6 +1,8 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, Security, status
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 from app.core.auth import get_current_user
 from app.core.responses import ok_response
@@ -64,12 +66,48 @@ async def get_file(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  GET /archivos/{file_id}/content
+# ══════════════════════════════════════════════════════════════════════════════
+@router.get("/archivos/{file_id}/content")
+async def get_file_content(
+    file_id: int,
+    current_user: dict = Security(get_current_user, scopes=["usuario", "agente", "supervisor", "operador", "admin"]),
+):
+    """Descarga el contenido binario del archivo."""
+    try:
+        logger.info("[GET /archivos/%s/content]", file_id)
+        file = controller.get_by_id(FileOut, file_id)
+        if not file or not file.ruta:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archivo no encontrado.")
+
+        from app.api.routes.file_service.file_CUD_service import STORAGE_ROOT
+        
+        disk_path = Path(file.ruta)
+        if not disk_path.is_absolute():
+            disk_path = STORAGE_ROOT / disk_path
+            
+        if not disk_path.exists() or not disk_path.is_file():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El archivo no existe en el disco.")
+            
+        return FileResponse(
+            path=disk_path, 
+            filename=file.nombre,
+            media_type=file.tipo or "application/octet-stream"
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("[GET /archivos/%s/content] Error: %s", file_id, exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  GET /archivos/pqr/{pqr_id}
 # ══════════════════════════════════════════════════════════════════════════════
 @router.get("/archivos/pqr/{pqr_id}", status_code=status.HTTP_200_OK)
 async def get_files_by_pqr(
     pqr_id: int,
-    current_user: dict = Security(get_current_user, scopes=["agente", "supervisor", "operador", "admin"]),
+    current_user: dict = Security(get_current_user, scopes=["usuario", "agente", "supervisor", "operador", "admin"]),
 ):
     """Retorna todos los archivos asociados a una PQR específica."""
     try:

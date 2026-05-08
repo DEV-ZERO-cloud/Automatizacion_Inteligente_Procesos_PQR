@@ -1,0 +1,16 @@
+.git
+.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+src/frontend/node_modules
+src/frontend/dist
+src/backend/.pytest_cache
+src/backend/.mypy_cache
+src/backend/.ruff_cache
+src/backend/app/tests
+data/models/hf_cache
