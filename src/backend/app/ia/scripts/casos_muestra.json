@@ -759,49 +759,49 @@
     "pqr_id": 127,
     "text": "CORTE DE ENERGÍA Y RIESGO ELÉCTRICO: El tablero de control instalado ayer comenzó a emitir chispas y humo denso. Detuvimos la operación de la planta por completo para evitar un incendio mayor.",
     "category": "Técnica",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 128,
     "text": "FUGA DE DATOS SENSIBLES: El portal de clientes está mostrando información de facturación y datos personales de otros usuarios al iniciar sesión. Exijo que bajen la plataforma inmediatamente.",
     "category": "Servicio",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 129,
     "text": "COBRO DUPLICADO MASIVO NO AUTORIZADO: Se debitaron automáticamente de nuestra cuenta corporativa $15.000 USD en lugar de los $1.500 USD pactados por contrato. Esto ha bloqueado nuestra liquidez operativa.",
     "category": "Facturación incorrecta",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 130,
-    "text": "INCUMPLIMIENTO CRÍTICO EN LICITACIÓN: El retraso de 15 días en la entrega de los transformadores industriales nos generó una penalización económica masiva y la pérdida inminente de la licitación estatal.",
+    "text": "INCUMPLIMIENTO crítica EN LICITACIÓN: El retraso de 15 días en la entrega de los transformadores industriales nos generó una penalización económica masiva y la pérdida inminente de la licitación estatal.",
     "category": "Entrega tardía",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 131,
     "text": "MATERIAL QUÍMICO / PELIGROSO DAÑADO: El último lote de refrigerantes industriales llegó con los sellos de seguridad rotos y presentando derrames en el camión. Hay riesgo para la salud del personal.",
     "category": "Producto defectuoso",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 132,
     "text": "DESVÍO DE DESPACHO INTERNACIONAL: El pedido de maquinaria pesada fue entregado por error en una bodega portuaria de otra ciudad y los documentos de aduana están bloqueados. Necesitamos rescate de la carga hoy.",
     "category": "Logística y entrega",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 133,
     "text": "ERROR EN CERTIFICACIÓN LEGAL: La factura y los documentos tributarios adjuntos registran un NIT inexistente y conceptos erróneos que impiden la nacionalización de la mercancía que está en el puerto.",
     "category": "Factura y documentos",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "pqr_id": 134,
     "text": "CANCELACIÓN DE EMERGENCIA POR INCUMPLIMIENTO: Solicito la rescisión inmediata del contrato de soporte técnico por negligencia. La falta de mantenimiento preventivo provocó el colapso del sistema principal.",
     "category": "Cancelación de pedido",
-    "priority": "crítico"
+    "priority": "crítica"
   },
   {
     "text": "No puedo ver el estado de mi pedido en la aplicacion, solo dice procesando desde hace 3 dias.",
@@ -812,13 +812,13 @@
   {
     "text": "Mi pedido aparece como entregado en el sistema pero nunca lo recibi en mi casa.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 136
   },
   {
     "text": "El rastreo de mi paquete no se actualiza desde hace 5 dias, necesito saber donde esta.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 137
   },
   {
@@ -830,37 +830,37 @@
   {
     "text": "El numero de guia que me enviaron no funciona en la pagina de la transportadora.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 139
   },
   {
     "text": "Mi pedido cambio de estado a cancelado sin que yo lo haya solicitado ni recibido notificacion.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 140
   },
   {
     "text": "La aplicacion me muestra un estado diferente al correo que recibi, hay inconsistencia.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 141
   },
   {
     "text": "Llevo dos dias intentando rastrear mi pedido y el sistema me arroja error cada vez.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 142
   },
   {
     "text": "El estado de mi pedido lleva 4 dias en camino pero no ha llegado ni hay novedad alguna.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 143
   },
   {
     "text": "Necesito confirmacion de si mi pedido fue enviado, el estado no ha cambiado en 48 horas.",
     "category": "Estado de pedido",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 144
   },
   {
@@ -872,7 +872,7 @@
   {
     "text": "El proceso de pago es confuso y tuve que intentar tres veces antes de que me aceptaran.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 146
   },
   {
@@ -890,157 +890,157 @@
   {
     "text": "Me registre con un correo incorrecto y no hay forma de corregirlo desde la plataforma.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 149
   },
   {
     "text": "El buscador de productos no funciona correctamente, no encuentra articulos del catalogo.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 150
   },
   {
     "text": "Tuve una experiencia terrible, el asesor en linea fue grosero y no resolvio mi duda.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 151
   },
   {
     "text": "La pasarela de pago me cobro dos veces por el mismo pedido y no me han devuelto el dinero.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 152
   },
   {
     "text": "No recibi el correo de confirmacion de compra y no tengo como comprobar que el pago fue exitoso.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 153
   },
   {
     "text": "Al finalizar el checkout el sistema arrojo un error y no se si el pedido quedo registrado.",
     "category": "Experiencia de compra",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 154
   },
   {
     "text": "Detecte una compra que yo no realice por valor de 500 mil pesos en mi historial de pedidos.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 155
   },
   {
     "text": "Alguien accedio a mi cuenta y cambio la contrasena y el correo, ya no puedo ingresar.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 156
   },
   {
     "text": "Recibi un correo sospechoso supuestamente de su empresa solicitando mis datos bancarios.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 157
   },
   {
     "text": "Me llego un mensaje de texto con un link falso que simula ser su tienda para robar informacion.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 158
   },
   {
     "text": "Mi tarjeta de credito fue usada de forma fraudulenta en tres compras en su plataforma.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 159
   },
   {
     "text": "Veo pedidos en mi cuenta que nunca hice, creo que fue hackeada por terceros.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 160
   },
   {
     "text": "Al ingresar mis datos la pagina no tiene el candado de seguridad SSL, es completamente insegura.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 161
   },
   {
     "text": "Un tercero llamo haciendose pasar por su empresa para pedirme el codigo de verificacion.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 162
   },
   {
     "text": "Encontre mis datos personales publicados en un foro, creo que hubo una fuga de informacion.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 163
   },
   {
     "text": "Me solicitaron pago por fuera de la plataforma via transferencia bancaria, algo que parece fraude.",
     "category": "Fraude / seguridad",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 164
   },
   {
     "text": "El producto que compre presento falla a los 15 dias y segun garantia deben repararlo o cambiarlo.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 165
   },
   {
     "text": "Solicite garantia por un electrodomestico defectuoso pero me dijeron que ya vencio sin notificacion.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 166
   },
   {
     "text": "El articulo dejo de funcionar en menos de un mes de uso normal y exijo que se honre la garantia.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 167
   },
   {
     "text": "Me negaron la garantia argumentando mal uso pero el producto se uso exactamente como indica el manual.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 168
   },
   {
     "text": "Llevo tres semanas esperando respuesta sobre el estado de la reparacion bajo garantia de mi celular.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 169
   },
   {
     "text": "La empresa de garantia me tiene en espera sin fecha definida para entrega del producto reparado.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 170
   },
   {
     "text": "Me ofrecieron cambio por producto nuevo bajo garantia pero van dos semanas y no hacen el cambio.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 171
   },
   {
     "text": "El producto en garantia fue enviado a servicio tecnico y ahora dicen que lo perdieron.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 172
   },
   {
     "text": "Quiero saber como ejercer la garantia de un producto que compre hace 6 meses y presento fallas.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 173
   },
   {
     "text": "El servicio tecnico de garantia cobro reparacion de un dano que estaba cubierto en la poliza.",
     "category": "Garantía",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 174
   },
   {
@@ -1070,13 +1070,13 @@
   {
     "text": "Publicaron un precio y al agregar al carrito aparece un precio 30% mayor, es enganoso.",
     "category": "Publicidad engañosa",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 179
   },
   {
     "text": "La descripcion del producto decia que era original pero recibi una replica de baja calidad.",
     "category": "Publicidad engañosa",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 180
   },
   {
@@ -1088,19 +1088,19 @@
   {
     "text": "El video publicitario muestra funciones que el producto real no tiene, me siento estafado.",
     "category": "Publicidad engañosa",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 182
   },
   {
     "text": "La promocion de descuentos tenia productos con precios inflados respecto al precio normal.",
     "category": "Publicidad engañosa",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 183
   },
   {
     "text": "Las condiciones del 2x1 no estaban claras en la publicidad y no aplico como esperaba.",
     "category": "Publicidad engañosa",
-    "priority": "crítico",
+    "priority": "crítica",
     "pqr_id": 184
   },
   {

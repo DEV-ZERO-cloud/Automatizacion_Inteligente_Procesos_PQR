@@ -173,16 +173,16 @@ VALID_CATEGORIES = {
     "Programa de fidelización",
     "Publicidad engañosa",
 }
-VALID_PRIORITIES = {"alta", "media", "baja", "urgente", "crítico", "critico"}
+VALID_PRIORITIES = {"alta", "media", "baja", "urgente", "crítica", "critica"}
 
 # Normalización de prioridades: unifica variantes que devuelve la API al nivel
 # canónico de la tabla `prioridades`. La API puede devolver "crítica" (femenino)
 # o "critica" (sin tilde) que deben mapearse a "crítico".
 PRIORITY_NORMALIZATION = {
-    "critica":  "crítico",
-    "crítica":  "crítico",
-    "critico":  "crítico",
-    "crítico":  "crítico",
+    "critica":  "crítica",
+    "crítica":  "crítica",
+    "critico":  "crítica",
+    "crítico":  "crítica",
     "urgente":  "urgente",
     "alta":     "alta",
     "media":    "media",
