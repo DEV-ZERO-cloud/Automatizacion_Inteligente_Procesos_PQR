@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { reportService } from '../services/reportService';
 import { pqrService } from '../services/pqrService';
+import { catalogService } from '../services/catalogService';
 import { useAuthStore } from '../stores/authStore';
 import type { PQR } from '../types';
 
@@ -109,6 +110,7 @@ export function Reportes() {
   const [filtroEstado, setFiltroEstado]   = useState('');
   const [chartType, setChartType]         = useState<'lineas' | 'barra'>('lineas');
   const [rawPqrs, setRawPqrs]             = useState<PQR[]>([]);
+  const [allCategoryNames, setAllCategoryNames] = useState<string[]>([]);
   const [categories, setCategories]       = useState<{name:string;cantidad:number;porcentaje:number;color:string}[]>([]);
   const [priorities, setPriorities]       = useState<{name:string;cantidad:number;porcentaje:number;color:string}[]>([]);
   const [stats, setStats]                 = useState({ total:0, pendientes:0, enProceso:0, resueltas:0 });
@@ -137,6 +139,12 @@ export function Reportes() {
         })));
         setRawPqrs(pqrs);
       } catch { /* silent */ }
+
+      // Carga independiente: si falla (ej. 403) no afecta al resto de la página
+      try {
+        const cats = await catalogService.getCategories();
+        if (ok) setAllCategoryNames(cats.map(c => c.nombre).filter(Boolean));
+      } catch { /* sin permisos o error de red: el filtro queda vacío */ }
     })();
     return () => { ok = false; };
   }, []);
@@ -161,7 +169,6 @@ export function Reportes() {
   const series  = useMemo(() => buildSeries(filteredForChart, labels, tiposPresentes.length ? tiposPresentes : ['total']), [filteredForChart, labels, tiposPresentes]);
   const maxVal  = useMemo(() => Math.max(...series.flatMap(s => s.values), 1), [series]);
 
-  const uniqueCats   = Array.from(new Set(rawPqrs.map(p => p.categoria).filter(Boolean))) as string[];
   const uniqueEstados = Array.from(new Set(rawPqrs.map(p => p.estado).filter(Boolean))) as string[];
 
   /* ── SVG multi-línea ── */
@@ -214,10 +221,10 @@ export function Reportes() {
               <option value="90d">Últimos 90 días</option>
               <option value="1y">Último año</option>
             </select>
-            {/* Filtro categoría */}
-            <select className="select" style={{ width:140, fontSize:12, padding:'6px 10px' }} value={filtroCategoria} onChange={e=>setFiltroCategoria(e.target.value)}>
+            {/* Filtro categoría — todas las categorías de la BD */}
+            <select className="select" style={{ width:170, fontSize:12, padding:'6px 10px' }} value={filtroCategoria} onChange={e=>setFiltroCategoria(e.target.value)}>
               <option value="">Todas las categorías</option>
-              {uniqueCats.map(c => <option key={c} value={c}>{c}</option>)}
+              {allCategoryNames.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             {/* Filtro tipo */}
             <select className="select" style={{ width:130, fontSize:12, padding:'6px 10px' }} value={filtroTipo} onChange={e=>setFiltroTipo(e.target.value)}>

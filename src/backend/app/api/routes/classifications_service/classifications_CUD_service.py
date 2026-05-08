@@ -70,7 +70,7 @@ async def validate_classification(
             categoria_id=payload.categoria_id,
             prioridad_id=payload.prioridad_id,
             confianza=payload.confianza,
-            origen="MANUAL",
+            origen=payload.origen,
             fue_corregida=True,
             validado_por=current_user.get("sub"),
             created_at=payload.created_at,

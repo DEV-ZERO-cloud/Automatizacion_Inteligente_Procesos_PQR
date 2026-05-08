@@ -38,8 +38,8 @@ export function BandejaEntrada() {
   const [showModal, setShowModal] = useState(false);
   const [selectedPQR, setSelectedPQR] = useState<PQR | null>(null);
   const [pqrs, setPqrs] = useState<PQR[]>([]);
-  const [prioridades, setPrioridades] = useState<string[]>([]);
-  const [categorias, setCategorias] = useState<string[]>([]);
+  const [prioridadesData, setPrioridadesData] = useState<{ id: number; nombre: string }[]>([]);
+  const [categoriasData, setCategoriasData] = useState<{ id: number; nombre: string }[]>([]);
   const [classificationByPqr, setClassificationByPqr] = useState<Record<number, Classification | null>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,37 +69,25 @@ export function BandejaEntrada() {
         }
 
         setPqrs(pqrData);
+        setCategoriasData(categoriesData.map(c => ({ id: Number(c.id), nombre: c.nombre })));
+        setPrioridadesData(prioritiesData.map(p => ({ id: Number(p.id), nombre: p.nombre })));
 
-        const apiCategories = categoriesData.map((item) => item.nombre).filter(Boolean);
-        const apiPriorities = prioritiesData.map((item) => item.nombre).filter(Boolean);
-
-        const dbCategories = Array.from(new Set(pqrData.map((item) => item.categoria).filter(Boolean))) as string[];
-        const dbPriorities = Array.from(new Set(pqrData.map((item) => item.prioridad).filter(Boolean))) as string[];
-
-        setCategorias(apiCategories.length > 0 ? apiCategories : dbCategories);
-        setPrioridades(apiPriorities.length > 0 ? apiPriorities : dbPriorities);
-
+        // Cargar clasificación de TODAS las PQRs
         const classificationPairs = await Promise.all(
-          pqrData
-            .filter((item) => !['resuelta', 'cerrada'].includes(item.estado.toLowerCase()))
-            .map(async (item) => {
-              try {
-                const classification = await pqrService.getClassification(item.id);
-                return [item.id, classification] as const;
-              } catch {
-                return [item.id, null] as const;
-              }
-            })
+          pqrData.map(async (item) => {
+            try {
+              const classification = await pqrService.getClassification(item.id);
+              return [item.id, classification] as const;
+            } catch {
+              return [item.id, null] as const;
+            }
+          })
         );
 
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
         const map: Record<number, Classification | null> = {};
-        classificationPairs.forEach(([id, classification]) => {
-          map[id] = classification;
-        });
+        classificationPairs.forEach(([id, classification]) => { map[id] = classification; });
         setClassificationByPqr(map);
       } catch {
         if (isMounted) {
@@ -122,37 +110,35 @@ export function BandejaEntrada() {
 
   const filteredPQRS = useMemo(() => {
     return pqrs.filter((pqr) => {
-      const status = pqr.estado.toLowerCase();
-      const isPending = !['resuelta', 'cerrada'].includes(status);
+      const cls = classificationByPqr[pqr.id];
+      // Validado = tiene validado_por; pendiente = sin validar aún
+      const isValidated = cls?.fue_corregida === true;
+      if (activeTab === 'pendientes' && isValidated) return false;
+      if (activeTab === 'validados' && !isValidated) return false;
 
-      if (activeTab === 'pendientes' && !isPending) {
-        return false;
-      }
-      if (activeTab === 'validados' && isPending) {
-        return false;
-      }
-
-      if (filtroPrioridad && (pqr.prioridad || '').toLowerCase() !== filtroPrioridad.toLowerCase()) {
-        return false;
+      // Filtro prioridad: resolvemos nombre desde el catálogo via ID
+      if (filtroPrioridad) {
+        const priNombre = prioridadesData.find(p => p.id === Number(cls?.prioridad_id))?.nombre || pqr.prioridad || '';
+        if (priNombre.toLowerCase() !== filtroPrioridad.toLowerCase()) return false;
       }
 
-      if (filtroCategoria && (pqr.categoria || '').toLowerCase() !== filtroCategoria.toLowerCase()) {
-        return false;
+      // Filtro categoría: resolvemos nombre desde el catálogo via ID
+      if (filtroCategoria) {
+        const catNombre = categoriasData.find(c => c.id === Number(cls?.categoria_id))?.nombre || pqr.categoria || '';
+        if (catNombre.toLowerCase() !== filtroCategoria.toLowerCase()) return false;
       }
 
       const search = searchText.trim().toLowerCase();
       if (search) {
         const text = `${pqr.id} ${pqr.titulo} ${pqr.descripcion} ${pqr.usuario_nombre || ''}`.toLowerCase();
-        if (!text.includes(search)) {
-          return false;
-        }
+        if (!text.includes(search)) return false;
       }
-
       return true;
     });
-  }, [activeTab, filtroCategoria, filtroPrioridad, pqrs, searchText]);
+  }, [activeTab, filtroCategoria, filtroPrioridad, pqrs, searchText, classificationByPqr, categoriasData, prioridadesData]);
 
-  const pendientesCount = useMemo(() => pqrs.filter((p) => !['resuelta', 'cerrada'].includes(p.estado.toLowerCase())).length, [pqrs]);
+  const pendientesCount = useMemo(() => pqrs.filter(p => classificationByPqr[p.id]?.fue_corregida !== true).length, [pqrs, classificationByPqr]);
+  const validadosCount = useMemo(() => pqrs.filter(p => classificationByPqr[p.id]?.fue_corregida === true).length, [pqrs, classificationByPqr]);
 
   const avgConfidence = useMemo(() => {
     const values = Object.values(classificationByPqr).filter((item): item is Classification => item !== null);
@@ -193,9 +179,13 @@ export function BandejaEntrada() {
   };
 
   const openDetail = (pqr: PQR) => {
+    const cls = classificationByPqr[pqr.id];
+    // Inicializamos el drawer desde los IDs de la clasificación → nombres del catálogo
+    const catName = categoriasData.find(c => c.id === Number(cls?.categoria_id))?.nombre || pqr.categoria || '';
+    const priName = prioridadesData.find(p => p.id === Number(cls?.prioridad_id))?.nombre || pqr.prioridad || '';
     setSelectedPQR(pqr);
-    setDrawerCategoria(pqr.categoria || '');
-    setDrawerPrioridad(pqr.prioridad || '');
+    setDrawerCategoria(catName);
+    setDrawerPrioridad(priName);
     setShowConfirm(false);
     setShowModal(true);
   };
@@ -209,12 +199,11 @@ export function BandejaEntrada() {
     }
   };
 
-  const handleValidate = async (pqr: PQR) => {
-    const classification = classificationByPqr[pqr.id];
-    if (!classification) {
-      return;
-    }
-
+  // Aceptar clasificación IA sin modificar valores
+  const handleAcceptAI = async () => {
+    if (!selectedPQR) return;
+    const classification = classificationByPqr[selectedPQR.id];
+    if (!classification) return;
     try {
       await pqrService.validateClassification({
         id: Number(classification.id),
@@ -228,11 +217,45 @@ export function BandejaEntrada() {
         validado_por: user?.id ? Number(user.id) : undefined,
         created_at: classification.created_at,
       });
-
-      const updated = await pqrService.getClassification(pqr.id);
-      setClassificationByPqr((prev) => ({ ...prev, [pqr.id]: updated }));
+      const updated = await pqrService.getClassification(selectedPQR.id);
+      setClassificationByPqr(prev => ({ ...prev, [selectedPQR.id]: updated }));
+      setShowModal(false);
     } catch {
-      setError('No fue posible validar la clasificación seleccionada.');
+      setError('No fue posible registrar la validación.');
+    }
+  };
+
+  // Guardar cambios manuales: actualiza clasificaciones con nuevos IDs
+  const handleSaveChanges = async () => {
+    if (!selectedPQR) return;
+    const classification = classificationByPqr[selectedPQR.id];
+    if (!classification) return;
+    const newCatId = categoriasData.find(c => c.nombre === drawerCategoria)?.id;
+    const newPriId = prioridadesData.find(p => p.nombre === drawerPrioridad)?.id;
+    if (!newCatId || !newPriId) { setError('Categoría o prioridad inválida.'); return; }
+    try {
+      await pqrService.validateClassification({
+        id: Number(classification.id),
+        pqr_id: Number(classification.pqr_id),
+        modelo_version: classification.modelo_version,
+        categoria_id: newCatId,
+        prioridad_id: newPriId,
+        confianza: classification.confianza,
+        origen: 'MANUAL',
+        fue_corregida: true,
+        validado_por: user?.id ? Number(user.id) : undefined,
+        created_at: classification.created_at,
+      });
+      const updated = await pqrService.getClassification(selectedPQR.id);
+      setClassificationByPqr(prev => ({ ...prev, [selectedPQR.id]: updated }));
+      // Actualizar nombres en la lista local para que la tabla los muestre
+      setPqrs(prev => prev.map(p => p.id === selectedPQR.id
+        ? { ...p, categoria: drawerCategoria, prioridad: drawerPrioridad } : p));
+      setShowConfirm(false);
+      setShowModal(false);
+    } catch {
+      setError('No fue posible guardar los cambios.');
+      setShowConfirm(false);
     }
   };
 
@@ -249,7 +272,7 @@ export function BandejaEntrada() {
             Pendientes ({pendientesCount})
           </button>
           <button className={`tab ${activeTab === 'validados' ? 'active' : ''}`} onClick={() => setActiveTab('validados')}>
-            Validados
+            Validados ({validadosCount})
           </button>
         </div>
         <input
@@ -266,8 +289,8 @@ export function BandejaEntrada() {
           <p style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Filtrar por Prioridad</p>
           <select className="select" value={filtroPrioridad} onChange={(e) => setFiltroPrioridad(e.target.value)}>
             <option value="">Todas</option>
-            {prioridades.map((item) => (
-              <option key={item} value={item}>{item}</option>
+            {prioridadesData.map((item) => (
+              <option key={item.id} value={item.nombre}>{item.nombre}</option>
             ))}
           </select>
         </div>
@@ -275,8 +298,8 @@ export function BandejaEntrada() {
           <p style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>Filtrar por Categoria</p>
           <select className="select" value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)}>
             <option value="">Todas</option>
-            {categorias.map((item) => (
-              <option key={item} value={item}>{item}</option>
+            {categoriasData.map((item) => (
+              <option key={item.id} value={item.nombre}>{item.nombre}</option>
             ))}
           </select>
         </div>
@@ -336,8 +359,8 @@ export function BandejaEntrada() {
                         <p style={{ fontWeight: '500', marginBottom: '4px' }}>{pqr.titulo}</p>
                         <p style={{ fontSize: '12px', color: '#94a3b8' }}>Usuario: {pqr.usuario_nombre || pqr.usuario_id || '-'}</p>
                       </td>
-                        <td><span className="badge badge-neutral">{pqr.categoria || 'N/D'}</span></td>
-                        <td><span className={getPriorityBadge(pqr.prioridad || 'media')}>{(pqr.prioridad || 'N/D').toUpperCase()}</span></td>
+                      <td><span className="badge badge-neutral">{pqr.categoria || 'N/D'}</span></td>
+                      <td><span className={getPriorityBadge(pqr.prioridad || 'media')}>{(pqr.prioridad || 'N/D').toUpperCase()}</span></td>
                       <td>
                         {confidence !== null ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -452,11 +475,15 @@ export function BandejaEntrada() {
                     </div>
                     <div>
                       <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Categoría sugerida</p>
-                      <p style={{ fontSize: '13px', fontWeight: 600 }}>{classificationByPqr[selectedPQR.id]?.categoria_nombre || 'N/D'}</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600 }}>
+                        {(() => { const cls = classificationByPqr[selectedPQR.id]; return cls ? (categoriasData.find(c => c.id === Number(cls.categoria_id))?.nombre || 'N/D') : 'N/D'; })()}
+                      </p>
                     </div>
                     <div>
                       <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Prioridad sugerida</p>
-                      <p style={{ fontSize: '13px', fontWeight: 600 }}>{classificationByPqr[selectedPQR.id]?.prioridad_nombre || 'N/D'}</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600 }}>
+                        {(() => { const cls = classificationByPqr[selectedPQR.id]; return cls ? (prioridadesData.find(p => p.id === Number(cls.prioridad_id))?.nombre || 'N/D') : 'N/D'; })()}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -474,42 +501,64 @@ export function BandejaEntrada() {
                       <label style={{ fontSize: '12px', fontWeight: 600, color: '#525f73', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Categoría</label>
                       <select className="select" value={drawerCategoria} onChange={e => setDrawerCategoria(e.target.value)}>
                         <option value="">N/D</option>
-                        {categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        {categoriasData.map(cat => <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>)}
                       </select>
                     </div>
                     <div>
                       <label style={{ fontSize: '12px', fontWeight: 600, color: '#525f73', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Prioridad</label>
                       <select className="select" value={drawerPrioridad} onChange={e => setDrawerPrioridad(e.target.value)}>
                         <option value="">N/D</option>
-                        {prioridades.map(pri => <option key={pri} value={pri}>{pri}</option>)}
+                        {prioridadesData.map(pri => <option key={pri.id} value={pri.nombre}>{pri.nombre}</option>)}
                       </select>
                     </div>
                   </div>
-                  {(drawerCategoria !== (selectedPQR.categoria || '') || drawerPrioridad !== (selectedPQR.prioridad || '')) && (
-                    <div style={{ marginTop: '12px', padding: '10px 12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a', fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
-                      Tienes cambios sin guardar
-                    </div>
-                  )}
+                  {(() => {
+                    const cls = classificationByPqr[selectedPQR.id];
+                    const origCat = categoriasData.find(c => c.id === Number(cls?.categoria_id))?.nombre || '';
+                    const origPri = prioridadesData.find(p => p.id === Number(cls?.prioridad_id))?.nombre || '';
+                    return (drawerCategoria !== origCat || drawerPrioridad !== origPri) && (
+                      <div style={{ marginTop: '12px', padding: '10px 12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a', fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
+                        Tienes cambios sin guardar
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>
 
             {/* Footer con acciones */}
-            {canValidate && activeTab === 'pendientes' && (
-              <div style={{ padding: '16px 24px', borderTop: '1px solid #f2f4f7', display: 'flex', gap: '12px', background: '#fafbfc' }}>
-                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setShowModal(false); setShowConfirm(false); }}>
-                  Cancelar
-                </button>
+            {canValidate && activeTab === 'pendientes' && classificationByPqr[selectedPQR.id] && (
+              <div style={{ padding: '16px 24px', borderTop: '1px solid #f2f4f7', display: 'flex', flexDirection: 'column', gap: '8px', background: '#fafbfc' }}>
+                {/* Aceptar IA sin cambios */}
                 <button
-                  className="btn btn-primary"
-                  style={{ flex: 2 }}
-                  disabled={drawerCategoria === (selectedPQR.categoria || '') && drawerPrioridad === (selectedPQR.prioridad || '')}
-                  onClick={() => setShowConfirm(true)}
+                  className="btn btn-secondary"
+                  style={{ width: '100%', gap: '6px' }}
+                  onClick={handleAcceptAI}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>save</span>
-                  Guardar cambios
+                  <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>verified</span>
+                  Aceptar validación IA (sin cambios)
                 </button>
+                {/* Guardar cambios manuales */}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setShowModal(false); setShowConfirm(false); }}>
+                    Cancelar
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    style={{ flex: 2 }}
+                    disabled={(() => {
+                      const cls = classificationByPqr[selectedPQR.id];
+                      const origCat = categoriasData.find(c => c.id === Number(cls?.categoria_id))?.nombre || '';
+                      const origPri = prioridadesData.find(p => p.id === Number(cls?.prioridad_id))?.nombre || '';
+                      return drawerCategoria === origCat && drawerPrioridad === origPri;
+                    })()}
+                    onClick={() => setShowConfirm(true)}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>save</span>
+                    Guardar cambios
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -564,21 +613,7 @@ export function BandejaEntrada() {
                   <button
                     className="btn btn-primary"
                     style={{ flex: 2 }}
-                    onClick={async () => {
-                      const updates: Partial<{ categoria: string; prioridad: string }> = {};
-                      if (drawerCategoria !== (selectedPQR.categoria || '')) updates.categoria = drawerCategoria;
-                      if (drawerPrioridad !== (selectedPQR.prioridad || '')) updates.prioridad = drawerPrioridad;
-                      try {
-                        await pqrService.update(selectedPQR.id, updates);
-                        setPqrs(prev => prev.map(p => p.id === selectedPQR.id ? { ...p, ...updates } : p));
-                        setSelectedPQR({ ...selectedPQR, ...updates });
-                        setShowConfirm(false);
-                        setShowModal(false);
-                      } catch {
-                        setError('No fue posible guardar los cambios.');
-                        setShowConfirm(false);
-                      }
-                    }}
+                    onClick={handleSaveChanges}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>check_circle</span>
                     Confirmar y guardar
