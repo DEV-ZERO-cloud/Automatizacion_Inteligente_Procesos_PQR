@@ -13,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./src/db/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pqr_user -d pqr_db"]
+      test: [ "CMD-SHELL", "pg_isready -U pqr_user -d pqr_db" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -46,7 +46,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      BASE_URL: http://localhost:8000
       ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
       PG_HOST: postgres
       PG_PORT: 5432
@@ -54,13 +53,13 @@ services:
       PG_USER: pqr_user
       PG_PASSWORD: pqr_password
       MODEL_NAME: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-      HF_HOME: /data/models/hf_cache 
+      HF_HOME: /data/models/hf_cache
       BASE_URL: http://localhost:8000
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health > /dev/null"]
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:8000/health > /dev/null" ]
       interval: 15s
       timeout: 5s
       retries: 20
@@ -86,5 +85,4 @@ services:
 volumes:
   postgres_data:
   frontend_node_modules:
-
 
