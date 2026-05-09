@@ -70,6 +70,17 @@ export function Topbar() {
     navigate('/login');
   };
 
+  if (user?.rol_id === 'agente') {
+    return (
+      <header className="topbar" style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 24px', background: 'transparent', borderBottom: 'none' }}>
+        <button className="btn btn-ghost danger" onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444' }}>
+          <span className="material-symbols-outlined">logout</span>
+          Cerrar sesión
+        </button>
+      </header>
+    );
+  }
+
   return (
     <header className="topbar">
       <div className="flex items-center gap-4">

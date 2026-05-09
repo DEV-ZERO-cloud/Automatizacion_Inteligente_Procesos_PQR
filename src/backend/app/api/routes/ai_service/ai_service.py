@@ -1,9 +1,11 @@
 import os
 import logging
 import httpx
+import csv as csv_mod
+from pathlib import Path as FilePath
 from dotenv import load_dotenv
 #------------------------------------------------------
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, File, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 #---------------------------------------------------------------------
 from app.ia.embeddings.generator import EmbeddingGenerator
@@ -426,3 +428,115 @@ async def debug_status():
             else "rules only (ML sin entrenar — ejecuta trainer.py)"
         ),
     }
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  Training CSV Management
+# ══════════════════════════════════════════════════════════════════════════════
+
+TRAINING_DIR = FilePath(__file__).resolve().parents[2] / "ia" / "training"
+TRAINING_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@router.get("/training/csv/list", tags=["IA"])
+async def list_training_csvs():
+    """Lista todos los CSV disponibles en el directorio de entrenamiento."""
+    try:
+        files = []
+        for f in TRAINING_DIR.glob("*.csv"):
+            stat = f.stat()
+            try:
+                with open(f, encoding="utf-8-sig") as fh:
+                    row_count = sum(1 for _ in fh) - 1
+            except Exception:
+                row_count = 0
+            files.append({
+                "filename": f.name,
+                "path": str(f),
+                "size_bytes": stat.st_size,
+                "rows": max(row_count, 0),
+                "modified": stat.st_mtime,
+            })
+        files.sort(key=lambda x: x["modified"], reverse=True)
+        return {"files": files}
+    except Exception as exc:
+        logger.error("Error listando CSVs: %s", exc)
+        raise HTTPException(status_code=500, detail="Error al listar archivos CSV.")
+
+
+@router.post("/training/csv/upload", tags=["IA"])
+async def upload_training_csv(file: UploadFile = File(...)):
+    """Sube un CSV al directorio de entrenamiento."""
+    try:
+        if not file.filename or not file.filename.lower().endswith(".csv"):
+            raise HTTPException(status_code=400, detail="Solo se permiten archivos .csv")
+
+        content = await file.read()
+        dest = TRAINING_DIR / file.filename
+        dest.write_bytes(content)
+
+        required = {"texto", "categoria", "prioridad"}
+        try:
+            with open(dest, encoding="utf-8-sig") as fh:
+                sample = fh.read(2048)
+                sep = ";" if sample.count(";") > sample.count(",") else ","
+            with open(dest, encoding="utf-8-sig", newline="") as fh:
+                reader = csv_mod.DictReader(fh, delimiter=sep)
+                headers = set(reader.fieldnames or [])
+                missing = required - headers
+                row_count = sum(1 for _ in reader)
+        except Exception:
+            missing = set()
+            headers = set()
+            row_count = 0
+
+        return {
+            "success": True,
+            "filename": file.filename,
+            "path": str(dest),
+            "size_bytes": len(content),
+            "rows": row_count,
+            "columns": list(headers),
+            "missing_columns": list(missing),
+            "valid": len(missing) == 0,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Error subiendo CSV: %s", exc)
+        raise HTTPException(status_code=500, detail="Error al subir el archivo CSV.")
+    finally:
+        await file.close()
+
+
+@router.get("/training/csv/{filename}/preview", tags=["IA"])
+async def preview_training_csv(filename: str, limit: int = 10):
+    """Muestra una vista previa de un CSV de entrenamiento."""
+    try:
+        filepath = TRAINING_DIR / filename
+        if not filepath.exists():
+            raise HTTPException(status_code=404, detail="Archivo no encontrado.")
+
+        with open(filepath, encoding="utf-8-sig") as fh:
+            sample = fh.read(2048)
+            sep = ";" if sample.count(";") > sample.count(",") else ","
+
+        rows = []
+        with open(filepath, encoding="utf-8-sig", newline="") as fh:
+            reader = csv_mod.DictReader(fh, delimiter=sep)
+            columns = list(reader.fieldnames or [])
+            for i, row in enumerate(reader):
+                if i >= limit:
+                    break
+                rows.append(dict(row))
+
+        return {
+            "filename": filename,
+            "columns": columns,
+            "preview": rows,
+            "total_previewed": len(rows),
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Error previewing CSV: %s", exc)
+        raise HTTPException(status_code=500, detail="Error al previsualizar el CSV.")

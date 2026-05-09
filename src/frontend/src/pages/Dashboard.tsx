@@ -157,7 +157,10 @@ export function Dashboard() {
           { label: 'Gestión de PQRs', icon: 'assignment', path: '/gestion-pqrs' },
         ];
       case 'agente':
-        return [{ label: 'Atender PQRs', icon: 'inbox', path: '/bandeja-entrada' }];
+        return [
+          { label: 'Configurar IA', icon: 'psychology', path: '/gestion-ia' },
+          { label: 'Atender PQRs', icon: 'inbox', path: '/bandeja-entrada' }
+        ];
       default:
         return [];
     }
