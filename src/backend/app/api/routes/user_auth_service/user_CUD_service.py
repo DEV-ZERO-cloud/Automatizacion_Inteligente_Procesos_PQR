@@ -29,7 +29,7 @@ ROLE_SCOPE_MAP: dict = {
 
 
 class RegisterRequest(BaseModel):
-    identificacion: int = Field(..., gt=0)
+    identificacion: str = Field(..., min_length=1, max_length=30)
     nombre: str = Field(..., min_length=3, max_length=120)
     correo: EmailStr
     telefono: str | None = Field(default=None, max_length=30)
