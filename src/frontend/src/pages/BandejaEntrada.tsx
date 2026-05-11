@@ -225,27 +225,45 @@ export function BandejaEntrada() {
     }
   };
 
-  // Guardar cambios manuales: actualiza clasificaciones con nuevos IDs
+  // Guardar cambios manuales: actualiza clasificaciones con nuevos IDs o crea una nueva si no existe
   const handleSaveChanges = async () => {
     if (!selectedPQR) return;
-    const classification = classificationByPqr[selectedPQR.id];
-    if (!classification) return;
     const newCatId = categoriasData.find(c => c.nombre === drawerCategoria)?.id;
     const newPriId = prioridadesData.find(p => p.nombre === drawerPrioridad)?.id;
     if (!newCatId || !newPriId) { setError('Categoría o prioridad inválida.'); return; }
     try {
-      await pqrService.validateClassification({
-        id: Number(classification.id),
-        pqr_id: Number(classification.pqr_id),
-        modelo_version: classification.modelo_version,
-        categoria_id: newCatId,
-        prioridad_id: newPriId,
-        confianza: classification.confianza,
-        origen: 'MANUAL',
-        fue_corregida: true,
-        validado_por: user?.id ? Number(user.id) : undefined,
-        created_at: classification.created_at,
-      });
+      const classification = classificationByPqr[selectedPQR.id];
+      
+      if (classification) {
+        // Actualizar clasificación existente
+        await pqrService.validateClassification({
+          id: Number(classification.id),
+          pqr_id: Number(classification.pqr_id),
+          modelo_version: classification.modelo_version,
+          categoria_id: newCatId,
+          prioridad_id: newPriId,
+          confianza: classification.confianza,
+          origen: 'MANUAL',
+          fue_corregida: true,
+          validado_por: user?.id ? Number(user.id) : undefined,
+          created_at: classification.created_at,
+        });
+      } else {
+        // Crear clasificación manual si no existe
+        await pqrService.validateClassification({
+          id: 0,
+          pqr_id: selectedPQR.id,
+          modelo_version: 'MANUAL',
+          categoria_id: newCatId,
+          prioridad_id: newPriId,
+          confianza: 1.0,
+          origen: 'MANUAL',
+          fue_corregida: true,
+          validado_por: user?.id ? Number(user.id) : undefined,
+          created_at: new Date().toISOString(),
+        });
+      }
+      
       const updated = await pqrService.getClassification(selectedPQR.id);
       setClassificationByPqr(prev => ({ ...prev, [selectedPQR.id]: updated }));
       // Actualizar nombres en la lista local para que la tabla los muestre
@@ -489,12 +507,14 @@ export function BandejaEntrada() {
                 </div>
               )}
 
-              {/* Edición de clasificación */}
+              {/* Edición de clasificación - Con o sin IA */}
               {canValidate && activeTab === 'pendientes' && (
                 <div style={{ border: '2px solid #e6e8eb', borderRadius: '14px', padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#003d9b' }}>edit_note</span>
-                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Ajustar clasificación</p>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+                      {classificationByPqr[selectedPQR.id] ? 'Ajustar clasificación' : 'Clasificar PQR'}
+                    </p>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div>
@@ -514,8 +534,21 @@ export function BandejaEntrada() {
                   </div>
                   {(() => {
                     const cls = classificationByPqr[selectedPQR.id];
-                    const origCat = categoriasData.find(c => c.id === Number(cls?.categoria_id))?.nombre || '';
-                    const origPri = prioridadesData.find(p => p.id === Number(cls?.prioridad_id))?.nombre || '';
+                    if (!cls) {
+                      // Sin clasificación IA: mostrar mensaje si no hay selección
+                      if (!drawerCategoria || !drawerPrioridad) {
+                        return (
+                          <div style={{ marginTop: '12px', padding: '10px 12px', background: '#e0f2fe', borderRadius: '8px', border: '1px solid #bae6fd', fontSize: '12px', color: '#0369a1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
+                            Selecciona categoría y prioridad para crear clasificación manual
+                          </div>
+                        );
+                      }
+                      return null;
+                    }
+                    // Con clasificación IA: mostrar si hay cambios
+                    const origCat = categoriasData.find(c => c.id === Number(cls.categoria_id))?.nombre || '';
+                    const origPri = prioridadesData.find(p => p.id === Number(cls.prioridad_id))?.nombre || '';
                     return (drawerCategoria !== origCat || drawerPrioridad !== origPri) && (
                       <div style={{ marginTop: '12px', padding: '10px 12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a', fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
@@ -527,19 +560,21 @@ export function BandejaEntrada() {
               )}
             </div>
 
-            {/* Footer con acciones */}
-            {canValidate && activeTab === 'pendientes' && classificationByPqr[selectedPQR.id] && (
+            {/* Footer con acciones - Mostrar siempre en pendientes */}
+            {canValidate && activeTab === 'pendientes' && (
               <div style={{ padding: '16px 24px', borderTop: '1px solid #f2f4f7', display: 'flex', flexDirection: 'column', gap: '8px', background: '#fafbfc' }}>
-                {/* Aceptar IA sin cambios */}
-                <button
-                  className="btn btn-secondary"
-                  style={{ width: '100%', gap: '6px' }}
-                  onClick={handleAcceptAI}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>verified</span>
-                  Aceptar validación IA (sin cambios)
-                </button>
-                {/* Guardar cambios manuales */}
+                {/* Aceptar IA sin cambios - Solo si existe clasificación IA */}
+                {classificationByPqr[selectedPQR.id] && (
+                  <button
+                    className="btn btn-secondary"
+                    style={{ width: '100%', gap: '6px' }}
+                    onClick={handleAcceptAI}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>verified</span>
+                    Aceptar validación IA (sin cambios)
+                  </button>
+                )}
+                {/* Guardar cambios manuales - Con o sin IA */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setShowModal(false); setShowConfirm(false); }}>
                     Cancelar
@@ -549,14 +584,19 @@ export function BandejaEntrada() {
                     style={{ flex: 2 }}
                     disabled={(() => {
                       const cls = classificationByPqr[selectedPQR.id];
-                      const origCat = categoriasData.find(c => c.id === Number(cls?.categoria_id))?.nombre || '';
-                      const origPri = prioridadesData.find(p => p.id === Number(cls?.prioridad_id))?.nombre || '';
+                      if (!cls) {
+                        // Si no existe clasificación IA, permitir si categoría y prioridad están seleccionadas
+                        return !drawerCategoria || !drawerPrioridad;
+                      }
+                      // Si existe, permitir solo si hay cambios
+                      const origCat = categoriasData.find(c => c.id === Number(cls.categoria_id))?.nombre || '';
+                      const origPri = prioridadesData.find(p => p.id === Number(cls.prioridad_id))?.nombre || '';
                       return drawerCategoria === origCat && drawerPrioridad === origPri;
                     })()}
                     onClick={() => setShowConfirm(true)}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '17px' }}>save</span>
-                    Guardar cambios
+                    Guardar clasificación
                   </button>
                 </div>
               </div>

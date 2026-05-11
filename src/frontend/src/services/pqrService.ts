@@ -45,6 +45,10 @@ export const pqrService = {
     const response = await api.put(`/pqrs/${id}/cerrar`, { confirmacion: true });
     return response.data?.data;
   },
+  async agregarComentario(id: number, comentario: string): Promise<{ pqr_id: number; comentario: string }> {
+    const response = await api.post(`/pqrs/${id}/comentar`, { comentario });
+    return response.data?.data;
+  },
   async getAllClassifications(): Promise<Classification[]> {
     const response = await api.get('/classifications');
     return response.data?.data ?? [];

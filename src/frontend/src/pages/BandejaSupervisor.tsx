@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { pqrService } from '../services/pqrService';
 import { catalogService } from '../services/catalogService';
+import { userService, type UserListItem } from '../services/userService';
 import { fileService } from '../services/fileService';
 import { ModalVisualizador } from '../components/visualizador/ModalVisualizador';
 import type { PQR, PQRFile, Classification } from '../types';
@@ -44,6 +45,10 @@ export function BandejaSupervisor() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
+  const [filtroValidacion, setFiltroValidacion] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+  const [filtroPrioridad, setFiltroPrioridad] = useState('');
   const [activeTab, setActiveTab] = useState<'pendientes' | 'proceso' | 'resueltas'>('pendientes');
   const [feedback, setFeedback] = useState('');
 
@@ -51,7 +56,7 @@ export function BandejaSupervisor() {
   const [showModal, setShowModal] = useState(false);
 
   const [classifications, setClassifications] = useState<Record<number, Classification | null>>({});
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [history, setHistory] = useState<History[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [attachments, setAttachments] = useState<PQRFile[]>([]);
   const [loadingAttachments, setLoadingAttachments] = useState(false);
@@ -60,6 +65,8 @@ export function BandejaSupervisor() {
 
   const [categoriasData, setCategoriasData] = useState<{ id: number; nombre: string }[]>([]);
   const [prioridadesData, setPrioridadesData] = useState<{ id: number; nombre: string }[]>([]);
+  const [supervisors, setSupervisors] = useState<UserListItem[]>([]);
+  const [asignarSupervisorId, setAsignarSupervisorId] = useState('');
 
   const [clasificarCategoria, setClasificarCategoria] = useState('');
   const [clasificarPrioridad, setClasificarPrioridad] = useState('');
@@ -77,15 +84,17 @@ export function BandejaSupervisor() {
       setLoading(true); setError('');
       try {
         const params = user?.rol_id === 'admin' ? {} : { supervisor_id: Number(user?.id) };
-        const [pqrData, cats, pris] = await Promise.all([
+        const [pqrData, cats, pris, sups] = await Promise.all([
           pqrService.getAll(params),
           catalogService.getCategories(),
           catalogService.getPriorities(),
+          userService.getSupervisors(),
         ]);
         if (!mounted) return;
         setPqrs(pqrData);
         setCategoriasData(cats.map(c => ({ id: Number(c.id), nombre: c.nombre })));
         setPrioridadesData(pris.map(p => ({ id: Number(p.id), nombre: p.nombre })));
+        setSupervisors(sups);
 
         const clsMap: Record<number, Classification | null> = {};
         await Promise.all(pqrData.map(async (pqr) => {
@@ -220,14 +229,33 @@ export function BandejaSupervisor() {
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  const handleAsignar = async () => {
+    if (!selectedPqr || !asignarSupervisorId) return;
+    setActionLoading(true);
+    try {
+      const updated = await pqrService.asignar(selectedPqr.id, Number(asignarSupervisorId));
+      setPqrs(pqrs.map(p => p.id === updated.id ? updated : p));
+      setSelectedPqr(updated);
+      loadHistory(updated.id);
+      setFeedback('Supervisor asignado correctamente.');
+    } catch { setFeedback('Error al asignar supervisor.'); }
+    finally { setActionLoading(false); }
+  };
+
   const filteredPqrs = pqrs.filter(p => {
     const estado = p.estado.toLowerCase();
     const search = searchText.trim().toLowerCase();
+    const cls = classifications[p.id];
     const matchesSearch = !search || p.titulo.toLowerCase().includes(search) || p.descripcion.toLowerCase().includes(search) || String(p.id).includes(search);
     if (!matchesSearch) return false;
-    if (activeTab === 'pendientes') return estado === 'pendiente';
-    if (activeTab === 'proceso') return estado === 'en_proceso';
-    if (activeTab === 'resueltas') return ['resuelta', 'cerrada'].includes(estado);
+    if (activeTab === 'pendientes' && estado !== 'pendiente') return false;
+    if (activeTab === 'proceso' && estado !== 'en_proceso') return false;
+    if (activeTab === 'resueltas' && !['resuelta', 'cerrada'].includes(estado)) return false;
+    if (filtroTipo && p.tipo.toLowerCase() !== filtroTipo.toLowerCase()) return false;
+    if (filtroValidacion === 'validados' && cls?.fue_corregida !== true) return false;
+    if (filtroValidacion === 'pendientes' && cls?.fue_corregida === true) return false;
+    if (filtroCategoria && (p.categoria || '').toLowerCase() !== filtroCategoria.toLowerCase()) return false;
+    if (filtroPrioridad && (p.prioridad || '').toLowerCase() !== filtroPrioridad.toLowerCase()) return false;
     return true;
   });
 
@@ -258,6 +286,52 @@ export function BandejaSupervisor() {
           <label style={{ fontSize: 14, fontWeight: 600 }}>Buscar:</label>
           <input className="input" style={{ width: 300 }} placeholder="Buscar por titulo, descripcion o ID..." value={searchText} onChange={e => setSearchText(e.target.value)} />
           <span style={{ fontSize: 13, color: '#6b7280' }}>({filteredPqrs.length} PQRs)</span>
+        </div>
+      </div>
+
+      <div className="filters-grid">
+        <div className="card card-static" style={{ padding: '16px' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>
+            Filtrar por Tipo
+          </p>
+          <select className="select" value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}>
+            <option value="">Todos</option>
+            <option value="peticion">Petición</option>
+            <option value="queja">Queja</option>
+            <option value="reclamo">Reclamo</option>
+          </select>
+        </div>
+        <div className="card card-static" style={{ padding: '16px' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>
+            Filtrar por Validación
+          </p>
+          <select className="select" value={filtroValidacion} onChange={e => setFiltroValidacion(e.target.value)}>
+            <option value="">Todos</option>
+            <option value="pendientes">Pendientes</option>
+            <option value="validados">Validados</option>
+          </select>
+        </div>
+        <div className="card card-static" style={{ padding: '16px' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>
+            Filtrar por Categoría
+          </p>
+          <select className="select" value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
+            <option value="">Todas</option>
+            {categoriasData.map(c => (
+              <option key={c.id} value={c.nombre}>{c.nombre}</option>
+            ))}
+          </select>
+        </div>
+        <div className="card card-static" style={{ padding: '16px' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#525f73', marginBottom: '8px' }}>
+            Filtrar por Prioridad
+          </p>
+          <select className="select" value={filtroPrioridad} onChange={e => setFiltroPrioridad(e.target.value)}>
+            <option value="">Todas</option>
+            {prioridadesData.map(p => (
+              <option key={p.id} value={p.nombre}>{p.nombre}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -339,6 +413,43 @@ export function BandejaSupervisor() {
                     <span className={`badge badge-${getEstadoBadge(selectedPqr.estado)}`}>{selectedPqr.estado}</span>
                   </div>
                 </div>
+
+                {/* ASIGNAR A SUPERVISOR - solo Admin */}
+                {user?.rol_id === 'admin' && (
+                  <div style={{ background: 'linear-gradient(135deg,#fef9ee,#fff8e7)', borderRadius: 14, padding: 20, border: '2px solid #f5e6b8' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#b8860b' }}>person_add</span>
+                      <h4 style={{ fontSize: 15, fontWeight: 800, color: '#7c5e00', margin: 0 }}>
+                        {selectedPqr.supervisor_id ? 'Reasignar Supervisor' : 'Asignar a Supervisor'}
+                      </h4>
+                      {selectedPqr.supervisor_id && (
+                        <span className="badge badge-success" style={{ fontSize: 10, marginLeft: 4 }}>Asignada</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <select
+                        className="select"
+                        style={{ flex: 1 }}
+                        value={asignarSupervisorId}
+                        onChange={e => setAsignarSupervisorId(e.target.value)}
+                      >
+                        <option value="">Seleccionar supervisor...</option>
+                        {supervisors.map(s => (
+                          <option key={s.id} value={s.id}>{s.nombre}</option>
+                        ))}
+                      </select>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handleAsignar}
+                        disabled={actionLoading || !asignarSupervisorId}
+                        style={{ background: '#b8860b', borderColor: '#b8860b', whiteSpace: 'nowrap' }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>check</span>
+                        Asignar
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* CLASIFICACION IA */}
                 {classifications[selectedPqr.id] && (() => {

@@ -71,7 +71,12 @@ export function Dashboard() {
           }))
         );
 
-        const sortedRecent = [...pqrs]
+        // Para supervisor: filtrar solo PQRs asignadas; para otros roles: mostrar las más recientes
+        const filteredPqrs = user?.rol_id === 'supervisor' 
+          ? pqrs.filter(p => p.supervisor_id === Number(user?.id))
+          : pqrs;
+        
+        const sortedRecent = [...filteredPqrs]
           .sort((a, b) => b.id - a.id)
           .slice(0, 5);
         setRecentPQRS(sortedRecent);
@@ -231,7 +236,9 @@ export function Dashboard() {
       <div className="dashboard-main-grid">
         <div className="card animate-fade-in" style={{ opacity: 0, animationDelay: '0.2s', borderTop: '4px solid #1e64c8' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f2f4f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '700' }}>PQRs Recientes</h2>
+            <h2 style={{ fontSize: '16px', fontWeight: '700' }}>
+              {user?.rol_id === 'supervisor' ? 'PQRs Asignadas' : 'PQRs Recientes'}
+            </h2>
             <Link to="/bandeja-entrada" className="btn btn-sm btn-secondary">Ver todas</Link>
           </div>
           <div style={{ overflowX: 'auto' }}>
