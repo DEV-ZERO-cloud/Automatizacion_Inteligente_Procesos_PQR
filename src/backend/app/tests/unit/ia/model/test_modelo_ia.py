@@ -103,7 +103,7 @@ def _make_classify_patches(
 
 
 def _extract_classify_response(mock_post_clf):
-    """Extrae el classify_response del call registrado en el mock de _post_classification."""
+    #Extrae el classify_response del call registrado en el mock de _post_classification.
     call_kwargs = mock_post_clf.call_args
     return (
         call_kwargs.kwargs.get("classify_response")
@@ -122,8 +122,8 @@ class TestConfianzaModelo:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: confianza 0.35 < umbral 0.60
-        Esperado: requiere_revision=True en classify_response enviado a _post_classification
+        #CASO DE FALLA: confianza 0.35 < umbral 0.60
+        #Esperado: requiere_revision=True en classify_response enviado a _post_classification
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
@@ -156,8 +156,8 @@ class TestConfianzaModelo:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO EXITOSO: confianza 0.85 > umbral 0.60
-        Esperado: requiere_revision=False
+        #CASO EXITOSO: confianza 0.85 > umbral 0.60
+        #Esperado: requiere_revision=False
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
@@ -190,9 +190,9 @@ class TestConfianzaModelo:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO LÍMITE: confianza == 0.60 (igual al umbral)
-        La condición es confianza < umbral, por tanto 0.60 NO activa revisión.
-        Esperado: requiere_revision=False
+        #CASO LÍMITE: confianza == 0.60 (igual al umbral)
+        #La condición es confianza < umbral, por tanto 0.60 NO activa revisión.
+        #Esperado: requiere_revision=False
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
@@ -225,8 +225,8 @@ class TestConfianzaModelo:
         self, mock_pqr, mock_rule_result_con_area, embedding_fake
     ):
         """
-        CASO DE FALLA: ningún clasificador retorna confianza
-        Esperado: confianza=None, requiere_revision=True
+        #CASO DE FALLA: ningún clasificador retorna confianza
+        #Esperado: confianza=None, requiere_revision=True
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_con_area, embedding_fake,
@@ -270,8 +270,8 @@ class TestModelosNoEntrenados:
         self, mock_pqr, mock_rule_result_con_area, embedding_fake
     ):
         """
-        CASO DE FALLA: CategoryClassifier y PriorityClassifier no entrenados.
-        Esperado: source='rules', confianza=None, requiere_revision=True
+        #CASO DE FALLA: CategoryClassifier y PriorityClassifier no entrenados.
+        #Esperado: source='rules', confianza=None, requiere_revision=True
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_con_area, embedding_fake,
@@ -309,8 +309,8 @@ class TestModelosNoEntrenados:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: sin reglas Y sin modelos entrenados.
-        Esperado: source='unavailable', requiere_revision=True
+        #CASO DE FALLA: sin reglas Y sin modelos entrenados.
+        #Esperado: source='unavailable', requiere_revision=True
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
@@ -347,8 +347,8 @@ class TestModelosNoEntrenados:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: PriorityClassifier no entrenado, CategoryClassifier sí.
-        Esperado: confianza solo de categoria, requiere_revision=True
+        #CASO DE FALLA: PriorityClassifier no entrenado, CategoryClassifier sí.
+        #Esperado: confianza solo de categoria, requiere_revision=True
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
@@ -382,8 +382,8 @@ class TestModelosNoEntrenados:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: CategoryClassifier no entrenado, PriorityClassifier sí.
-        Esperado: confianza solo de prioridad, requiere_revision=True
+        #CASO DE FALLA: CategoryClassifier no entrenado, PriorityClassifier sí.
+        #Esperado: confianza solo de prioridad, requiere_revision=True
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
@@ -424,9 +424,9 @@ class TestCalidadTextoEntrada:
         self, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: clean_text devuelve '' (solo caracteres especiales).
-        El embedding resultante es pobre → confianza baja esperada.
-        Esperado: requiere_revision=True, confianza < 0.60
+        #CASO DE FALLA: clean_text devuelve '' (solo caracteres especiales).
+        #El embedding resultante es pobre → confianza baja esperada.
+        #Esperado: requiere_revision=True, confianza < 0.60
         """
         pqr = MagicMock()
         pqr.ID = 5
@@ -463,9 +463,9 @@ class TestCalidadTextoEntrada:
         self, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: descripción de 3 palabras — embedding insuficiente.
-        Reproduce el bug real de la PQR 1: 'Cobro no corresponde al consumo'.
-        Esperado: requiere_revision=True, confianza < 0.60
+        #CASO DE FALLA: descripción de 3 palabras — embedding insuficiente.
+        #Reproduce el bug real de la PQR 1: 'Cobro no corresponde al consumo'.
+        #Esperado: requiere_revision=True, confianza < 0.60
         """
         pqr = MagicMock()
         pqr.ID = 6
@@ -502,9 +502,9 @@ class TestCalidadTextoEntrada:
         self, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        MEJORA: concatenar titulo + descripcion enriquece el embedding.
-        Simula la corrección aplicada: text = f'{titulo}. {descripcion}'
-        Esperado: confianza >= 0.60, requiere_revision=False
+        #MEJORA: concatenar titulo + descripcion enriquece el embedding.
+        #Simula la corrección aplicada: text = f'{titulo}. {descripcion}'
+        #Esperado: confianza >= 0.60, requiere_revision=False
         """
         pqr = MagicMock()
         pqr.ID = 7
@@ -550,8 +550,8 @@ class TestFallosComponentesPipeline:
         self, mock_pqr, mock_rule_result_sin_area
     ):
         """
-        CASO DE FALLA: EmbeddingGenerator lanza RuntimeError (ej. CUDA OOM).
-        Esperado: HTTPException 500
+        #CASO DE FALLA: EmbeddingGenerator lanza RuntimeError (ej. CUDA OOM).
+        #Esperado: HTTPException 500
         """
         mock_re = MagicMock()
         mock_re.evaluate.return_value = mock_rule_result_sin_area
@@ -576,8 +576,8 @@ class TestFallosComponentesPipeline:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: CategoryClassifier.predict lanza ValueError (modelo no ajustado).
-        Esperado: HTTPException 500
+        #CASO DE FALLA: CategoryClassifier.predict lanza ValueError (modelo no ajustado).
+        #Esperado: HTTPException 500
         """
         mock_re = MagicMock()
         mock_re.evaluate.return_value = mock_rule_result_sin_area
@@ -607,8 +607,8 @@ class TestFallosComponentesPipeline:
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
         """
-        CASO DE FALLA: PriorityClassifier.predict lanza ValueError.
-        Esperado: HTTPException 500
+        #CASO DE FALLA: PriorityClassifier.predict lanza ValueError.
+        #Esperado: HTTPException 500
         """
         mock_re = MagicMock()
         mock_re.evaluate.return_value = mock_rule_result_sin_area
@@ -643,8 +643,8 @@ class TestFallosComponentesPipeline:
         self, mock_pqr
     ):
         """
-        CASO DE FALLA: RuleEngine.evaluate lanza excepción por YAML corrupto.
-        Esperado: HTTPException 500
+        #CASO DE FALLA: RuleEngine.evaluate lanza excepción por YAML corrupto.
+        #Esperado: HTTPException 500
         """
         mock_re = MagicMock()
         mock_re.evaluate.side_effect = Exception("YAML parse error: mapping values are not allowed here")
@@ -669,8 +669,8 @@ class TestFallosHTTP:
     @pytest.mark.asyncio
     async def test_pqr_no_encontrada_404_retorna_500(self):
         """
-        CASO DE FALLA: PQR no existe en el backend (HTTP 404).
-        Esperado: HTTPException 500 (capturado por el handler genérico)
+        #CASO DE FALLA: PQR no existe en el backend (HTTP 404).
+        #Esperado: HTTPException 500 (capturado por el handler genérico)
         """
         with (
             patch(
@@ -691,8 +691,8 @@ class TestFallosHTTP:
     @pytest.mark.asyncio
     async def test_timeout_al_obtener_pqr_retorna_500(self):
         """
-        CASO DE FALLA: httpx.TimeoutException al llamar /pqrs/{id}.
-        Esperado: HTTPException 500
+        #CASO DE FALLA: httpx.TimeoutException al llamar /pqrs/{id}.
+        #Esperado: HTTPException 500
         """
         with (
             patch(
@@ -709,8 +709,8 @@ class TestFallosHTTP:
     @pytest.mark.asyncio
     async def test_servidor_backend_caido_retorna_500(self):
         """
-        CASO DE FALLA: servidor backend no disponible (ConnectError).
-        Esperado: HTTPException 500
+        #CASO DE FALLA: servidor backend no disponible (ConnectError).
+        #Esperado: HTTPException 500
         """
         with (
             patch(
@@ -727,8 +727,8 @@ class TestFallosHTTP:
     @pytest.mark.asyncio
     async def test_pqr_retorna_401_no_autenticado_retorna_500(self):
         """
-        CASO DE FALLA: token expirado → backend responde 401.
-        Esperado: HTTPException 500
+        #CASO DE FALLA: token expirado → backend responde 401.
+        #Esperado: HTTPException 500
         """
         with (
             patch(

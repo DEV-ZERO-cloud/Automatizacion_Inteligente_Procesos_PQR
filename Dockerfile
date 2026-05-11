@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia el código y la configuracion del backend
 COPY src/backend/app ./app
 COPY src/db ./db
+COPY src/data/models ./data/models
 COPY config.yaml ./config.yaml
 
 # Puerto de la API

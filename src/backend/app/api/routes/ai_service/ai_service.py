@@ -170,6 +170,11 @@ async def _post_classification(
                 "fue_corregida": False
             }
     )
+    logger.error(
+        "[_post_classification] %d — body: %s",
+        response.status_code,
+        response.text  # FastAPI puts the validation detail here
+    )
     response.raise_for_status()
     return True
 # ── Lógica de fuente ───────────────────────────────────────────────────────────
