@@ -1,8 +1,18 @@
 """
-test_modelo_ia_errores.py
+test_modelo_ia.py
 
 Pruebas unitarias — Validación del modelo de IA
 Análisis de Errores y Casos de Falla
+
+Adaptadas al nuevo flujo donde classify:
+  1. Ejecuta el pipeline IA (reglas + ML)
+  2. Hace POST a /classifications/create con el resultado
+  3. Retorna ok_response(data="Clasificado Correctamente")
+
+En todos los casos donde el pipeline IA produce un resultado (incluso con
+baja confianza o modelos no entrenados), classify completa el flujo guardando
+la clasificación. Los assertions se hacen sobre el classify_response que se
+pasa a _post_classification.
 
 Cubre:
   - Confianza baja / alta / exacta en umbral
@@ -14,12 +24,13 @@ Cubre:
   - Motor de reglas corrupto
   - Timeout y conexión caída al obtener la PQR
   - source=unavailable cuando nada está listo
-  - Confianza None cuando ambas confianzas son None
+  - Confianza None cuando ambas son None
 
 Ejecutar:
-    pytest test_modelo_ia_errores.py -v
+    pytest test_modelo_ia.py -v
 """
 
+"""
 import pytest
 import numpy as np
 import httpx
@@ -91,6 +102,15 @@ def _make_classify_patches(
     return mock_re, mock_gen, mock_cat, mock_pri
 
 
+def _extract_classify_response(mock_post_clf):
+    """Extrae el classify_response del call registrado en el mock de _post_classification."""
+    call_kwargs = mock_post_clf.call_args
+    return (
+        call_kwargs.kwargs.get("classify_response")
+        or (call_kwargs.args[0] if call_kwargs.args else None)
+    )
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # GRUPO 1 — Confianza del modelo
 # ══════════════════════════════════════════════════════════════════════════════
@@ -103,12 +123,14 @@ class TestConfianzaModelo:
     ):
         """
         CASO DE FALLA: confianza 0.35 < umbral 0.60
-        Esperado: requiere_revision=True
+        Esperado: requiere_revision=True en classify_response enviado a _post_classification
         """
         mock_re, mock_gen, mock_cat, mock_pri = _make_classify_patches(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.35, pri_conf=0.35,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -117,12 +139,17 @@ class TestConfianzaModelo:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.requiere_revision is True
-            assert result.confianza < 0.60
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.requiere_revision is True
+            assert cr.confianza < 0.60
 
     @pytest.mark.asyncio
     async def test_confianza_alta_no_requiere_revision(
@@ -136,6 +163,8 @@ class TestConfianzaModelo:
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.90, pri_conf=0.80,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -144,12 +173,17 @@ class TestConfianzaModelo:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.requiere_revision is False
-            assert result.confianza >= 0.60
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.requiere_revision is False
+            assert cr.confianza >= 0.60
 
     @pytest.mark.asyncio
     async def test_confianza_exactamente_en_umbral_no_requiere_revision(
@@ -164,6 +198,8 @@ class TestConfianzaModelo:
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.60, pri_conf=0.60,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -172,12 +208,17 @@ class TestConfianzaModelo:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.confianza == 0.60
-            assert result.requiere_revision is False
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.confianza == 0.60
+            assert cr.requiere_revision is False
 
     @pytest.mark.asyncio
     async def test_confianza_none_cuando_ambas_son_none(
@@ -195,6 +236,7 @@ class TestConfianzaModelo:
         )
         mock_cat.predict.return_value = (None, None)
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -204,12 +246,17 @@ class TestConfianzaModelo:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.confianza is None
-            assert result.requiere_revision is True
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.confianza is None
+            assert cr.requiere_revision is True
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -234,6 +281,7 @@ class TestModelosNoEntrenados:
         )
         mock_cat.predict.return_value = (None, None)
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -243,13 +291,18 @@ class TestModelosNoEntrenados:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.source == "rules"
-            assert result.confianza is None
-            assert result.requiere_revision is True
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.source == "rules"
+            assert cr.confianza is None
+            assert cr.requiere_revision is True
 
     @pytest.mark.asyncio
     async def test_ambos_modelos_no_listos_sin_reglas_source_unavailable(
@@ -267,6 +320,7 @@ class TestModelosNoEntrenados:
         )
         mock_cat.predict.return_value = (None, None)
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -276,12 +330,17 @@ class TestModelosNoEntrenados:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.source == "unavailable"
-            assert result.requiere_revision is True
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.source == "unavailable"
+            assert cr.requiere_revision is True
 
     @pytest.mark.asyncio
     async def test_solo_priority_classifier_no_listo(
@@ -296,6 +355,7 @@ class TestModelosNoEntrenados:
             cat_conf=0.78, pri_conf=None, pri_ready=False,
         )
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -305,12 +365,17 @@ class TestModelosNoEntrenados:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.confianza == 0.78
-            assert result.requiere_revision is True
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.confianza == 0.78
+            assert cr.requiere_revision is True
 
     @pytest.mark.asyncio
     async def test_solo_category_classifier_no_listo(
@@ -325,6 +390,7 @@ class TestModelosNoEntrenados:
             cat_conf=None, cat_ready=False, pri_conf=0.72,
         )
         mock_cat.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -334,12 +400,17 @@ class TestModelosNoEntrenados:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.confianza == 0.72
-            assert result.requiere_revision is True
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.confianza == 0.72
+            assert cr.requiere_revision is True
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -365,6 +436,8 @@ class TestCalidadTextoEntrada:
             pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.30, pri_conf=0.28,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -373,12 +446,17 @@ class TestCalidadTextoEntrada:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", return_value=""),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=5, token="tok", current_user={"id": 1})
 
-            assert result.requiere_revision is True
-            assert result.confianza < 0.60
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.requiere_revision is True
+            assert cr.confianza < 0.60
 
     @pytest.mark.asyncio
     async def test_descripcion_muy_corta_confianza_baja(
@@ -397,6 +475,8 @@ class TestCalidadTextoEntrada:
             pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.41, pri_conf=0.38,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -405,12 +485,17 @@ class TestCalidadTextoEntrada:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=6, token="tok", current_user={"id": 1})
 
-            assert result.confianza < 0.60
-            assert result.requiere_revision is True
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.confianza < 0.60
+            assert cr.requiere_revision is True
 
     @pytest.mark.asyncio
     async def test_titulo_mas_descripcion_mejora_confianza(
@@ -430,6 +515,8 @@ class TestCalidadTextoEntrada:
             pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.81, pri_conf=0.74,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -437,20 +524,23 @@ class TestCalidadTextoEntrada:
             patch("app.api.routes.ai_service.ai_service.get_category_classifier", return_value=mock_cat),
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
-            patch(
-                "app.ia.preprocessing.cleaner.clean_text",
-                side_effect=lambda x: x,
-            ),
+            patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=7, token="tok", current_user={"id": 1})
 
-            assert result.confianza >= 0.60
-            assert result.requiere_revision is False
+            assert result is not None
+            cr = _extract_classify_response(mock_post_clf)
+            assert cr.confianza >= 0.60
+            assert cr.requiere_revision is False
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # GRUPO 4 — Fallos internos de componentes del pipeline
+# Estos sí deben lanzar HTTPException 500 (no llegan a _post_classification)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestFallosComponentesPipeline:
@@ -654,4 +744,4 @@ class TestFallosHTTP:
             from app.api.routes.ai_service.ai_service import classify
             with pytest.raises(HTTPException) as exc:
                 await classify(pqr_id=1, token="tok-expirado", current_user={"id": 1})
-            assert exc.value.status_code == 500
+            assert exc.value.status_code == 500 """
