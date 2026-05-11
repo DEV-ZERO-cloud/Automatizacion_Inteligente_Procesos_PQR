@@ -303,14 +303,14 @@ export function MisPQRs() {
 
       {showViewer && attachments.length > 0 && (
         <div className="modal-overlay" onClick={() => setShowViewer(false)} style={{ zIndex: 300 }}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '90vw', width: '95%', maxHeight: '90vh', margin: '20px' }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px', width: '80%', maxHeight: '80vh', margin: '20px' }}>
             <div className="modal-header" style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
               <h3 style={{ margin: 0, fontSize: '16px' }}>Vista previa: {attachments[currentFileIndex]?.nombre}</h3>
               <button className="btn btn-ghost btn-sm" onClick={() => setShowViewer(false)}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <div className="modal-body" style={{ padding: 0, height: 'calc(90vh - 80px)', overflow: 'hidden' }}>
+            <div className="modal-body" style={{ padding: 0, height: 'calc(80vh - 80px)', overflow: 'hidden' }}>
               <ModalVisualizador
                 isOpen={showViewer}
                 onClose={() => setShowViewer(false)}

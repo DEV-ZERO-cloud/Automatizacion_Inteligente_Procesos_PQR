@@ -49,6 +49,16 @@ dist/
 *.tmp
 *.bak
 
+# Nombres reservados de Windows (pueden crearse accidentalmente con redirecciones)
+nul
+con
+prn
+aux
+com1
+com2
+lpt1
+lpt2
+
 # Alembic (opcional si generas migraciones y no quieres versiones temporales)
 # alembic/versions/__pycache__/
 
@@ -64,7 +74,7 @@ dist/
 outputs/
 artifacts/
 checkpoints/
-data/models/hf_cache/
+**/hf_cache/
 
 # Adjuntos subidos por usuarios
 src/backend/uploads/

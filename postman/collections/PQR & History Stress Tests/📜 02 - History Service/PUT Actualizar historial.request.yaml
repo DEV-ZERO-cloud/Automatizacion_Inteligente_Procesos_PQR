@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{base_url}}/historial/update"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{admin_token}}
+body:
+  type: text
+  content: |-
+    {
+        "id": {{history_id}},
+        "accion": "ACTUALIZADO_ESTRES",
+        "detalle": "Registro actualizado durante prueba de estrés"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Historial actualizado exitosamente', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 5000

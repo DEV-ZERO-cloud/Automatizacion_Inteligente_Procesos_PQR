@@ -10,7 +10,7 @@ from app.core.auth import encode_token, get_current_user
 from app.core.responses import ok_response
 from app.core.security import hash_password, is_password_hashed, verify_password
 from app.logic.universal_controller_instance import universal_controller as controller
-from app.models.user import UserCreate, UserOut, UserUpdate
+from app.models.user import UserCreate, UserCreateRequest, UserOut, UserUpdate
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -129,7 +129,7 @@ async def register_user(payload: RegisterRequest):
             contrasena=hash_password(payload.password),
             rol_id=4,
             area_id=3,
-            activo=1,
+            activo=True,
         )
         controller.add(user_to_create)
 
@@ -156,7 +156,7 @@ async def register_user(payload: RegisterRequest):
 # ══════════════════════════════════════════════════════════════════════════════
 @router.post("/users/create", status_code=status.HTTP_201_CREATED)
 async def create_user(
-    payload: UserCreate,
+    payload: UserCreateRequest,
     current_user: dict = Security(get_current_user, scopes=["admin", "supervisor", "operador"]),
 ):
     """
@@ -167,7 +167,6 @@ async def create_user(
     try:
         logger.info("[POST /users/create] Creando usuario con correo: %s", payload.correo)
 
-        # Verificar duplicado por correo
         existing = controller.get_by_column(UserOut, "correo", payload.correo)
         if existing:
             raise HTTPException(
@@ -175,7 +174,6 @@ async def create_user(
                 detail="Ya existe un usuario con ese correo.",
             )
 
-        # Verificar duplicado por identificación
         existing_id = controller.get_by_column(UserOut, "identificacion", payload.identificacion)
         if existing_id:
             raise HTTPException(
@@ -183,15 +181,26 @@ async def create_user(
                 detail="Ya existe un usuario con esa identificación.",
             )
 
-        payload_data = payload.model_dump()
-        payload_data["contrasena"] = hash_password(payload_data["contrasena"])
-        secure_payload = UserCreate(**payload_data)
+        users = controller.get_all(UserOut)
+        next_id = (max((u.id for u in users), default=0) + 1) if users else 1
 
-        controller.add(secure_payload)
-        logger.info("[POST /users/create] Usuario creado con ID=%s", payload.id)
+        user_to_create = UserCreate(
+            id=next_id,
+            identificacion=payload.identificacion,
+            nombre=payload.nombre,
+            correo=payload.correo,
+            telefono=payload.telefono or "",
+            contrasena=hash_password(payload.contrasena),
+            rol_id=payload.rol_id,
+            area_id=payload.area_id,
+            activo=payload.activo if payload.activo is not None else True,
+        )
+
+        controller.add(user_to_create)
+        logger.info("[POST /users/create] Usuario creado con ID=%s", next_id)
 
         return ok_response(
-            data={"id": payload.id},
+            data={"id": next_id},
             message="Usuario creado",
             status_code=status.HTTP_201_CREATED,
         )
@@ -235,7 +244,7 @@ async def update_user(
             telefono=payload.telefono,
             rol_id=payload.rol_id,
             area_id=payload.area_id,
-            activo=existing.activo,
+            activo=payload.activo if payload.activo is not None else existing.activo,
             contrasena=existing.contrasena,
         )
         controller.update(updated)

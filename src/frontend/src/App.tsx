@@ -12,6 +12,7 @@ import { GestionPQRs } from './pages/GestionPQRs';
 import { Reportes } from './pages/Reportes';
 import { GestionUsuarios } from './pages/GestionUsuarios';
 import { GestionIA } from './pages/GestionIA';
+import { BandejaSupervisor } from './pages/BandejaSupervisor';
 import { Ajustes } from './pages/Ajustes';
 import { UserDashboard } from './pages/UserDashboard';
 import { useAuthStore } from './stores/authStore';
@@ -159,6 +160,7 @@ function App() {
           <Route path="gestion-pqrs" element={<GestionPQRs />} />
           <Route path="usuarios" element={<GestionUsuarios />} />
           <Route path="gestion-ia" element={<GestionIA />} />
+          <Route path="bandeja-supervisor" element={<BandejaSupervisor />} />
           <Route path="ajustes" element={<Ajustes />} />
           <Route path="pqr/:id" element={<DetallePQR />} />
         </Route>

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{base_url}}/pqrs"
+method: GET
+headers:
+  Authorization: Bearer {{admin_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const jsonData = pm.response.json();
+      if (jsonData && jsonData.data && jsonData.data.length > 0) {
+          const firstId = jsonData.data[0].id;
+          pm.environment.set('target_pqr_id', firstId);
+      }
+
+      pm.test('PQRs listadas exitosamente', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 3000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+    language: text/javascript
+order: 2000

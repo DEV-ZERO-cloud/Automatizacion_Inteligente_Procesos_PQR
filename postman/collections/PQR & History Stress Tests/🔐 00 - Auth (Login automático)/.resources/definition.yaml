@@ -1,0 +1,3 @@
+$kind: collection
+description: Ejecutar esta carpeta primero para obtener los tokens de acceso. Los tokens se guardan automáticamente en las variables de entorno.
+order: 1000

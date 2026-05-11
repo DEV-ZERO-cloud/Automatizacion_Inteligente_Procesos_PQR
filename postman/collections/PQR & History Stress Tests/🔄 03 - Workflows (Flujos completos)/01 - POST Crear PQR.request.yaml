@@ -1,0 +1,39 @@
+$kind: http-request
+url: "{{base_url}}/pqrs"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{admin_token}}
+body:
+  type: text
+  content: |-
+    {
+        "titulo": "{{titulo}}",
+        "descripcion": "{{descripcion}}",
+        "tipo": "{{tipo}}",
+        "area_id": 3,
+        "usuario_id": 4
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const iter = pm.info.iteration || 0;
+      const timestamp = Date.now();
+      const tipos = ['peticion', 'queja', 'reclamo'];
+      pm.variables.set('titulo', `Workflow PQR #${iter} - ${timestamp}`);
+      pm.variables.set('descripcion', `Flujo completo de prueba. Iteración #${iter}.`);
+      pm.variables.set('tipo', tipos[iter % 3]);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const jsonData = pm.response.json();
+      if (jsonData && jsonData.data && jsonData.data.id) {
+          pm.environment.set('pqr_id', jsonData.data.id);
+          console.log(`✅ Workflow: PQR #${jsonData.data.id} creado`);
+      }
+
+      pm.test('PQR creada en workflow', function () {
+          pm.response.to.have.status(201);
+      });
+    language: text/javascript
+order: 1000

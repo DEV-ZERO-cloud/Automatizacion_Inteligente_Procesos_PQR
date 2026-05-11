@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{base_url}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/x-www-form-urlencoded
+body:
+  type: urlencoded
+  content:
+    username: "{{operador_email}}"
+    password: "{{operador_pass}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      const jsonData = pm.response.json();
+      if (jsonData.access_token) {
+          pm.environment.set('operador_token', jsonData.access_token);
+          console.log('✅ Operador token obtenido');
+      }
+
+      pm.test('Login operador exitoso', function () {
+          pm.response.to.have.status(200);
+          pm.expect(jsonData.access_token).to.not.be.empty;
+      });
+    language: text/javascript
+order: 3000

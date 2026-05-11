@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/historial/delete/{{history_id}}"
+method: DELETE
+headers:
+  Authorization: Bearer {{admin_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Historial eliminado exitosamente', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 6000

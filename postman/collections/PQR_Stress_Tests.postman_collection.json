@@ -1,0 +1,1307 @@
+{
+    "info": {
+        "name": "PQR & History Stress Tests",
+        "description": "Coleccion completa para pruebas de estres de los microservicios PQR e Historial. Incluye autenticacion automatica, endpoints CRUD, flujos de trabajo completos y scripts de generacion de datos dinamicos.\n\n## Como usar:\n1. Importar en Postman\n2. Seleccionar environment \"PQR Stress Env\"\n3. Ejecutar carpeta \"🔐 Auth\" para obtener tokens\n4. Usar Collection Runner para las pruebas de estres\n\n## Fases de estres recomendadas:\n- Baseline: 10 iteraciones, delay 1000ms\n- Carga media: 100 iteraciones, delay 200ms\n- Carga alta: 500 iteraciones, delay 50ms\n- Pico: 1000 iteraciones, delay 0ms\n- Spike: 3 ventanas Runner simultaneas, 200 iter c/u, delay 0ms",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "🔐 00 - Auth (Login automatico)",
+            "description": "Ejecutar esta carpeta primero para obtener los tokens de acceso. Los tokens se guardan automaticamente en las variables de entorno.",
+            "item": [
+                {
+                    "name": "POST Login - Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData.access_token) {",
+                                    "    pm.environment.set('admin_token', jsonData.access_token);",
+                                    "    console.log('Admin token obtenido');",
+                                    "}",
+                                    "",
+                                    "pm.test('Login admin exitoso', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(jsonData.access_token).to.not.be.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "body": {
+                            "mode": "urlencoded",
+                            "urlencoded": [
+                                {
+                                    "key": "username",
+                                    "value": "{{admin_email}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "password",
+                                    "value": "{{admin_pass}}",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login - Supervisor",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData.access_token) {",
+                                    "    pm.environment.set('supervisor_token', jsonData.access_token);",
+                                    "    console.log('Supervisor token obtenido');",
+                                    "}",
+                                    "",
+                                    "pm.test('Login supervisor exitoso', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(jsonData.access_token).to.not.be.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "body": {
+                            "mode": "urlencoded",
+                            "urlencoded": [
+                                {
+                                    "key": "username",
+                                    "value": "{{supervisor_email}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "password",
+                                    "value": "{{supervisor_pass}}",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login - Operador",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData.access_token) {",
+                                    "    pm.environment.set('operador_token', jsonData.access_token);",
+                                    "    console.log('Operador token obtenido');",
+                                    "}",
+                                    "",
+                                    "pm.test('Login operador exitoso', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(jsonData.access_token).to.not.be.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "body": {
+                            "mode": "urlencoded",
+                            "urlencoded": [
+                                {
+                                    "key": "username",
+                                    "value": "{{operador_email}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "password",
+                                    "value": "{{operador_pass}}",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login - Usuario",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData.access_token) {",
+                                    "    pm.environment.set('usuario_token', jsonData.access_token);",
+                                    "    console.log('Usuario token obtenido');",
+                                    "}",
+                                    "",
+                                    "pm.test('Login usuario exitoso', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(jsonData.access_token).to.not.be.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "body": {
+                            "mode": "urlencoded",
+                            "urlencoded": [
+                                {
+                                    "key": "username",
+                                    "value": "{{usuario_email}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "password",
+                                    "value": "{{usuario_pass}}",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📋 01 - PQR Service",
+            "description": "Endpoints CRUD del microservicio PQR. Cada request genera datos dinamicos unicos por iteracion para pruebas de estres realistas.",
+            "item": [
+                {
+                    "name": "POST Crear PQR",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const iter = pm.info.iteration || 0;",
+                                    "const timestamp = Date.now();",
+                                    "const tipos = ['peticion', 'queja', 'reclamo'];",
+                                    "pm.variables.set('titulo', `PQR Stress #${iter} - ${timestamp}`);",
+                                    "pm.variables.set('descripcion', `Descripcion generada automaticamente para prueba de estres. Iteracion #${iter}, timestamp ${timestamp}.`);",
+                                    "pm.variables.set('tipo', tipos[iter % 3]);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData && jsonData.data && jsonData.data.id) {",
+                                    "    const pqrId = jsonData.data.id;",
+                                    "    pm.environment.set('pqr_id', pqrId);",
+                                    "    pm.collectionVariables.set('last_pqr_id', pqrId);",
+                                    "    console.log(`PQR #${pqrId} creado`);",
+                                    "}",
+                                    "",
+                                    "pm.test('PQR creada exitosamente', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"{{titulo}}\",\n    \"descripcion\": \"{{descripcion}}\",\n    \"tipo\": \"{{tipo}}\",\n    \"area_id\": 3,\n    \"usuario_id\": 4\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs"]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Listar PQRs",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData && jsonData.data && jsonData.data.length > 0) {",
+                                    "    const firstId = jsonData.data[0].id;",
+                                    "    pm.environment.set('target_pqr_id', firstId);",
+                                    "}",
+                                    "",
+                                    "pm.test('PQRs listadas exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 3000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pqrs",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs"]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Obtener PQR por ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR encontrada', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{target_pqr_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{target_pqr_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT Actualizar PQR",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const iter = pm.info.iteration || 0;",
+                                    "const timestamp = Date.now();",
+                                    "pm.variables.set('titulo_upd', `PQR Actualizada #${iter} - ${timestamp}`);",
+                                    "pm.variables.set('descripcion_upd', `Descripcion actualizada en prueba de estres. Iteracion #${iter}.`);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR actualizada exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"{{titulo_upd}}\",\n    \"descripcion\": \"{{descripcion_upd}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE Eliminar PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR eliminada exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT Asignar PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR asignada exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"supervisor_id\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/asignar",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "asignar"]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT Clasificar PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR clasificada exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{supervisor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"categoria\": \"{{categoria}}\",\n    \"prioridad\": \"{{prioridad}}\",\n    \"comentario\": \"Clasificacion generada en prueba de estres\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/clasificar",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "clasificar"]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT Resolver PQR",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const iter = pm.info.iteration || 0;",
+                                    "pm.variables.set('respuesta', `Respuesta automatica generada en prueba de estres. Caso resuelto en iteracion #${iter}.`);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR resuelta exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{supervisor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"respuesta\": \"{{respuesta}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/resolver",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "resolver"]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT Cerrar PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR cerrada exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"confirmacion\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/cerrar",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "cerrar"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📜 02 - History Service",
+            "description": "Endpoints CRUD del microservicio de Historial. Trabaja con PQRs existentes para registrar eventos.",
+            "item": [
+                {
+                    "name": "POST Crear historial",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const iter = pm.info.iteration || 0;",
+                                    "const timestamp = Date.now();",
+                                    "pm.variables.set('accion', `PRUEBA_ESTRES_${iter}`);",
+                                    "pm.variables.set('detalle', `Evento generado automaticamente en prueba de estres. Iteracion #${iter}, timestamp ${timestamp}.`);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData && jsonData.data && jsonData.data.id) {",
+                                    "    pm.environment.set('history_id', jsonData.data.id);",
+                                    "    console.log(`History #${jsonData.data.id} creado`);",
+                                    "}",
+                                    "",
+                                    "pm.test('Historial creado exitosamente', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"pqr_id\": {{target_pqr_id}},\n    \"usuario_id\": 1,\n    \"accion\": \"{{accion}}\",\n    \"detalle\": \"{{detalle}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/historial/create",
+                            "host": ["{{base_url}}"],
+                            "path": ["historial", "create"]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Listar historial",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Historial listado exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 3000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/historial",
+                            "host": ["{{base_url}}"],
+                            "path": ["historial"]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Historial por ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Historial encontrado', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/historial/{{history_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["historial", "{{history_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Historial por PQR ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Historial por PQR encontrado', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/historial/pqr/{{target_pqr_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["historial", "pqr", "{{target_pqr_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT Actualizar historial",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Historial actualizado exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": {{history_id}},\n    \"accion\": \"ACTUALIZADO_ESTRES\",\n    \"detalle\": \"Registro actualizado durante prueba de estres\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/historial/update",
+                            "host": ["{{base_url}}"],
+                            "path": ["historial", "update"]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE Eliminar historial",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Historial eliminado exitosamente', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/historial/delete/{{history_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["historial", "delete", "{{history_id}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔄 03 - Workflows (Flujos completos)",
+            "description": "Flujos de trabajo completos que encadenan multiples operaciones. El Runner ejecuta los requests en orden secuencial por cada iteracion: Crear PQR -> Clasificar -> Resolver -> Cerrar. Las variables se pasan automaticamente entre requests.",
+            "item": [
+                {
+                    "name": "01 - POST Crear PQR",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const iter = pm.info.iteration || 0;",
+                                    "const timestamp = Date.now();",
+                                    "const tipos = ['peticion', 'queja', 'reclamo'];",
+                                    "pm.variables.set('titulo', `Workflow PQR #${iter} - ${timestamp}`);",
+                                    "pm.variables.set('descripcion', `Flujo completo de prueba. Iteracion #${iter}.`);",
+                                    "pm.variables.set('tipo', tipos[iter % 3]);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const jsonData = pm.response.json();",
+                                    "if (jsonData && jsonData.data && jsonData.data.id) {",
+                                    "    pm.environment.set('pqr_id', jsonData.data.id);",
+                                    "    console.log(`Workflow: PQR #${jsonData.data.id} creado`);",
+                                    "}",
+                                    "",
+                                    "pm.test('PQR creada en workflow', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"{{titulo}}\",\n    \"descripcion\": \"{{descripcion}}\",\n    \"tipo\": \"{{tipo}}\",\n    \"area_id\": 3,\n    \"usuario_id\": 4\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs"]
+                        }
+                    }
+                },
+                {
+                    "name": "02 - PUT Clasificar PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR clasificada en workflow', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{supervisor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"categoria\": \"Facturacion\",\n    \"prioridad\": \"media\",\n    \"comentario\": \"Clasificacion automatica en workflow de estres\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/clasificar",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "clasificar"]
+                        }
+                    }
+                },
+                {
+                    "name": "03 - PUT Resolver PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR resuelta en workflow', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{supervisor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"respuesta\": \"Su PQR ha sido resuelta. Gracias por contactarnos.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/resolver",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "resolver"]
+                        }
+                    }
+                },
+                {
+                    "name": "04 - PUT Cerrar PQR",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('PQR cerrada en workflow', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Workflow completo ejecutado', function () {",
+                                    "    console.log(`Workflow completado para PQR #${pm.environment.get('pqr_id')}`);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"confirmacion\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pqrs/{{pqr_id}}/cerrar",
+                            "host": ["{{base_url}}"],
+                            "path": ["pqrs", "{{pqr_id}}", "cerrar"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "⚡ 04 - Stress Suites",
+            "description": "Organizado por fases de estres. Cada subcarpeta contiene los requests agrupados para ejecutar con configuraciones especificas en el Runner.\n\n## Como ejecutar cada fase:\n1. Seleccionar una subcarpeta (ej: Baseline)\n2. Click derecho -> Run Folder\n3. Configurar en el Runner:\n   - Iterations: segun la fase\n   - Delay: segun la fase\n   - Data: No usar archivo (datos generados por scripts)\n4. Click \"Run\"\n\nDespues de cada fase, exportar resultados desde el Runner (Export Results -> JSON).",
+            "item": [
+                {
+                    "name": "🟢 Baseline - 10 iter / delay 1s",
+                    "description": "Proposito: Establecer linea base de rendimiento con carga minima.\nRunner: 10 iteraciones, delay 1000ms\nMetrica objetivo: Respuestas < 500ms, 0% errores",
+                    "item": [
+                        {
+                            "name": "GET /health (health check)",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/health",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["health"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "POST Crear PQR (referencia)",
+                            "event": [
+                                {
+                                    "listen": "prerequest",
+                                    "script": {
+                                        "exec": [
+                                            "const iter = pm.info.iteration || 0;",
+                                            "pm.variables.set('titulo', `Baseline PQR #${iter}`);",
+                                            "pm.variables.set('descripcion', `Baseline test iteration ${iter}`);",
+                                            "pm.variables.set('tipo', ['peticion','queja','reclamo'][iter % 3]);"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\"titulo\": \"{{titulo}}\", \"descripcion\": \"{{descripcion}}\", \"tipo\": \"{{tipo}}\", \"area_id\": 3, \"usuario_id\": 4}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pqrs",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["pqrs"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "GET Listar PQRs (referencia)",
+                            "request": {
+                                "method": "GET",
+                                "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+                                "url": {
+                                    "raw": "{{base_url}}/pqrs",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["pqrs"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "GET /historial (referencia)",
+                            "request": {
+                                "method": "GET",
+                                "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+                                "url": {
+                                    "raw": "{{base_url}}/historial",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["historial"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "🟡 Carga Media - 100 iter / delay 200ms",
+                    "description": "Proposito: Medir degradacion bajo carga sostenida moderada.\nRunner: 100 iteraciones, delay 200ms\nMetrica objetivo: Respuestas < 1000ms, errores < 1%",
+                    "item": [
+                        {
+                            "name": "POST Crear PQR (carga media)",
+                            "event": [
+                                {
+                                    "listen": "prerequest",
+                                    "script": {
+                                        "exec": [
+                                            "const iter = pm.info.iteration || 0;",
+                                            "pm.variables.set('titulo', `CargaMedia PQR #${iter}`);",
+                                            "pm.variables.set('descripcion', `Carga media test iteration ${iter}`);",
+                                            "pm.variables.set('tipo', ['peticion','queja','reclamo'][iter % 3]);"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\"titulo\": \"{{titulo}}\", \"descripcion\": \"{{descripcion}}\", \"tipo\": \"{{tipo}}\", \"area_id\": 3, \"usuario_id\": 4}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pqrs",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["pqrs"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "PUT Clasificar PQR (carga media)",
+                            "event": [
+                                {
+                                    "listen": "prerequest",
+                                    "script": {
+                                        "exec": [
+                                            "const iter = pm.info.iteration || 0;",
+                                            "const id = (iter % 500) + 1;",
+                                            "pm.variables.set('cid', id);"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Authorization", "value": "Bearer {{supervisor_token}}" }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\"categoria\": \"Facturacion\", \"prioridad\": \"media\", \"comentario\": \"Carga media test\"}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pqrs/{{cid}}/clasificar",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["pqrs", "{{cid}}", "clasificar"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "POST Crear historial (carga media)",
+                            "event": [
+                                {
+                                    "listen": "prerequest",
+                                    "script": {
+                                        "exec": [
+                                            "const iter = pm.info.iteration || 0;",
+                                            "const id = (iter % 500) + 1;",
+                                            "pm.variables.set('hid', id);",
+                                            "pm.variables.set('accion', `CARGA_MEDIA_${iter}`);"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\"pqr_id\": {{hid}}, \"usuario_id\": 1, \"accion\": \"{{accion}}\", \"detalle\": \"Evento de carga media\"}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/historial/create",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["historial", "create"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "🔴 Pico - 1000 iter / delay 0ms",
+                    "description": "Proposito: Encontrar el punto de quiebre del sistema bajo carga maxima sostenida.\nRunner: 1000 iteraciones, delay 0ms\nMetrica objetivo: Identificar el limite de requests/segundo antes de errores masivos",
+                    "item": [
+                        {
+                            "name": "POST Crear PQR (pico)",
+                            "event": [
+                                {
+                                    "listen": "prerequest",
+                                    "script": {
+                                        "exec": [
+                                            "const iter = pm.info.iteration || 0;",
+                                            "pm.variables.set('titulo', `Pico PQR #${iter}`);",
+                                            "pm.variables.set('descripcion', `Pico test iteration ${iter}`);",
+                                            "pm.variables.set('tipo', ['peticion','queja','reclamo'][iter % 3]);"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\"titulo\": \"{{titulo}}\", \"descripcion\": \"{{descripcion}}\", \"tipo\": \"{{tipo}}\", \"area_id\": 3, \"usuario_id\": 4}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pqrs",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["pqrs"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "GET Listar PQRs (pico)",
+                            "request": {
+                                "method": "GET",
+                                "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+                                "url": {
+                                    "raw": "{{base_url}}/pqrs",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["pqrs"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "GET /historial (pico)",
+                            "request": {
+                                "method": "GET",
+                                "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+                                "url": {
+                                    "raw": "{{base_url}}/historial",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["historial"]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -63,6 +63,7 @@ async def get_all_pqrs(
     prioridad: str | None = Query(default=None),
     area_id: int | None = Query(default=None),
     usuario_id: int | None = Query(default=None),
+    supervisor_id: int | None = Query(default=None),
     search: str | None = Query(default=None),
     current_user: dict = Security(
         get_current_user, scopes=["admin", "supervisor", "operador", "gerente", "agente", "usuario"]
@@ -83,6 +84,8 @@ async def get_all_pqrs(
             data = [r for r in data if r.get("area_id") == area_id]
         if usuario_id is not None:
             data = [r for r in data if r.get("usuario_id") == usuario_id]
+        if supervisor_id is not None:
+            data = [r for r in data if r.get("supervisor_id") == supervisor_id]
         if search:
             s = search.lower()
             data = [

@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{base_url}}/pqrs/{{pqr_id}}/resolver"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{supervisor_token}}
+body:
+  type: text
+  content: |-
+    {
+        "respuesta": "{{respuesta}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const iter = pm.info.iteration || 0;
+      pm.variables.set('respuesta', `Respuesta automática generada en prueba de estrés. Caso resuelto en iteración #${iter}.`);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('PQR resuelta exitosamente', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 8000

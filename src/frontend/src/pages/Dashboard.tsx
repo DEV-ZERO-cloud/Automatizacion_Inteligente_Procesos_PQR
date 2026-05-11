@@ -144,7 +144,6 @@ export function Dashboard() {
       case 'admin':
         return [
           { label: 'Gestionar usuarios', icon: 'group', path: '/usuarios' },
-          { label: 'Configurar IA', icon: 'psychology', path: '/gestion-ia' },
         ];
       case 'supervisor':
         return [

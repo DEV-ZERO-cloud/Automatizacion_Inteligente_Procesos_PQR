@@ -1,0 +1,7 @@
+$kind: collection
+name: 🔴 Pico - 1000 iter / delay 0ms
+description: |-
+  Propósito: Encontrar el punto de quiebre del sistema bajo carga máxima sostenida.
+  Runner: 1000 iteraciones, delay 0ms
+  Métrica objetivo: Identificar el límite de requests/segundo antes de errores masivos
+order: 3000

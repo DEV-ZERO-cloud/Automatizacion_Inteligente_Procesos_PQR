@@ -74,11 +74,11 @@ async def get_history_by_pqr(
     """Retorna todo el historial asociado a una PQR específica."""
     try:
         logger.info("[GET /historial/pqr/%s] Buscando eventos", pqr_id)
-        event = controller.get_by_column(HistoryOut, "pqr_id", pqr_id)
-        if not event:
-            return ok_response(data=[], message="Historial por PQR consultado", status_code=status.HTTP_200_OK)
+        all_events = controller.get_all(HistoryOut)
+        filtered = [e for e in all_events if e.pqr_id == pqr_id]
+        filtered.sort(key=lambda x: x.created_at or x.id, reverse=True)
         return ok_response(
-            data=[event.to_dict()],
+            data=[e.to_dict() for e in filtered],
             message="Historial por PQR consultado",
             status_code=status.HTTP_200_OK,
         )

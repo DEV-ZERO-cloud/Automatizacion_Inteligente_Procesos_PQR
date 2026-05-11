@@ -1,0 +1,15 @@
+# Use this workspace to collaborate
+workspace:
+  id: f7a7c537-ad24-4805-8162-f2d404490fc7
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ..\postman\collections\PQR & History Stress Tests: 3dc6387a-04c6-4445-889d-9100648bf3f9
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

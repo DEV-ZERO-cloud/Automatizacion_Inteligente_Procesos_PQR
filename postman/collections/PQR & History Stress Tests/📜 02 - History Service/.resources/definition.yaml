@@ -1,0 +1,3 @@
+$kind: collection
+description: Endpoints CRUD del microservicio de Historial. Trabaja con PQRs existentes para registrar eventos.
+order: 3000

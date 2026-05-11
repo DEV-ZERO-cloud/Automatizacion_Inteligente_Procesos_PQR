@@ -1,0 +1,38 @@
+name: PQR Stress Env
+values:
+  - key: base_url
+    value: 'http://localhost:8000'
+  - key: admin_email
+    value: admin@pqr.com
+  - key: admin_pass
+    value: '123456'
+  - key: supervisor_email
+    value: laura@pqr.com
+  - key: supervisor_pass
+    value: '123456'
+  - key: operador_email
+    value: operador@pqr.com
+  - key: operador_pass
+    value: '123456'
+  - key: usuario_email
+    value: maria@pqr.com
+  - key: usuario_pass
+    value: '123456'
+  - key: admin_token
+    value: ''
+  - key: supervisor_token
+    value: ''
+  - key: operador_token
+    value: ''
+  - key: usuario_token
+    value: ''
+  - key: pqr_id
+    value: ''
+  - key: history_id
+    value: ''
+  - key: target_pqr_id
+    value: '1'
+  - key: categoria
+    value: Facturacion
+  - key: prioridad
+    value: media

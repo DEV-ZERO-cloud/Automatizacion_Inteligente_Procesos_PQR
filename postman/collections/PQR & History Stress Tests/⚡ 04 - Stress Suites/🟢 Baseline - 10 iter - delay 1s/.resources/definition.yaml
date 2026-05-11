@@ -1,0 +1,7 @@
+$kind: collection
+name: 🟢 Baseline - 10 iter / delay 1s
+description: |-
+  Propósito: Establecer línea base de rendimiento con carga mínima.
+  Runner: 10 iteraciones, delay 1000ms
+  Métrica objetivo: Respuestas < 500ms, 0% errores
+order: 1000

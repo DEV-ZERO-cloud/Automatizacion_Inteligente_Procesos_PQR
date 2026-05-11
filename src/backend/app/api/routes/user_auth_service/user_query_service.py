@@ -34,10 +34,13 @@ async def get_all_users(
         data = [
             {
                 "id": u.id,
+                "identificacion": u.identificacion,
                 "nombre": u.nombre,
                 "correo": u.correo,
+                "telefono": u.telefono,
                 "rol_id": u.rol_id,
                 "area_id": u.area_id,
+                "activo": u.activo,
             }
             for u in users
         ]

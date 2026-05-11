@@ -82,6 +82,19 @@ class UserOut(BaseModel):
         return cls(**data)
 
 
+class UserCreateRequest(BaseModel):
+    """Modelo para crear usuario desde admin (sin id, se auto-genera)."""
+
+    identificacion: str
+    nombre: str
+    correo: str
+    telefono: Optional[str] = None
+    contrasena: str
+    rol_id: int
+    area_id: int
+    activo: Optional[bool] = True
+
+
 class UserUpdate(BaseModel):
     """Modelo para actualizar datos de un usuario."""
 
@@ -91,3 +104,4 @@ class UserUpdate(BaseModel):
     telefono: Optional[str] = None
     rol_id: int
     area_id: int
+    activo: Optional[bool] = None

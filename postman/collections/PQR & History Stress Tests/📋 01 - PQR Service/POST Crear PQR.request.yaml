@@ -1,0 +1,45 @@
+$kind: http-request
+url: "{{base_url}}/pqrs"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{admin_token}}
+body:
+  type: text
+  content: |-
+    {
+        "titulo": "{{titulo}}",
+        "descripcion": "{{descripcion}}",
+        "tipo": "{{tipo}}",
+        "area_id": 3,
+        "usuario_id": 4
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const iter = pm.info.iteration || 0;
+      const timestamp = Date.now();
+      const tipos = ['peticion', 'queja', 'reclamo'];
+      pm.variables.set('titulo', `PQR Stress #${iter} - ${timestamp}`);
+      pm.variables.set('descripcion', `Descripción generada automáticamente para prueba de estrés. Iteración #${iter}, timestamp ${timestamp}. Esta es una prueba de carga del sistema.`);
+      pm.variables.set('tipo', tipos[iter % 3]);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const jsonData = pm.response.json();
+      if (jsonData && jsonData.data && jsonData.data.id) {
+          const pqrId = jsonData.data.id;
+          pm.environment.set('pqr_id', pqrId);
+          pm.collectionVariables.set('last_pqr_id', pqrId);
+          console.log(`✅ PQR #${pqrId} creado`);
+      }
+
+      pm.test('PQR creada exitosamente', function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 1000

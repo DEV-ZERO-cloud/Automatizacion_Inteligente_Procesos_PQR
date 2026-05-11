@@ -1,0 +1,32 @@
+$kind: http-request
+url: "{{base_url}}/pqrs/{{pqr_id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{admin_token}}
+body:
+  type: text
+  content: |-
+    {
+        "titulo": "{{titulo_upd}}",
+        "descripcion": "{{descripcion_upd}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const iter = pm.info.iteration || 0;
+      const timestamp = Date.now();
+      pm.variables.set('titulo_upd', `PQR Actualizada #${iter} - ${timestamp}`);
+      pm.variables.set('descripcion_upd', `Descripción actualizada en prueba de estrés. Iteración #${iter}.`);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('PQR actualizada exitosamente', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 4000

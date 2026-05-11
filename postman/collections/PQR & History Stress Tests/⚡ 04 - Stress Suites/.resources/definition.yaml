@@ -1,0 +1,15 @@
+$kind: collection
+description: |-
+  Organizado por fases de estrés. Cada subcarpeta contiene los requests agrupados para ejecutar con configuraciones específicas en el Runner.
+
+  ## Cómo ejecutar cada fase:
+  1. Seleccionar una subcarpeta (ej: 🟢 Baseline)
+  2. Click derecho → Run Folder
+  3. Configurar en el Runner:
+     - Iterations: según la fase
+     - Delay: según la fase
+     - Data: No usar archivo (datos generados por scripts)
+  4. Click "Run"
+
+  Después de cada fase, exportar resultados desde el Runner (Export Results → JSON).
+order: 5000

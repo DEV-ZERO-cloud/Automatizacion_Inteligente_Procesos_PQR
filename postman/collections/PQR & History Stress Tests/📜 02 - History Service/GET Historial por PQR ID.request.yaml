@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/historial/pqr/{{target_pqr_id}}"
+method: GET
+headers:
+  Authorization: Bearer {{admin_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Historial por PQR encontrado', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 1000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(1000);
+      });
+    language: text/javascript
+order: 4000

@@ -1,0 +1,3 @@
+$kind: collection
+description: Endpoints CRUD del microservicio PQR. Cada request genera datos dinámicos únicos por iteración para pruebas de estrés realistas.
+order: 2000

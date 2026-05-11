@@ -1,0 +1,19 @@
+$kind: collection
+name: PQR & History Stress Tests
+description: |-
+  Colección completa para pruebas de estrés de los microservicios PQR e Historial. Incluye autenticación automática, endpoints CRUD, flujos de trabajo completos y scripts de generación de datos dinámicos.
+
+  ## Cómo usar:
+  1. Importar en Postman
+  2. Seleccionar environment "PQR Stress Env"
+  3. Ejecutar carpeta "🔐 Auth" para obtener tokens
+  4. Usar Collection Runner para las pruebas de estrés
+
+  ## Fases de estrés recomendadas:
+  - 🟢 Baseline: 10 iteraciones, delay 1000ms
+  - 🟡 Carga media: 100 iteraciones, delay 200ms
+  - 🟠 Carga alta: 500 iteraciones, delay 50ms
+  - 🔴 Pico: 1000 iteraciones, delay 0ms
+  - ⚡ Spike: 3 ventanas Runner simultáneas, 200 iter c/u, delay 0ms
+variables:
+  last_pqr_id: ""

@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{base_url}}/pqrs/{{pqr_id}}/clasificar"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{supervisor_token}}
+body:
+  type: text
+  content: |-
+    {
+        "categoria": "{{categoria}}",
+        "prioridad": "{{prioridad}}",
+        "comentario": "Clasificación generada en prueba de estrés"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('PQR clasificada exitosamente', function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 7000

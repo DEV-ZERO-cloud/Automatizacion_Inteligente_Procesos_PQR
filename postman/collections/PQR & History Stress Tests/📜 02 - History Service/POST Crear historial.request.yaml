@@ -1,0 +1,40 @@
+$kind: http-request
+url: "{{base_url}}/historial/create"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{admin_token}}
+body:
+  type: text
+  content: |-
+    {
+        "pqr_id": {{target_pqr_id}},
+        "usuario_id": 1,
+        "accion": "{{accion}}",
+        "detalle": "{{detalle}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const iter = pm.info.iteration || 0;
+      const timestamp = Date.now();
+      pm.variables.set('accion', `PRUEBA_ESTRES_${iter}`);
+      pm.variables.set('detalle', `Evento generado automáticamente en prueba de estrés. Iteración #${iter}, timestamp ${timestamp}.`);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const jsonData = pm.response.json();
+      if (jsonData && jsonData.data && jsonData.data.id) {
+          pm.environment.set('history_id', jsonData.data.id);
+          console.log(`✅ History #${jsonData.data.id} creado`);
+      }
+
+      pm.test('Historial creado exitosamente', function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test('Response time < 2000ms', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 1000

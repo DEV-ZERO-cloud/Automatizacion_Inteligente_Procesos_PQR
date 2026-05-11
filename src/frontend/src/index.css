@@ -510,6 +510,25 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Sora', sans-serif; }
   color: #525f73;
 }
 .modal-close:hover { background: #f2f4f7; }
+.modal-body { padding: 0 0 24px; }
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f4f7;
+}
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+/* Danger button */
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1c; box-shadow: 0 10px 24px -14px rgba(220,38,38,0.75); }
+.btn-outline-danger {
+  background: transparent;
+  color: #dc2626;
+  border: 2px solid #fee2e2;
+}
+.btn-outline-danger:hover { background: #fee2e2; }
 
 /* Loading */
 .skeleton {

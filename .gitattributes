@@ -1,0 +1,28 @@
+# Normalizar saltos de línea automáticamente
+* text=auto
+
+# Archivos del proyecto — mantener CRLF en Windows
+*.html    text eol=crlf
+*.tsx     text eol=crlf
+*.ts      text eol=crlf
+*.css     text eol=crlf
+*.json    text eol=crlf
+*.md      text eol=crlf
+*.yaml    text eol=crlf
+*.yml     text eol=crlf
+*.py      text eol=crlf
+*.sql     text eol=crlf
+
+# Blobs binarios del cache de modelos — no normalizar
+*.blob    -text
+*.bin     -text
+*.pt      -text
+*.pth     -text
+*.pkl     -text
+*.joblib  -text
+*.onnx    -text
+*.h5      -text
+*.zip     -text
+
+# Lockfile de npm — no tocar
+package-lock.json -text

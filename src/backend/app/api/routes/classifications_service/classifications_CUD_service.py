@@ -10,6 +10,7 @@ from app.models.classification import (
     CategoryCreate, CategoryOut, CategoryUpdate,
     PriorityCreate, PriorityOut, PriorityUpdate
 )
+from app.models.history import HistoryCreate
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -76,6 +77,17 @@ async def validate_classification(
             created_at=payload.created_at,
         )
         controller.update(updated)
+
+        try:
+            history_entry = HistoryCreate(
+                pqr_id=payload.pqr_id,
+                usuario_id=current_user.get("sub"),
+                accion="Clasificación validada",
+                detalle=f"Clasificación validada manualmente con categoría ID {payload.categoria_id} y prioridad ID {payload.prioridad_id} (origen: {payload.origen})"
+            )
+            controller.add(history_entry)
+        except Exception as e:
+            logger.warning(f"[Historial] No se pudo registrar la validación: {e}")
         
         return ok_response(data=None, message="Clasificación validada")
     except HTTPException:

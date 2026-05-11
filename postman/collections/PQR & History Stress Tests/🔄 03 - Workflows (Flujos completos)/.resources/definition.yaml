@@ -1,0 +1,3 @@
+$kind: collection
+description: "Flujos de trabajo completos que encadenan múltiples operaciones. El Runner ejecuta los requests en orden secuencial por cada iteración: Crear PQR → Clasificar → Resolver → Cerrar. Las variables se pasan automáticamente entre requests."
+order: 4000

@@ -94,11 +94,36 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  identificacion: number;
+  identificacion: string;
   nombre: string;
   correo: string;
   telefono?: string;
   password: string;
+}
+
+export interface CreateUserRequest {
+  identificacion: string;
+  nombre: string;
+  correo: string;
+  telefono?: string;
+  contrasena: string;
+  rol_id: number;
+  area_id: number;
+}
+
+export interface UserUpdateRequest {
+  id: number;
+  nombre: string;
+  correo: string;
+  telefono?: string;
+  rol_id: number;
+  area_id: number;
+  activo?: boolean;
+}
+
+export interface RoleItem {
+  id: number;
+  nombre: string;
 }
 
 export interface LoginResponse {

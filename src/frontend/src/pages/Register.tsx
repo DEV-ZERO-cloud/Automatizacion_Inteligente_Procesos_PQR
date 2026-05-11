@@ -46,7 +46,7 @@ export function Register() {
     setLoading(true);
     try {
       const response = await authService.register({
-        identificacion: Number(form.identificacion),
+        identificacion: form.identificacion.trim(),
         nombre: form.nombre.trim(),
         correo: form.correo.trim().toLowerCase(),
         telefono: form.telefono.trim() || undefined,

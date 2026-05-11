@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{base_url}}/pqrs/{{pqr_id}}/resolver"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{supervisor_token}}
+body:
+  type: text
+  content: |-
+    {
+        "respuesta": "Su PQR ha sido resuelta. Gracias por contactarnos."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('PQR resuelta en workflow', function () {
+          pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 3000
