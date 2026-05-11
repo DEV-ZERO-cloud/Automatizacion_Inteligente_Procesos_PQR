@@ -1,1142 +1,1202 @@
 [
   {
     "pqr_id": 1,
-    "text": "Mi factura llego con un cobro adicional que no reconozco, exijo que me devuelvan el dinero de inmediato.",
-    "category": "Facturación incorrecta",
-    "priority": "alta"
+    "text": "Necesito actualizar mi documento de identidad en la cuenta. Registré un número incorrecto. El problema ocurre a veces sí y a veces no.",
+    "category": "Cambio de datos",
+    "priority": "baja"
   },
   {
     "pqr_id": 2,
-    "text": "Me cobraron el doble en el ultimo ciclo de facturacion. Necesito que corrijan este error con urgencia.",
-    "category": "Facturación incorrecta",
-    "priority": "alta"
+    "text": "La página carga muy lento y en móvil es casi imposible navegar. Pierdo el carrito cada vez que salgo de la app.",
+    "category": "Experiencia de compra",
+    "priority": "baja"
   },
   {
     "pqr_id": 3,
-    "text": "Detecte que me cobraron IVA dos veces en la misma factura. El monto total no corresponde al contrato.",
-    "category": "Facturación incorrecta",
-    "priority": "alta"
+    "text": "El artículo recibido es de otra marca. Yo pedí explícitamente la marca X y me llegó la Y.",
+    "category": "Producto incorrecto",
+    "priority": "media"
   },
   {
     "pqr_id": 4,
-    "text": "Recibi un cargo en mi tarjeta por un monto distinto al acordado en el contrato firmado el mes pasado.",
-    "category": "Facturación incorrecta",
+    "text": "Contraté srvicio premium con tiempo de respuesta de 19 horas pero llevan 18 horas sin resolver mi ticket. 😡 Ya he reportado esto varias veces y nadie responde.",
+    "category": "Servicio",
     "priority": "media"
   },
   {
     "pqr_id": 5,
-    "text": "Me facturaron el precio de lista cuando segun mi contrato tengo tarifa preferencial del 20% de descuento.",
-    "category": "Facturación incorrecta",
+    "text": "Solicito cambio de la pregunta de seguridad de mi cuenta. La actual es muy obvia. 😡",
+    "category": "Cambio de datos",
     "priority": "media"
   },
   {
     "pqr_id": 6,
-    "text": "En la factura aparece un concepto de instalacion que ya fue incluido en el cobro del mes anterior.",
-    "category": "Facturación incorrecta",
+    "text": "Necesito la factura electrónica de mi compra para declarar gastos. Por favor envíenla al correo registrado. 😡 Ya he reportado esto varias veces y nadie responde.",
+    "category": "Factura y documentos",
     "priority": "media"
   },
   {
     "pqr_id": 7,
-    "text": "La factura del mes de marzo tiene un redondeo incorrecto en el subtotal. El diferencial es minimo pero debe corregirse.",
-    "category": "Facturación incorrecta",
-    "priority": "baja"
+    "text": "Necesito cancelar urgentemente el pedido ORD-2024-32377. Me equivoqué en la dirección de entrega y si no lo cancelan llegaría a un lugar incorrecto. Necesito solucion urgente.",
+    "category": "Cancelación de pedido",
+    "priority": "alta"
   },
   {
     "pqr_id": 8,
-    "text": "El numero de orden en la factura no coincide con el de mi pedido. Solicito correccion del documento.",
-    "category": "Facturación incorrecta",
-    "priority": "baja"
+    "text": "La sincronización entre la app móvil y la web del servicio no funciona. Los datos no se actualizan en tiempo real.",
+    "category": "Servicio",
+    "priority": "media"
   },
   {
     "pqr_id": 9,
-    "text": "La descripcion del servicio en la factura usa una denominacion antigua. Por favor actualicen el texto.",
+    "text": "Se corrompieron los archivos financieros del cierre de año. Mañana presentamos a la junta directiva. Necesito recuperación urgente.",
     "category": "Facturación incorrecta",
-    "priority": "baja"
+    "priority": "critica"
   },
   {
     "pqr_id": 10,
-    "text": "Necesito con urgencia las especificaciones tecnicas del equipo RT-900 para una licitacion que cierra manana.",
-    "category": "Información de producto",
+    "text": "¿Cuál es el estado de mi solicitud de devolución ORD-2024-20460? Entregué el producto hace 28 días y no tengo actualización.",
+    "category": "Devolución y reembolso",
     "priority": "alta"
   },
   {
     "pqr_id": 11,
-    "text": "Requiero confirmacion inmediata de si el servicio incluye soporte 24/7 antes de firmar el contrato hoy.",
-    "category": "Información de producto",
-    "priority": "alta"
+    "text": "Necesito el soporte de pago del pedido ORD-2024-20990 para mis registros contables. 😡",
+    "category": "Factura y documentos",
+    "priority": "baja"
   },
   {
     "pqr_id": 12,
-    "text": "El generador GT-500 cumple la norma NTC-2050? Necesito saberlo hoy para la visita de inspeccion.",
-    "category": "Información de producto",
-    "priority": "alta"
+    "text": "la fecha de entrega prometida ya pasó hace 16 días. ¿pueden darme una nueva fecha estimada?",
+    "category": "Entrega tardía",
+    "priority": "baja"
   },
   {
     "pqr_id": 13,
-    "text": "Solicito informacion detallada sobre los nuevos planes de servicios disponibles para empresas medianas.",
-    "category": "Información de producto",
+    "text": "El producto empezó a fallar. Según la garantía del fabricante debo tener cobertura. ¿Cómo procedo? Necesito solucion urgente.",
+    "category": "Garantía",
     "priority": "media"
   },
   {
     "pqr_id": 14,
-    "text": "Cual es la diferencia entre el plan basico y el plan premium en terminos de cobertura tecnica?",
-    "category": "Información de producto",
+    "text": "Me dieron un crédito de tienda sin preguntarme. Yo pedí reembolso al método de pago original y eso es lo que quiero. 😡 No sé si esto corresponde a soporte o facturación.",
+    "category": "Devolución y reembolso",
     "priority": "media"
   },
   {
     "pqr_id": 15,
-    "text": "El plan empresarial incluye soporte tecnico 24/7 o solo en horario laboral?",
-    "category": "Información de producto",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 16,
-    "text": "Cuales son los requisitos para acceder al programa de mantenimiento preventivo trimestral?",
-    "category": "Información de producto",
+    "text": "La descripción del producto tiene información que no corresponde a la realidad. ¿Pueden actualizar eso? 😡 No sé si esto corresponde a soporte o facturación.",
+    "category": "Publicidad engañosa",
     "priority": "baja"
   },
   {
+    "pqr_id": 16,
+    "text": "La empresa de mensajería que usan dañó mi producto durante el transporte. Necesito que me respondan por el daño.",
+    "category": "Logística y entrega",
+    "priority": "critica"
+  },
+  {
     "pqr_id": 17,
-    "text": "Por favor envien el manual de usuario del equipo modelo XR-200 que adquirimos la semana pasada.",
-    "category": "Información de producto",
+    "text": "Mi devolución está en proceso pero ya pasaron 21 días. ¿Cuándo se acredita el reembolso? 😡",
+    "category": "Devolución y reembolso",
     "priority": "baja"
   },
   {
     "pqr_id": 18,
-    "text": "Tienen planes especiales para instituciones educativas? Somos una universidad publica.",
-    "category": "Información de producto",
-    "priority": "baja"
+    "text": "La plataforma me cobró pero no procesó el pedido. Tengo el cargo en mi tarjeta pero no aparece la orden en mi cuenta. Necesito solucion urgente.",
+    "category": "Experiencia de compra",
+    "priority": "critica"
   },
   {
     "pqr_id": 19,
-    "text": "El equipo instalado hace una semana emite ruidos extraños y se apaga solo sin previo aviso.",
-    "category": "Técnica",
-    "priority": "alta"
+    "text": "Solicito el certificado de compra del pedido ORD-2024-21058.",
+    "category": "Factura y documentos",
+    "priority": "baja"
   },
   {
     "pqr_id": 20,
-    "text": "Los tecnicos que vinieron dejaron cables sueltos y sin senalizar. Hay riesgo de accidente electrico.",
-    "category": "Técnica",
-    "priority": "alta"
+    "text": "Incumplimiento contractual inminente: el sistema no procesa los pagos de nómina y hoy es día de pago de 3 empleados. Necesito solucion urgente. El problema ocurre a veces sí y a veces no.",
+    "category": "Atención al cliente",
+    "priority": "critica"
   },
   {
     "pqr_id": 21,
-    "text": "El intercambiador de calor instalado tiene una fuga de refrigerante visible. Se necesita revision urgente.",
-    "category": "Técnica",
-    "priority": "alta"
+    "text": "Tuve una experiencia muy positiva comprando en su tienda. El proceso fue rápido, la entrega fue puntual y el producto llegó en perfectas condiciones. Muy recomendados. Necesito solucion urgente. 😡 No tengo claro por qué ocurrió el cobro.",
+    "category": "Experiencia de compra",
+    "priority": "baja"
   },
   {
     "pqr_id": 22,
-    "text": "El tecnico no llego a la cita programada para el dia de ayer y nadie me aviso del cambio.",
-    "category": "Técnica",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 23,
-    "text": "El sensor de temperatura instalado esta descalibrado y genera alarmas con frecuencia inusual.",
-    "category": "Técnica",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 24,
-    "text": "El sistema de calefaccion instalado no alcanza la temperatura configurada en ningun punto del edificio.",
-    "category": "Técnica",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 25,
-    "text": "El tecnico resolvio el problema pero no dejo el informe de visita firmado como es el procedimiento.",
-    "category": "Técnica",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 26,
-    "text": "Quisiera coordinar la revision preventiva anual del equipo antes de que venza la garantia.",
-    "category": "Técnica",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 27,
-    "text": "Solicito que en la proxima visita tecnica cambien el filtro de aire del equipo segun el manual.",
-    "category": "Técnica",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 28,
-    "text": "El producto llego completamente danado. El empaque estaba roto y faltaban piezas. Quiero solucion inmediata.",
-    "category": "Producto defectuoso",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 29,
-    "text": "El dispositivo se cortocircuito al primer uso y genero un amago de incendio. Exijo cambio urgente.",
-    "category": "Producto defectuoso",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 30,
-    "text": "El equipo presenta falla critico desde el primer dia de operacion. No cumple ninguna especificacion tecnica.",
-    "category": "Producto defectuoso",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 31,
-    "text": "El aparato recibido presenta rayaduras profundas en la carcasa y uno de los botones no funciona.",
-    "category": "Producto defectuoso",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 32,
-    "text": "El producto entregado tiene la pantalla rota. El empaque llego en buen estado pero el equipo no.",
-    "category": "Producto defectuoso",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 33,
-    "text": "Dos de las cuatro baterias incluidas en el kit llegaron completamente descargadas y sin carga.",
-    "category": "Producto defectuoso",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 34,
-    "text": "El manual impreso del producto tiene paginas en blanco. Solicito que envien uno en buen estado.",
-    "category": "Producto defectuoso",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 35,
-    "text": "El color del producto recibido no coincide con el que seleccione en la orden de compra.",
-    "category": "Producto defectuoso",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 36,
-    "text": "El producto funciona pero el acabado superficial tiene imperfecciones visibles que afectan la presentacion.",
-    "category": "Producto defectuoso",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 37,
-    "text": "Llevo dos semanas sin resolver mi caso y ya voy para la tercera llamada sin ninguna respuesta concreta.",
-    "category": "Atención al cliente",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 38,
-    "text": "El agente colgo la llamada sin resolver mi problema y sin dar ningun numero de seguimiento.",
-    "category": "Atención al cliente",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 39,
-    "text": "El operador fue grosero y me amenazo con escalar el cobro si no pagaba de inmediato. Exijo queja formal.",
-    "category": "Atención al cliente",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 40,
-    "text": "El tiempo de espera en la linea de atencion supera los 45 minutos. Esto afecta la experiencia del cliente.",
-    "category": "Atención al cliente",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 41,
-    "text": "Tres agentes distintos me dieron informacion contradictoria sobre el estado de mi caso. Necesito claridad.",
-    "category": "Atención al cliente",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 42,
-    "text": "Cada vez que llamo me piden los mismos datos. Su sistema no guarda el historial de interacciones.",
-    "category": "Atención al cliente",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 43,
-    "text": "Sugiero que implementen notificaciones automaticas por WhatsApp para el seguimiento de solicitudes.",
-    "category": "Atención al cliente",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 44,
-    "text": "El personal de soporte fue muy amable y resolvio mi problema en menos de una hora. Muchas gracias.",
-    "category": "Atención al cliente",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 45,
-    "text": "Me gustaria sugerir que agreguen tutoriales en video para la configuracion inicial de los equipos.",
-    "category": "Atención al cliente",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 46,
-    "text": "Quiero cancelar la orden de compra 9900 emitida hoy por error antes de que sea procesada en bodega.",
-    "category": "Cancelación de pedido",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 47,
-    "text": "Cancelen urgentemente el pedido 5512, el proveedor alterno entrego antes y ya no lo necesitamos.",
-    "category": "Cancelación de pedido",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 48,
-    "text": "Solicito la cancelacion inmediata del contrato por incumplimiento grave de los niveles de servicio.",
-    "category": "Cancelación de pedido",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 49,
-    "text": "Quiero cancelar el contrato de servicio porque no estoy satisfecho con la calidad de la atencion.",
-    "category": "Cancelación de pedido",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 50,
-    "text": "Deseo dar por terminado el acuerdo de nivel de servicio firmado en enero por incumplimiento reiterado.",
-    "category": "Cancelación de pedido",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 51,
-    "text": "Solicito terminar el contrato de mantenimiento por incumplimiento del tiempo de respuesta acordado.",
-    "category": "Cancelación de pedido",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 52,
-    "text": "Necesito cancelar el pedido numero 7845 antes de que sea despachado. Cambie de proveedor.",
-    "category": "Cancelación de pedido",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 53,
-    "text": "Quiero cancelar la suscripcion mensual al modulo de analytics porque no lo estamos utilizando.",
-    "category": "Cancelación de pedido",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 54,
-    "text": "Deseo cancelar la orden de instalacion programada para la semana entrante. Cambie los plazos del proyecto.",
-    "category": "Cancelación de pedido",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 55,
-    "text": "Me estan cobrando por un servicio que di de baja hace tres meses. Exijo la devolucion total de inmediato.",
-    "category": "Devolución y reembolso",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 56,
-    "text": "Pague por anticipado tres meses de servicio que nunca recibi. Necesito el reembolso completo urgente.",
-    "category": "Devolución y reembolso",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 57,
-    "text": "En enero pague dos veces la misma factura por error del sistema de debito automatico. Exijo devolucion.",
-    "category": "Devolución y reembolso",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 58,
-    "text": "Realice una transferencia por el monto equivocado. Solicito la devolucion del excedente pagado.",
-    "category": "Devolución y reembolso",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 59,
-    "text": "El servicio fue suspendido antes del vencimiento del periodo pagado. Exijo el reintegro proporcional.",
-    "category": "Devolución y reembolso",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 60,
-    "text": "Hice un pago duplicado por distraccion. Solicito que abonen el exceso a mi proxima factura.",
-    "category": "Devolución y reembolso",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 61,
-    "text": "Pague anticipadamente un año de servicio y deseo cancelar. Solicito calculo y devolucion del proporcional.",
-    "category": "Devolución y reembolso",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 62,
-    "text": "El descuento prometido en la promocion nunca fue aplicado. Solicito el reintegro de la diferencia.",
-    "category": "Devolución y reembolso",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 63,
-    "text": "Me cobraron un recargo por cambio de plan que segun la politica comercial no corresponde. Solicito devolucion.",
-    "category": "Devolución y reembolso",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 64,
-    "text": "Llevo diez dias esperando la entrega prometida en tres dias habiles. Necesito fecha exacta urgente.",
-    "category": "Entrega tardía",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 65,
-    "text": "El equipo debio llegar hace cinco dias. Sin el no podemos operar la nueva linea de produccion.",
-    "category": "Entrega tardía",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 66,
-    "text": "El retraso en la entrega nos genero incumplimiento con nuestro cliente. Exijo compensacion y fecha definitiva.",
-    "category": "Entrega tardía",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 67,
-    "text": "El pedido lleva cuatro dias de retraso y el sistema de rastreo no muestra ninguna actualizacion.",
-    "category": "Entrega tardía",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 68,
-    "text": "Acordamos entrega en 48 horas y ya van seis dias sin novedades. Solicito explicacion del retraso.",
-    "category": "Entrega tardía",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 69,
-    "text": "La entrega prometida para el lunes aun no ha llegado el miercoles. Necesito saber que paso.",
-    "category": "Entrega tardía",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 70,
-    "text": "Mi pedido llego un dia despues de la fecha acordada. Sin urgencia, solo quiero dejar constancia.",
-    "category": "Entrega tardía",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 71,
-    "text": "La entrega se retraso dos dias sin previo aviso. Agradezco que mejoren la comunicacion proactiva.",
-    "category": "Entrega tardía",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 72,
-    "text": "El pedido llego tarde pero en perfectas condiciones. Solicito que respeten los plazos en el futuro.",
-    "category": "Entrega tardía",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 73,
-    "text": "Necesito con urgencia las facturas de los ultimos tres meses para evitar el bloqueo de nuestra cuenta.",
-    "category": "Factura y documentos",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 74,
-    "text": "Sin el certificado de retencion no puedo cerrar el balance. Lo necesito antes de las 5 p.m. de hoy.",
-    "category": "Factura y documentos",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 75,
-    "text": "El area contable requiere el soporte de pago de forma inmediata o se suspendera el servicio.",
-    "category": "Factura y documentos",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 76,
-    "text": "Necesito el certificado de garantia y las actas de entrega de los equipos instalados el mes pasado.",
-    "category": "Factura y documentos",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 77,
-    "text": "Solicito copia de todos los contratos vigentes entre mi empresa y la suya para auditoria interna.",
-    "category": "Factura y documentos",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 78,
-    "text": "Requiero las facturas electronicas de los ultimos seis meses para presentar declaracion tributaria.",
-    "category": "Factura y documentos",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 79,
-    "text": "Por favor envien la factura del mes de febrero en formato XML para nuestro sistema contable.",
-    "category": "Factura y documentos",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 80,
-    "text": "Solicito que corrijan el NIT registrado en las facturas. Hay un digito de verificacion errado.",
-    "category": "Factura y documentos",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 81,
-    "text": "Pueden enviar los documentos en PDF y no en imagen JPG? Facilita el archivo en nuestro sistema.",
-    "category": "Factura y documentos",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 82,
-    "text": "El servicio de internet lleva tres dias fallando en horario laboral, afectando gravemente nuestras operaciones.",
-    "category": "Servicio",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 83,
-    "text": "El servidor de correo corporativo lleva 48 horas caido. Estamos perdiendo contratos por esta falla.",
-    "category": "Servicio",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 84,
-    "text": "El sistema de videovigilancia dejo de grabar desde hace 72 horas. Hubo un robo y no hay evidencia.",
-    "category": "Servicio",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 85,
-    "text": "El servicio prometido en el contrato no corresponde a lo que realmente estan prestando. Exijo cumplimiento.",
-    "category": "Servicio",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 86,
-    "text": "La aplicacion movil sigue crasheando cuando intento ver el historial de pagos. Ya lo reporte hace un mes.",
-    "category": "Servicio",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 87,
-    "text": "La plataforma web arroja error 500 cada vez que intento descargar mis reportes mensuales.",
-    "category": "Servicio",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 88,
-    "text": "La velocidad del servicio de internet cae notoriamente los viernes por la tarde. Solicito revision.",
-    "category": "Servicio",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 89,
-    "text": "El portal de clientes tarda mas de 30 segundos en cargar. No es urgente pero afecta la productividad.",
-    "category": "Servicio",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 90,
-    "text": "El servicio funciona bien en general pero el modulo de reportes genera archivos con formato incorrecto.",
-    "category": "Servicio",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 91,
-    "text": "El numero de cuenta bancaria para debito automatico es incorrecto. Hay riesgo de cobro fallido hoy.",
-    "category": "Cambio de datos",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 92,
-    "text": "El contacto de emergencia registrado fallecio. Es urgente actualizar los datos antes de la proxima visita.",
-    "category": "Cambio de datos",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 93,
-    "text": "El correo de notificaciones esta equivocado y no estamos recibiendo las alertas criticos del sistema.",
-    "category": "Cambio de datos",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 94,
-    "text": "Propongo que habiliten un canal de autogestion en linea para cambios de direccion de facturacion.",
-    "category": "Cambio de datos",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 95,
-    "text": "Solicito que actualicen la direccion de entrega registrada en mi cuenta. Me cambie de sede.",
-    "category": "Cambio de datos",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 96,
-    "text": "Necesito cambiar el representante legal registrado en el contrato. Adjunto documentacion correspondiente.",
-    "category": "Cambio de datos",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 97,
-    "text": "Por favor actualicen el nombre del contacto principal en la cuenta. La persona anterior ya no trabaja aqui.",
-    "category": "Cambio de datos",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 98,
-    "text": "Solicito corregir la ortografia de mi apellido en el sistema. Aparece Ramirez y el correcto es Ramirez.",
-    "category": "Cambio de datos",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 99,
-    "text": "Quisiera agregar un segundo correo electronico como destinatario de copia en las facturas mensuales.",
-    "category": "Cambio de datos",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 100,
-    "text": "El paquete fue entregado en una direccion equivocada y el vecino no sabe nada del producto.",
-    "category": "Logística y entrega",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 101,
-    "text": "Recibi solo la mitad de los articulos pedidos. El albaran indica 20 unidades pero llegaron 10.",
-    "category": "Logística y entrega",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 102,
-    "text": "El transportista dano la mercancia durante el trayecto. Los equipos llegaron completamente destruidos.",
-    "category": "Logística y entrega",
-    "priority": "alta"
-  },
-  {
-    "pqr_id": 103,
-    "text": "El courier dejo el paquete en la recepcion sin obtener firma ni verificar identidad del receptor.",
-    "category": "Logística y entrega",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 104,
-    "text": "El pedido fue dividido en dos envios sin previo aviso y solo llego una parte. Cuando llega el resto?",
-    "category": "Logística y entrega",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 105,
-    "text": "El embalaje llego en mal estado aunque el producto parece funcionar. Solicito revision del proceso.",
-    "category": "Logística y entrega",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 106,
-    "text": "El repartidor no toco el timbre y dejo el paquete en la puerta sin avisar. Por suerte no fue robado.",
-    "category": "Logística y entrega",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 107,
-    "text": "El mensajero llego fuera del horario acordado. No genero inconvenientes pero solicito respeten la cita.",
-    "category": "Logística y entrega",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 108,
-    "text": "La caja llego con la etiqueta de otro cliente. El contenido es el correcto pero solicito correccion.",
-    "category": "Logística y entrega",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 109,
-    "text": "Mi pedido figura como entregado en el sistema pero nunca llego a mi domicilio. Exijo investigacion.",
+    "text": "El seguimiento del pedido ORD-2024-51766 lleva 28 días sin actualización. La transportadora no responde. Necesito que ustedes intervengan. Necesito solucion urgente.",
     "category": "Pedido no entregado",
     "priority": "alta"
   },
   {
+    "pqr_id": 23,
+    "text": "El color del producto que recibí no corresponde al que seleccioné al comprar. Necesito el correcto. El problema ocurre a veces sí y a veces no.",
+    "category": "Producto incorrecto",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 24,
+    "text": "¿cómo funciona el programa de puntos? no entiendo cómo los acumulo ni cómo los puedo redimir.",
+    "category": "Programa de fidelización",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 25,
+    "text": "Se corrompieron los archivos financieros del cierre de año. Mañana presentamos a la junta directiva. Necesito recuperación urgente. 😡",
+    "category": "Facturación incorrecta",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 26,
+    "text": "El sistema de alarma instalado activa falsas alarmas 36 veces por semana. Es insoportable de noche. No sé si esto corresponde a soporte o facturación.",
+    "category": "Tecnica",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 27,
+    "text": "El producto llegó pero no estoy seguro si es el correcto. ¿Pueden confirmarme la referencia del ORD-2024-14285?",
+    "category": "Producto incorrecto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 28,
+    "text": "¿El producto viene con garantía del fabricante? La descripción no lo aclara y necesito saberlo antes de comprarlo.",
+    "category": "Garantía",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 29,
+    "text": "Tuve 11 llamadas y ningún agente me pudo solucionar. Por favor escalen mi caso a un supervisor.",
+    "category": "Atención al cliente",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 30,
+    "text": "Detecté transacciones fraudulentas en mi cuenta por un total de 2303 pesos. Alguien está usando mis datos sin autorización. Necesito bloqueo inmediato.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 31,
+    "text": "¿Hay disponibilidad en talla 24? Solo aparece agotado en la página.",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 32,
+    "text": "El chat me dijo que mi devolución estaba aprobada pero el email dice rechazada. Necesito que se pongan de acuerdo. 😡 No sé si esto corresponde a soporte o facturación.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 33,
+    "text": "El valor cobrado no corresponde al precio en la plataforma. Hay una diferencia de 100.000 pesos que necesito que me expliquen.",
+    "category": "Facturación incorrecta",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 34,
+    "text": "Entregué el producto en el punto de devolución hace 9 días y no tengo ni el reembolso ni ningún correo de confirmación.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 35,
+    "text": "Mi pedido fue devuelto al remitente sin razón aparente. Necesito que me lo reenvíen. No sé si esto corresponde a soporte o facturación.",
+    "category": "Pedido no entregado",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 36,
+    "text": "Detecté transacciones fraudulentas en mi cuenta por un total de 4,622 pesos. Alguien está usando mis datos sin autorización. Necesito bloqueo inmediato. El problema ocurre a veces sí y a veces no.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 37,
+    "text": "Mi pedido fue devuelto al remitente sin razón aparente. Necesito que me lo reenvíen. El problema ocurre a veces sí y a veces no.",
+    "category": "Pedido no entregado",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 38,
+    "text": "No recibí el correo con la confirmación de envío. ¿En qué estado está el pedido ORD-2024-68164?",
+    "category": "Estado de pedido",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 39,
+    "text": "mi producto no enciende desde hace 6 días. lo compré hace poco y debe estar en garantía. necesito solución. 😡",
+    "category": "Garantía",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 40,
+    "text": "Solicito servicio de garantía para el producto referencia ORD-2024-34323. Presenta problemas de funcionamiento y está en período de garantía según mi factura. 😡 No sé si esto corresponde a soporte o facturación.",
+    "category": "Garantía",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 41,
+    "text": "el producto llegó con el empaque un poco golpeado aunque el artículo parece bien. ¿pueden verificar si hay daño interno?",
+    "category": "Producto defectuoso",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 42,
+    "text": "Hice una compra grande y no me dieron los puntos correspondientes. Fueron 1.000.000 pesos.",
+    "category": "Programa de fidelización",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 43,
+    "text": "Sugiero que implementen la opción de guardar tarjetas para pagos más rápidos.",
+    "category": "Experiencia de compra",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 44,
+    "text": "Se borraron 50 registros críticos de nuestra base de datos durante el mantenimiento. Incluye datos de pacientes. Emergencia total.",
+    "category": "Producto defectuoso",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 45,
+    "text": "Mi pedido tenía fecha de entrega el 19 de marzo y ya pasaron 19 días adicionales sin que llegue.",
+    "category": "Entrega tardía",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 46,
+    "text": "creo que hubo un error en mi pedido. el artículo no coincide con la descripción de la orden. ¿pueden verificar?",
+    "category": "Producto incorrecto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 47,
+    "text": "necesito saber si el producto es compatible con mi equipo antes de comprarlo. ¿tienen especificaciones técnicas detalladas? 😡",
+    "category": "Información de producto",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 48,
+    "text": "El seguimiento del pedido ORD-2024-82154 lleva 2 días sin actualización. La transportadora no responde. Necesito que ustedes intervengan.",
+    "category": "Pedido no entregado",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 49,
+    "text": "sugiero que implementen la opción de entrega en puntos de recogida. No tengo claro por qué ocurrió el cobro.",
+    "category": "Logística y entrega",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 50,
+    "text": "Requiero certificado de compra del pedido ORD-2024-82399 para un trámite de garantía con el fabricante. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Factura y documentos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 51,
+    "text": "Tenía un descuento del 50% aplicado y no se reflejó en el cobro final. Me cobraron el precio completo. Por favor ajusten eso.",
+    "category": "Facturación incorrecta",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 52,
+    "text": "El proceso de compra es muy complicado. Hay demasiados pasos y la página es confusa.",
+    "category": "Experiencia de compra",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 53,
+    "text": "El error en la facturación masiva cobró de más a 48 clientes. Ya hay quejas en redes sociales. Necesito solución en horas.",
+    "category": "Facturación incorrecta",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 54,
+    "text": "Hice un pedido el 5 de noviembre y no sé en qué parte del proceso está. ¿Me pueden dar un estimado de entrega? Ya he reportado esto varias veces y nadie responde.",
+    "category": "Estado de pedido",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 55,
+    "text": "¿Pueden decirme en qué estado está mi pedido ORD-2024-89313? Ya pasaron 24 días desde que lo hice y no tengo ninguna actualización. No tengo claro por qué ocurrió el cobro.",
+    "category": "Estado de pedido",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 56,
+    "text": "¿Cómo modifico mi información de perfil en la aplicación? No tengo claro por qué ocurrió el cobro.",
+    "category": "Cambio de datos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 57,
+    "text": "Necesito saber si el producto es compatible con mi equipo antes de comprarlo. ¿Tienen especificaciones técnicas detalladas?",
+    "category": "Información de producto",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 58,
+    "text": "Quiero actualizar mi dirección de entrega para los próximos pedidos. Me cambié de casa. El problema ocurre a veces sí y a veces no.",
+    "category": "Cambio de datos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 59,
+    "text": "El seguimiento del pedido ORD-2024-20029 lleva 5 días sin actualización. La transportadora no responde. Necesito que ustedes intervengan.",
+    "category": "Pedido no entregado",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 60,
+    "text": "Recibí notificaciones de compras que no realicé. Parece que mi cuenta fue hackeada. Necesito que la bloqueen.",
+    "category": "Fraude / seguridad",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 61,
+    "text": "el pedido llegó pero no era lo que compré. la referencia es diferente. por favor coordinen la devolución y el envío del producto correcto.",
+    "category": "Producto incorrecto",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 62,
+    "text": "¿Cuál es el estado de mi solicitud de devolución ORD-2024-73068? Entregué el producto hace 28 días y no tengo actualización.",
+    "category": "Devolución y reembolso",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 63,
+    "text": "¿Cuál es el estado de mi solicitud de devolución ORD-2024-49515? Entregué el producto hace 3 días y no tengo actualización. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Devolución y reembolso",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 64,
+    "text": "Me aprobaron la devolución hace más de 1 días y los 120.000 pesos aún no han regresado a mi cuenta. Necesito solución urgente. 😡 El problema ocurre a veces sí y a veces no.",
+    "category": "Devolución y reembolso",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 65,
+    "text": "El repartidor no tocó el timbre y marcó el pedido como 'no hay nadie'. Estaba en casa todo el día. No tengo claro por qué ocurrió el cobro.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 66,
+    "text": "tuve 19 llamadas y ningún agente me pudo solucionar. por favor escalen mi caso a un supervisor. El problema ocurre a veces sí y a veces no.",
+    "category": "Atención al cliente",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 67,
+    "text": "¿Hay disponibilidad en talla 30? Solo aparece agotado en la página.",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 68,
+    "text": "Me reembolsaron en puntos sin pedirme permiso. Quiero el dinero real en mi cuenta bancaria, no puntos. El problema ocurre a veces sí y a veces no.",
+    "category": "Devolución y reembolso",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 69,
+    "text": "Devolví el producto pero aún no recibo el dinero. ¿Pueden darme un tiempo estimado? 😡 No sé si esto corresponde a soporte o facturación.",
+    "category": "Devolución y reembolso",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 70,
+    "text": "Ya son 6 días desde la fecha prometida de entrega y no tengo nada. Exijo respuesta concreta y solución. 😡",
+    "category": "Pedido no entregado",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 71,
+    "text": "Me aplicaron el IVA dos veces en la misma línea de la factura. Por favor corrijan ese error.",
+    "category": "Facturación incorrecta",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 72,
+    "text": "Hay 29 cargos desconocidos en mi cuenta desde hace 10 horas. Sospecho que mis datos fueron comprometidos en una filtración.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 73,
+    "text": "El servicio de notificaciones push no llega a los usuarios desde hace 26 días. Pérdida de engagement crítica.",
+    "category": "Servicio",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 74,
+    "text": "¿Cómo funciona el programa de puntos? No entiendo cómo los acumulo ni cómo los puedo redimir. El problema ocurre a veces sí y a veces no.",
+    "category": "Programa de fidelización",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 75,
+    "text": "¿Cuántos puntos necesito para acceder al nivel premium del programa de fidelización?",
+    "category": "Programa de fidelización",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 76,
+    "text": "Recibí un correo indicando que mi cuenta fue accedida desde Medellín cuando yo estoy en otra ciudad. Posible hackeo activo. Necesito solucion urgente.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 77,
+    "text": "Hay 49 cargos desconocidos en mi cuenta desde hace 32 horas. Sospecho que mis datos fueron comprometidos en una filtración. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 78,
+    "text": "Quisiera conocer el proceso para hacer una devolución. El producto no cumplió mis expectativas.",
+    "category": "Devolución y reembolso",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 79,
+    "text": "El repartidor entregó el paquete en una dirección diferente a la mía. Tengo foto del comprobante con otra puerta.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 80,
+    "text": "solicito actualización de datos de contacto de emergencia en mi perfil de usuario. necesito solucion urgente. No tengo claro por qué ocurrió el cobro.",
+    "category": "Cambio de datos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 81,
+    "text": "Recibí correos de phishing usando el nombre de su empresa. ¿Pueden investigar? No sé si esto corresponde a soporte o facturación.",
+    "category": "Fraude / seguridad",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 82,
+    "text": "Me llegó el cobro incorrecto en mi tarjeta. Pagué 25.000 de más y necesito devolución urgente.",
+    "category": "Facturación incorrecta",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 83,
+    "text": "¿Cuál es el peso del producto? Necesito saberlo para calcular el envío.",
+    "category": "Información de producto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 84,
+    "text": "Por favor cancelen el pedido ORD-2024-68024 antes de que sea despachado. Es urgente porque hay un error en los datos. 😡 El problema ocurre a veces sí y a veces no.",
+    "category": "Cancelación de pedido",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 85,
+    "text": "Me enviaron un producto completamente diferente al que pedí. Pagué 50.000 pesos por algo que no me sirve y necesito solución urgente.",
+    "category": "Producto incorrecto",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 86,
+    "text": "Quiero cancelar el pedido ORD-2024-55867 que hice hace unas horas. Me equivoqué en la talla y necesito hacer uno nuevo. Necesito solucion urgente.",
+    "category": "Cancelación de pedido",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 87,
+    "text": "Me registré con el nombre de mi empresa anterior. Ahora opero con otro nombre y necesito actualizarlo.",
+    "category": "Cambio de datos",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 88,
+    "text": "La transportadora ya actualizó dos veces la fecha de entrega. Llevamos 22 días de retraso. Necesito solucion urgente.",
+    "category": "Entrega tardía",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 89,
+    "text": "El servicio de suscripción se renovó automáticamente aunque lo cancelé. Quiero reembolso del último cobro de 1,315. No sé si esto corresponde a soporte o facturación.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 90,
+    "text": "¿Cómo funciona el programa de puntos? No entiendo cómo los acumulo ni cómo los puedo redimir.",
+    "category": "Programa de fidelización",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 91,
+    "text": "El UPS instalado no sostuvo la carga durante el apagón. El servidor se apagó abruptamente y perdimos datos. Necesito solucion urgente.",
+    "category": "Tecnica",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 92,
+    "text": "Hice un pedido hace 1 días y no tengo ninguna actualización. El número de guía anda mal. Necesito saber dónde está mi mercancía urgente. Necesito solucion urgente. El problema ocurre a veces sí y a veces no.",
+    "category": "Estado de pedido",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 93,
+    "text": "El artículo tiene un defecto visible de fabricación. No funciona correctamente desde el primer día.",
+    "category": "Producto defectuoso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 94,
+    "text": "El agente me prometió una solución que nunca llegó. Nadie hace seguimiento a los casos.",
+    "category": "Atención al cliente",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 95,
+    "text": "El seguimiento del pedido ORD-2024-39724 lleva 6 días sin actualización. La transportadora no responde. Necesito que ustedes intervengan.",
+    "category": "Pedido no entregado",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 96,
+    "text": "La caja fue reemplazada por una diferente durante el tránsito. El producto que recibí no es el que compré.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 97,
+    "text": "la guía de mi pedido no tiene movimiento desde hace 29 días. ¿pueden hacer seguimiento con la transportadora?",
+    "category": "Pedido no entregado",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 98,
+    "text": "el producto llegó después de la fecha del evento para el que lo compré. ya no lo necesito. quiero devolución total. El problema ocurre a veces sí y a veces no.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 99,
+    "text": "El envío aparece como entregado en el sistema hace 49 días pero yo nunca lo recibí. El mensajero marcó entrega falsa.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 100,
+    "text": "La persona del chat no me supo orientar y cerró la conversación sin solucionar nada.",
+    "category": "Atención al cliente",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 101,
+    "text": "Mi pedido se está demorando más de lo normal. ¿Hay algún inconveniente con la entrega? No sé si esto corresponde a soporte o facturación.",
+    "category": "Entrega tardía",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 102,
+    "text": "El producto llegó pero no estoy seguro si es el correcto. ¿Pueden confirmarme la referencia del ORD-2024-39138?",
+    "category": "Producto incorrecto",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 103,
+    "text": "El cargo a mi tarjeta fue de 25.000 pero el total del pedido era menor. Necesito conciliación. 😡",
+    "category": "Facturación incorrecta",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 104,
+    "text": "La API del servicio tiene una latencia de 32 ms cuando el SLA dice máximo 10 ms. Afecta nuestra aplicación.",
+    "category": "Servicio",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 105,
+    "text": "Solicito el certificado de compra del pedido ORD-2024-15958. No tengo claro por qué ocurrió el cobro.",
+    "category": "Factura y documentos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 106,
+    "text": "Mi solicitud de devolución está aprobada pero el dinero no regresa a mi cuenta. Son 4 días esperando. 😡 No sé si esto corresponde a soporte o facturación.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 107,
+    "text": "Detecté acceso no autorizado a mi cuenta. Se realizaron 27 compras que no reconozco. Es urgente bloquear todo.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 108,
+    "text": "Necesito actualizar el número de cédula. Hubo un error administrativo cuando me registraron.",
+    "category": "Cambio de datos",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 109,
+    "text": "El domicilio intentó entregar en una dirección incorrecta. Necesitan corregir el sistema.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
     "pqr_id": 110,
-    "text": "El numero de seguimiento que me dieron no existe en el sistema del operador logistico. Exijo aclaracion.",
+    "text": "El seguimiento del pedido ORD-2024-48337 lleva 28 días sin actualización. La transportadora no responde. Necesito que ustedes intervengan.",
     "category": "Pedido no entregado",
     "priority": "alta"
   },
   {
     "pqr_id": 111,
-    "text": "Han pasado quince dias desde el despacho y el pedido no llega. Amenaza con accion legal si no resuelven.",
-    "category": "Pedido no entregado",
+    "text": "el srvicio de monitoreo de red que contratamos no detectó una caída de 60 horas el fin de semana pasado. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Servicio",
     "priority": "alta"
   },
   {
     "pqr_id": 112,
-    "text": "El sistema indica que mi paquete fue entregado hace tres dias pero nadie lo recibio en la empresa.",
-    "category": "Pedido no entregado",
+    "text": "El UPS instalado no sostuvo la carga durante el apagón. El servidor se apagó abruptamente y perdimos datos. 😡",
+    "category": "Tecnica",
     "priority": "media"
   },
   {
     "pqr_id": 113,
-    "text": "El transportista marco entrega exitosa pero no hay firma ni evidencia fotografica. Donde esta mi pedido?",
-    "category": "Pedido no entregado",
+    "text": "Quiero usar mis puntos para pagar parte de mi próximo pedido pero la plataforma no me permite aplicarlos.",
+    "category": "Programa de fidelización",
     "priority": "media"
   },
   {
     "pqr_id": 114,
-    "text": "Mi pedido lleva dos semanas en estado en transito sin ninguna actualizacion. Solicito rastreo detallado.",
+    "text": "Mi pedido fue devuelto al remitente sin razón aparente. Necesito que me lo reenvíen.",
     "category": "Pedido no entregado",
-    "priority": "media"
+    "priority": "alta"
   },
   {
     "pqr_id": 115,
-    "text": "Aun no recibo el pedido aunque ya paso la fecha estimada. No es urgente pero solicito seguimiento.",
-    "category": "Pedido no entregado",
+    "text": "La descripción del producto tiene información que no corresponde a la realidad. ¿Pueden actualizar eso?",
+    "category": "Publicidad engañosa",
     "priority": "baja"
   },
   {
     "pqr_id": 116,
-    "text": "El portal muestra pendiente de entrega desde hace cinco dias. Cuando sera la visita del courier?",
-    "category": "Pedido no entregado",
-    "priority": "baja"
+    "text": "Me dijeron que tenía puntos por vencer y no sé cómo usarlos. ¿Pueden explicarme el proceso de canje?",
+    "category": "Programa de fidelización",
+    "priority": "media"
   },
   {
     "pqr_id": 117,
-    "text": "Mi pedido no ha llegado y la fecha estimada vencio ayer. Por favor confirmen el estado actual.",
-    "category": "Pedido no entregado",
-    "priority": "baja"
+    "text": "Me informaron que mis datos personales están siendo vendidos en foros de internet. Exijo bloqueo inmediato y medidas de seguridad. No sé si esto corresponde a soporte o facturación.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
   },
   {
     "pqr_id": 118,
-    "text": "Me enviaron el modelo equivocado del dispositivo. Pedi el XR-300 y recibi el XR-100. Necesito cambio urgente.",
-    "category": "Producto incorrecto",
-    "priority": "alta"
+    "text": "¿Pueden emitirme una factura a nombre de mi empresa para la compra del 6 de abril? Necesito el NIT en el documento. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Factura y documentos",
+    "priority": "media"
   },
   {
     "pqr_id": 119,
-    "text": "Recibi un producto de otro cliente. Tiene etiqueta con nombre y datos personales ajenos. Urge correccion.",
-    "category": "Producto incorrecto",
-    "priority": "alta"
+    "text": "El código postal en mi perfil está mal. Eso hace que me asignen tienda incorrecta y tarifas de envío equivocadas.",
+    "category": "Cambio de datos",
+    "priority": "media"
   },
   {
     "pqr_id": 120,
-    "text": "El equipo enviado no es compatible con nuestra infraestructura. Necesito el modelo correcto hoy mismo.",
+    "text": "¿Es posible cancelar el pedido ORD-2024-90973? Apenas lo hice hace unos minutos. 😡",
+    "category": "Cancelación de pedido",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 121,
+    "text": "Contraté srvicio de entrega express para antes de las 12m pero llegó a las 8:00 PM. El pedido era un regalo de cumpleaños.",
+    "category": "Logística y entrega",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 122,
+    "text": "Mi solicitud de devolución está aprobada pero el dinero no regresa a mi cuenta. Son 11 días esperando. No sé si esto corresponde a soporte o facturación.",
+    "category": "Devolución y reembolso",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 123,
+    "text": "Hice un pedido hace 11 días y no tengo ninguna actualización. El número de guía no funciona. Necesito saber dónde está mi mercancía urgente. No tengo claro por qué ocurrió el cobro.",
+    "category": "Estado de pedido",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 124,
+    "text": "El sistema de pararrayos instalado no cumple la norma técnica requerida. El perito lo determinó en su revisión. El problema ocurre a veces sí y a veces no.",
+    "category": "Tecnica",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 125,
+    "text": "Por favor cancelen el pedido ORD-2024-21910 antes de que sea despachado. Es urgente porque hay un error en los datos. Necesito solucion urgente.",
+    "category": "Cancelación de pedido",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 126,
+    "text": "el producto que adquirí presenta un defecto que no fue causado por mal uso. quiero que lo revisen bajo garantía. No sé si esto corresponde a soporte o facturación.",
+    "category": "Garantía",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 127,
+    "text": "abrí el paquete y me encontré con un producto que no pedí. el empaque externo estaba bien pero adentro había otra referencia.",
+    "category": "Producto incorrecto",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 128,
+    "text": "¿El artículo viene con todos los accesorios que aparecen en la foto? La descripción no es clara. 😡",
+    "category": "Información de producto",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 129,
+    "text": "Me vendieron un producto con características que no tiene. La descripción es completamente falsa. 😡 Ya he reportado esto varias veces y nadie responde.",
+    "category": "Publicidad engañosa",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 130,
+    "text": "el pago fue aprobado por el banco pero la plataforma sigue mostrando error. temo que me cobren dos veces.",
+    "category": "Experiencia de compra",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 131,
+    "text": "Me contactó alguien diciendo ser de su empresa pidiendo mi clave. No les di nada pero quiero reportarlo.",
+    "category": "Fraude / seguridad",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 132,
+    "text": "Recibí un mensaje sospechoso en nombre de su empresa solicitando mis datos. ¿Es legítimo o es phishing?",
+    "category": "Fraude / seguridad",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 133,
+    "text": "El sistema biométrico instalado no reconoce las huellas del 31% del personal. Hay problemas de calidad del sensor.",
+    "category": "Tecnica",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 134,
+    "text": "¿Pueden emitirme una fcatura a nombre de mi empresa para la compra del 9 de marzo? Necesito el NIT en el documento. Necesito solucion urgente.",
+    "category": "Factura y documentos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 135,
+    "text": "el agente me prometió una solución que nunca llegó. nadie hace seguimiento a los casos.",
+    "category": "Atención al cliente",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 136,
+    "text": "Mis puntos no se actualizaron después de la última compra. Ya pasaron 25 días y el saldo sigue igual. Necesito solucion urgente. No sé si esto corresponde a soporte o facturación.",
+    "category": "Programa de fidelización",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 137,
+    "text": "El producto que compré por 500.000 pesos llegó completamente dañado. No sirve para nada y necesito reemplazo inmediato.",
+    "category": "Producto defectuoso",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 138,
+    "text": "Necesito hacer válida la garantía de mi compra. El producto tiene una falla técnica y compré hace menos de 3 días. Tengo la factura. Necesito solucion urgente.",
+    "category": "Garantía",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 139,
+    "text": "¿Cuáles son las ciudades donde hacen entrega express? No lo encontré en la página. Necesito solucion urgente.",
+    "category": "Logística y entrega",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 140,
+    "text": "Pagué 250.000 pesos hace 27 días y no tengo ni el producto ni información. Esto es inaceptable. Exijo solución o devolución.",
+    "category": "Pedido no entregado",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 141,
+    "text": "La velocidad de mi internet es de 31 Mbps cuando contraté 12 Mbps. He medido con 31 herramientas diferentes. Necesito solucion urgente.",
+    "category": "Servicio",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 142,
+    "text": "Mi pedido ORD-2024-29484 nunca llegó. La transportadora dice que lo entregaron pero yo no recibí nada. Necesito una solución inmediata o que me devuelvan el dinero. 😡",
+    "category": "Pedido no entregado",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 143,
+    "text": "Devolví el producto pero aún no recibo el dinero. ¿Pueden darme un tiempo estimado?",
+    "category": "Devolución y reembolso",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 144,
+    "text": "¿El producto tiene garantía del fabricante incluida? La descripción no lo menciona. 😡",
+    "category": "Información de producto",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 145,
+    "text": "¿Pueden emitirme una factura a nombre de mi empresa para la compra del 15 de septiembre? Necesito el NIT en el documento.",
+    "category": "Factura y documentos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 146,
+    "text": "Recibí alertas de inicio de sesión desde 10 dispositivos que no reconozco. Mi cuenta está siendo accedida ilegalmente ahora mismo. Necesito solucion urgente.",
+    "category": "Fraude / seguridad",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 147,
+    "text": "el producto que llegó no es el que aparece en mi orden. hay un error evidente en el alistamiento del pedido. 😡",
     "category": "Producto incorrecto",
     "priority": "alta"
   },
   {
-    "pqr_id": 121,
-    "text": "El color del producto recibido es negro y yo pedi el blanco. Solicito cambio segun orden de compra.",
-    "category": "Producto incorrecto",
+    "pqr_id": 148,
+    "text": "Me dijeron que tenía puntos por vencer y no sé cómo usarlos. ¿Pueden explicarme el proceso de canje?",
+    "category": "Programa de fidelización",
     "priority": "media"
   },
   {
-    "pqr_id": 122,
-    "text": "Recibi la version anterior del software cuando explicitamente pedi la version mas reciente.",
-    "category": "Producto incorrecto",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 123,
-    "text": "Enviaron el kit basico en lugar del kit profesional que aparece en mi factura. Solicito correccion.",
-    "category": "Producto incorrecto",
-    "priority": "media"
-  },
-  {
-    "pqr_id": 124,
-    "text": "El accesorio incluido no corresponde al modelo del equipo principal. Solicito el componente correcto.",
-    "category": "Producto incorrecto",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 125,
-    "text": "Me enviaron el manual en ingles y yo solicite el paquete con documentacion en espanol.",
-    "category": "Producto incorrecto",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 126,
-    "text": "La funda protectora incluida no es la del modelo que compre. Solicito el accesorio correcto.",
-    "category": "Producto incorrecto",
-    "priority": "baja"
-  },
-  {
-    "pqr_id": 127,
-    "text": "CORTE DE ENERGÍA Y RIESGO ELÉCTRICO: El tablero de control instalado ayer comenzó a emitir chispas y humo denso. Detuvimos la operación de la planta por completo para evitar un incendio mayor.",
-    "category": "Técnica",
-    "priority": "crítica"
-  },
-  {
-    "pqr_id": 128,
-    "text": "FUGA DE DATOS SENSIBLES: El portal de clientes está mostrando información de facturación y datos personales de otros usuarios al iniciar sesión. Exijo que bajen la plataforma inmediatamente.",
-    "category": "Servicio",
-    "priority": "crítica"
-  },
-  {
-    "pqr_id": 129,
-    "text": "COBRO DUPLICADO MASIVO NO AUTORIZADO: Se debitaron automáticamente de nuestra cuenta corporativa $15.000 USD en lugar de los $1.500 USD pactados por contrato. Esto ha bloqueado nuestra liquidez operativa.",
-    "category": "Facturación incorrecta",
-    "priority": "crítica"
-  },
-  {
-    "pqr_id": 130,
-    "text": "INCUMPLIMIENTO crítica EN LICITACIÓN: El retraso de 15 días en la entrega de los transformadores industriales nos generó una penalización económica masiva y la pérdida inminente de la licitación estatal.",
-    "category": "Entrega tardía",
-    "priority": "crítica"
-  },
-  {
-    "pqr_id": 131,
-    "text": "MATERIAL QUÍMICO / PELIGROSO DAÑADO: El último lote de refrigerantes industriales llegó con los sellos de seguridad rotos y presentando derrames en el camión. Hay riesgo para la salud del personal.",
-    "category": "Producto defectuoso",
-    "priority": "crítica"
-  },
-  {
-    "pqr_id": 132,
-    "text": "DESVÍO DE DESPACHO INTERNACIONAL: El pedido de maquinaria pesada fue entregado por error en una bodega portuaria de otra ciudad y los documentos de aduana están bloqueados. Necesitamos rescate de la carga hoy.",
-    "category": "Logística y entrega",
-    "priority": "crítica"
-  },
-  {
-    "pqr_id": 133,
-    "text": "ERROR EN CERTIFICACIÓN LEGAL: La factura y los documentos tributarios adjuntos registran un NIT inexistente y conceptos erróneos que impiden la nacionalización de la mercancía que está en el puerto.",
+    "pqr_id": 149,
+    "text": "Solicito el certificado de compra del pedido ORD-2024-92363. 😡",
     "category": "Factura y documentos",
-    "priority": "crítica"
+    "priority": "baja"
   },
   {
-    "pqr_id": 134,
-    "text": "CANCELACIÓN DE EMERGENCIA POR INCUMPLIMIENTO: Solicito la rescisión inmediata del contrato de soporte técnico por negligencia. La falta de mantenimiento preventivo provocó el colapso del sistema principal.",
-    "category": "Cancelación de pedido",
-    "priority": "crítica"
+    "pqr_id": 150,
+    "text": "¿Los puntos tienen fecha de vencimiento? No quiero perderlos.",
+    "category": "Programa de fidelización",
+    "priority": "baja"
   },
   {
-    "text": "No puedo ver el estado de mi pedido en la aplicacion, solo dice procesando desde hace 3 dias.",
+    "pqr_id": 151,
+    "text": "Mis puntos no se actualizaron después de la última compra. Ya pasaron 10 días y el saldo sigue igual.",
+    "category": "Programa de fidelización",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 152,
+    "text": "requiero certificado de compra del pedido ord-2024-13928 para un trámite de garantía con el fabricante.",
+    "category": "Factura y documentos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 153,
+    "text": "El producto que compré por 25.000 pesos llegó completamente dañado. No sirve para nada y necesito reemplazo inmediato. El problema ocurre a veces sí y a veces no.",
+    "category": "Producto defectuoso",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 154,
+    "text": "No recibí el correo con la confirmación de envío. ¿En qué estado está el pedido ORD-2024-59877?",
     "category": "Estado de pedido",
-    "priority": "alta",
-    "pqr_id": 135
+    "priority": "baja"
   },
   {
-    "text": "Mi pedido aparece como entregado en el sistema pero nunca lo recibi en mi casa.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 136
-  },
-  {
-    "text": "El rastreo de mi paquete no se actualiza desde hace 5 dias, necesito saber donde esta.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 137
-  },
-  {
-    "text": "Compre hace una semana y el estado sigue en preparacion, nadie me informa nada.",
-    "category": "Estado de pedido",
-    "priority": "baja",
-    "pqr_id": 138
-  },
-  {
-    "text": "El numero de guia que me enviaron no funciona en la pagina de la transportadora.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 139
-  },
-  {
-    "text": "Mi pedido cambio de estado a cancelado sin que yo lo haya solicitado ni recibido notificacion.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 140
-  },
-  {
-    "text": "La aplicacion me muestra un estado diferente al correo que recibi, hay inconsistencia.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 141
-  },
-  {
-    "text": "Llevo dos dias intentando rastrear mi pedido y el sistema me arroja error cada vez.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 142
-  },
-  {
-    "text": "El estado de mi pedido lleva 4 dias en camino pero no ha llegado ni hay novedad alguna.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 143
-  },
-  {
-    "text": "Necesito confirmacion de si mi pedido fue enviado, el estado no ha cambiado en 48 horas.",
-    "category": "Estado de pedido",
-    "priority": "crítica",
-    "pqr_id": 144
-  },
-  {
-    "text": "La pagina web se cayo justo cuando iba a pagar y perdi mi carrito con varios productos.",
+    "pqr_id": 155,
+    "text": "La aplicación se cierra sola cuando intento agregar productos al carrito. Esto me impide comprar.",
     "category": "Experiencia de compra",
-    "priority": "media",
-    "pqr_id": 145
+    "priority": "media"
   },
   {
-    "text": "El proceso de pago es confuso y tuve que intentar tres veces antes de que me aceptaran.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 146
-  },
-  {
-    "text": "No pude aplicar el cupon de descuento que recibi por correo, el sistema lo rechaza.",
-    "category": "Experiencia de compra",
-    "priority": "alta",
-    "pqr_id": 147
-  },
-  {
-    "text": "La experiencia de navegacion en la app movil es muy lenta y los productos no cargan.",
-    "category": "Experiencia de compra",
-    "priority": "alta",
-    "pqr_id": 148
-  },
-  {
-    "text": "Me registre con un correo incorrecto y no hay forma de corregirlo desde la plataforma.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 149
-  },
-  {
-    "text": "El buscador de productos no funciona correctamente, no encuentra articulos del catalogo.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 150
-  },
-  {
-    "text": "Tuve una experiencia terrible, el asesor en linea fue grosero y no resolvio mi duda.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 151
-  },
-  {
-    "text": "La pasarela de pago me cobro dos veces por el mismo pedido y no me han devuelto el dinero.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 152
-  },
-  {
-    "text": "No recibi el correo de confirmacion de compra y no tengo como comprobar que el pago fue exitoso.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 153
-  },
-  {
-    "text": "Al finalizar el checkout el sistema arrojo un error y no se si el pedido quedo registrado.",
-    "category": "Experiencia de compra",
-    "priority": "crítica",
-    "pqr_id": 154
-  },
-  {
-    "text": "Detecte una compra que yo no realice por valor de 500 mil pesos en mi historial de pedidos.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 155
-  },
-  {
-    "text": "Alguien accedio a mi cuenta y cambio la contrasena y el correo, ya no puedo ingresar.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 156
-  },
-  {
-    "text": "Recibi un correo sospechoso supuestamente de su empresa solicitando mis datos bancarios.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 157
-  },
-  {
-    "text": "Me llego un mensaje de texto con un link falso que simula ser su tienda para robar informacion.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 158
-  },
-  {
-    "text": "Mi tarjeta de credito fue usada de forma fraudulenta en tres compras en su plataforma.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 159
-  },
-  {
-    "text": "Veo pedidos en mi cuenta que nunca hice, creo que fue hackeada por terceros.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 160
-  },
-  {
-    "text": "Al ingresar mis datos la pagina no tiene el candado de seguridad SSL, es completamente insegura.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 161
-  },
-  {
-    "text": "Un tercero llamo haciendose pasar por su empresa para pedirme el codigo de verificacion.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 162
-  },
-  {
-    "text": "Encontre mis datos personales publicados en un foro, creo que hubo una fuga de informacion.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 163
-  },
-  {
-    "text": "Me solicitaron pago por fuera de la plataforma via transferencia bancaria, algo que parece fraude.",
-    "category": "Fraude / seguridad",
-    "priority": "crítica",
-    "pqr_id": 164
-  },
-  {
-    "text": "El producto que compre presento falla a los 15 dias y segun garantia deben repararlo o cambiarlo.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 165
-  },
-  {
-    "text": "Solicite garantia por un electrodomestico defectuoso pero me dijeron que ya vencio sin notificacion.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 166
-  },
-  {
-    "text": "El articulo dejo de funcionar en menos de un mes de uso normal y exijo que se honre la garantia.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 167
-  },
-  {
-    "text": "Me negaron la garantia argumentando mal uso pero el producto se uso exactamente como indica el manual.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 168
-  },
-  {
-    "text": "Llevo tres semanas esperando respuesta sobre el estado de la reparacion bajo garantia de mi celular.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 169
-  },
-  {
-    "text": "La empresa de garantia me tiene en espera sin fecha definida para entrega del producto reparado.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 170
-  },
-  {
-    "text": "Me ofrecieron cambio por producto nuevo bajo garantia pero van dos semanas y no hacen el cambio.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 171
-  },
-  {
-    "text": "El producto en garantia fue enviado a servicio tecnico y ahora dicen que lo perdieron.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 172
-  },
-  {
-    "text": "Quiero saber como ejercer la garantia de un producto que compre hace 6 meses y presento fallas.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 173
-  },
-  {
-    "text": "El servicio tecnico de garantia cobro reparacion de un dano que estaba cubierto en la poliza.",
-    "category": "Garantía",
-    "priority": "crítica",
-    "pqr_id": 174
-  },
-  {
-    "text": "El producto anunciado con 50% de descuento en realidad subio de precio antes del descuento.",
-    "category": "Publicidad engañosa",
-    "priority": "alta",
-    "pqr_id": 175
-  },
-  {
-    "text": "Las fotos del producto en la pagina no corresponden con lo que recibi, es completamente diferente.",
-    "category": "Publicidad engañosa",
-    "priority": "alta",
-    "pqr_id": 176
-  },
-  {
-    "text": "Me ofrecieron envio gratis en la publicidad pero al momento de pagar cobraron costo de envio.",
-    "category": "Publicidad engañosa",
-    "priority": "media",
-    "pqr_id": 177
-  },
-  {
-    "text": "El anuncio decia que incluia accesorios pero el producto llego sin ninguno de los mencionados.",
-    "category": "Publicidad engañosa",
-    "priority": "alta",
-    "pqr_id": 178
-  },
-  {
-    "text": "Publicaron un precio y al agregar al carrito aparece un precio 30% mayor, es enganoso.",
-    "category": "Publicidad engañosa",
-    "priority": "crítica",
-    "pqr_id": 179
-  },
-  {
-    "text": "La descripcion del producto decia que era original pero recibi una replica de baja calidad.",
-    "category": "Publicidad engañosa",
-    "priority": "crítica",
-    "pqr_id": 180
-  },
-  {
-    "text": "Me prometieron bonificacion por primera compra que nunca fue aplicada en mi pedido final.",
-    "category": "Publicidad engañosa",
-    "priority": "media",
-    "pqr_id": 181
-  },
-  {
-    "text": "El video publicitario muestra funciones que el producto real no tiene, me siento estafado.",
-    "category": "Publicidad engañosa",
-    "priority": "crítica",
-    "pqr_id": 182
-  },
-  {
-    "text": "La promocion de descuentos tenia productos con precios inflados respecto al precio normal.",
-    "category": "Publicidad engañosa",
-    "priority": "crítica",
-    "pqr_id": 183
-  },
-  {
-    "text": "Las condiciones del 2x1 no estaban claras en la publicidad y no aplico como esperaba.",
-    "category": "Publicidad engañosa",
-    "priority": "crítica",
-    "pqr_id": 184
-  },
-  {
-    "text": "El agente que me atendio fue grosero y no soluciono mi problema despues de 45 minutos de espera.",
+    "pqr_id": 156,
+    "text": "He llamado 26 veces esta semana y cada vez me transfieren a otro agente que me pide repetir todo desde el principio.",
     "category": "Atención al cliente",
-    "priority": "baja",
-    "pqr_id": 185
+    "priority": "baja"
   },
   {
-    "text": "Solicite actualizar mi numero de telefono hace 10 dias y aun no se ha realizado el cambio.",
-    "category": "Cambio de datos",
-    "priority": "media",
-    "pqr_id": 186
-  },
-  {
-    "text": "Realice la devolucion hace 20 dias y el reembolso no aparece en mi cuenta bancaria.",
-    "category": "Devolución y reembolso",
-    "priority": "baja",
-    "pqr_id": 187
-  },
-  {
-    "text": "Las especificaciones tecnicas del producto en la pagina estan desactualizadas y me llevaron a error.",
-    "category": "Información de producto",
-    "priority": "baja",
-    "pqr_id": 188
-  },
-  {
-    "text": "Mi paquete lleva 12 dias sin ser entregado y la transportadora dice que no lo encuentran.",
+    "pqr_id": 157,
+    "text": "Mi pedido fue devuelto al remitente sin razón aparente. Necesito que me lo reenvíen.",
     "category": "Pedido no entregado",
-    "priority": "media",
-    "pqr_id": 189
+    "priority": "media"
   },
   {
-    "text": "Me enviaron una talla S cuando en mi pedido claramente seleccione talla L, exijo el cambio.",
+    "pqr_id": 158,
+    "text": "Cambié de número de teléfono y necesito actualizar el de contacto en mi cuenta. El nuevo es 38473647904. Necesito solucion urgente.",
+    "category": "Cambio de datos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 159,
+    "text": "El producto falló antes de los 6 días de garantía. Ya fui al punto de servicio técnico y me dijeron que debía contactarlos a ustedes primero. Necesito solucion urgente.",
+    "category": "Garantía",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 160,
+    "text": "Por favor cambien el correo electrónico de mi cuenta. El que tengo registrado ya no lo uso. Necesito solucion urgente. No tengo claro por qué ocurrió el cobro.",
+    "category": "Cambio de datos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 161,
+    "text": "¿Pueden reenviar la factura del pedido ORD-2024-88272 al correo corporativo? Necesito solucion urgente. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Factura y documentos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 162,
+    "text": "La pantalla del sistema POS instalado tiene pixeles muertos en la zona central. Afecta la lectura de información.",
+    "category": "Tecnica",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 163,
+    "text": "Mi pedido tenía fecha de entrega el 28 de mayo y ya pasaron 25 días adicionales sin que llegue. 😡 Necesito solucion urgente.",
+    "category": "Entrega tardía",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 164,
+    "text": "Mi producto tiene 10 días de comprado y ya presentó una falla. Está dentro del período de garantía y quiero que me lo reparen o cambien. El problema ocurre a veces sí y a veces no.",
+    "category": "Garantía",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 165,
+    "text": "¿Cómo funciona el programa de puntos? No entiendo cómo los acumulo ni cómo los puedo redimir.",
+    "category": "Programa de fidelización",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 166,
+    "text": "Quiero cambiar los datos de la persona de contacto para facturación. El contador anterior renunció. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Cambio de datos",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 167,
+    "text": "El pedido muestra estado 'entregado' pero nadie firmó en mi dirección. Necesito que revisen.",
+    "category": "Pedido no entregado",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 168,
+    "text": "Quiero cancelar el pedido ORD-2024-17666 que hice hace unas horas. Me equivoqué en la talla y necesito hacer uno nuevo.",
+    "category": "Cancelación de pedido",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 169,
+    "text": "Hice un pedido hace 13 días y no tengo ninguna actualización. El número de guía no funciona. Necesito saber dónde está mi mercancía urgente. 😡 Necesito solucion urgente.",
+    "category": "Estado de pedido",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 170,
+    "text": "La empresa de mensajería que usan dañó mi producto durante el transporte. Necesito que me respondan por el daño.",
+    "category": "Logística y entrega",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 171,
+    "text": "La Superintendencia nos visita mañana y necesitamos los reportes que el sistema no genera hace 8 días. Riesgo de sanción millonaria. No sé si esto corresponde a soporte o facturación.",
+    "category": "Atención al cliente",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 172,
+    "text": "Quisiera solicitar la corrección de un error menor en mi factura. El valor difiere en pocos pesos del total real. 😡",
+    "category": "Facturación incorrecta",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 173,
+    "text": "necesito separar mi cuenta personal de la empresarial. están mezcladas desde el inicio. No tengo claro por qué ocurrió el cobro.",
+    "category": "Cambio de datos",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 174,
+    "text": "Quiero actualizar mi dirección de entrega para los próximos pedidos. Me cambié de casa. Necesito solucion urgente.",
+    "category": "Cambio de datos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 175,
+    "text": "La empresa de mensajería que usan dañó mi producto durante el transporte. Necesito que me respondan por el daño. Necesito solucion urgente.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 176,
+    "text": "Mi pedido lleva 23 días en la bodega de Cúcuta sin que nadie lo despache. El sistema dice 'en tránsito' pero no se mueve. 😡 El problema ocurre a veces sí y a veces no.",
+    "category": "Logística y entrega",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 177,
+    "text": "La persona del chat no me supo orientar y cerró la conversación sin solucionar nada. Necesito que alguien competente me atienda.",
+    "category": "Atención al cliente",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 178,
+    "text": "Quiero agregar una segunda dirección de entrega a mi perfil para envíos a la oficina. Necesito solucion urgente. 😡",
+    "category": "Cambio de datos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 179,
+    "text": "Necesito corregir mi fecha de nacimiento en el sistema. Hay un error de digitación: dice 15/09/1992 pero es 15/12/1992.",
+    "category": "Cambio de datos",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 180,
+    "text": "Creo que hubo un error en mi pedido. El artículo no coincide con la descripción de la orden. ¿Pueden verificar?",
     "category": "Producto incorrecto",
-    "priority": "baja",
-    "pqr_id": 190
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 181,
+    "text": "La página carga muy lento y en móvil es casi imposible navegar. Pierdo el carrito cada vez que salgo de la app. No sé si esto corresponde a soporte o facturación.",
+    "category": "Experiencia de compra",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 182,
+    "text": "Mi producto dejó de funcionar completamente a los 11 días de comprado. Fue un gasto de 30.000 pesos que necesito que me resuelvan urgente. Necesito solucion urgente.",
+    "category": "Garantía",
+    "priority": "critica"
+  },
+  {
+    "pqr_id": 183,
+    "text": "Solicito srvicio de garantía para el producto referencia ORD-2024-13160. Presenta problemas de funcionamiento y está en período de garantía según mi factura.",
+    "category": "Garantía",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 184,
+    "text": "Compré el 14 de septiembre y el pedido no aparece por ningún lado. La guía no registra movimiento desde hace 4 días. Quiero saber qué pasó con mi mercancía.",
+    "category": "Pedido no entregado",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 185,
+    "text": "La plataforma de gestión de inventario contratada tiene diferencias entre el stock real y el virtual.",
+    "category": "Servicio",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 186,
+    "text": "Pedí el artículo referencia A y me enviaron la referencia B. Son productos diferentes. Necesito el correcto.",
+    "category": "Producto incorrecto",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 187,
+    "text": "Recibí el paquete de otra persona con mi nombre. Al parecer mezclaron los pedidos en la bodega de distribución.",
+    "category": "Logística y entrega",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 188,
+    "text": "Quisiera solicitar la corrección de un error menor en mi fcatura. El valor difiere en pocos pesos del total real.",
+    "category": "Facturación incorrecta",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 189,
+    "text": "necesito cambiar el correo de mi cuenta. el actual fue hackeado y ya no tengo acceso.",
+    "category": "Cambio de datos",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 190,
+    "text": "Quiero eliminar una dirección de entrega antigua de mi perfil. Ya no vivo ahí. No sé si esto corresponde a soporte o facturación.",
+    "category": "Cambio de datos",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 191,
+    "text": "El precio que me facturaron no coincide con el que tenía en el carrito. Por favor revisen y corrijan la diferencia. Necesito solucion urgente.",
+    "category": "Facturación incorrecta",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 192,
+    "text": "Por favor cancelen el pedido ORD-2024-13091 antes de que sea despachado. Es urgente porque hay un error en los datos.",
+    "category": "Cancelación de pedido",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 193,
+    "text": "Mi producto tiene 18 días de comprado y ya presentó una falla. Está dentro del período de garantía y quiero que me lo reparen o cambien. No sé si esto corresponde a soporte o facturación.",
+    "category": "Garantía",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 194,
+    "text": "El UPS instalado no sostuvo la carga durante el apagón. El servidor se apagó abruptamente y perdimos datos. Necesito solucion urgente. Ya he reportado esto varias veces y nadie responde.",
+    "category": "Tecnica",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 195,
+    "text": "Pedí el artículo referencia A y me enviaron la referencia B. Son productos diferentes. Necesito el correcto. No tengo claro por qué ocurrió el cobro.",
+    "category": "Producto incorrecto",
+    "priority": "alta"
+  },
+  {
+    "pqr_id": 196,
+    "text": "El color del producto es diferente al de la foto. Además tiene una mancha que parece defecto de fábrica.",
+    "category": "Producto defectuoso",
+    "priority": "media"
+  },
+  {
+    "pqr_id": 197,
+    "text": "Necesito agregar a mi cónyuge como usuario autorizado de la cuenta.",
+    "category": "Cambio de datos",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 198,
+    "text": "¿Tienen servicio de entrega en el mismo día? ¿Cuál es el costo? No sé si esto corresponde a soporte o facturación.",
+    "category": "Logística y entrega",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 199,
+    "text": "Noto un pequeño descuadre en mi factura del 5 de diciembre. ¿Pueden revisarlo cuando tengan oportunidad?",
+    "category": "Facturación incorrecta",
+    "priority": "baja"
+  },
+  {
+    "pqr_id": 200,
+    "text": "¿El producto puede enviarse a mi ciudad? Necesito confirmación antes de comprarlo. El problema ocurre a veces sí y a veces no.",
+    "category": "Información de producto",
+    "priority": "baja"
   }
 ]

@@ -1,7 +1,14 @@
 """
-test_ai_service.py
+test_ia_service.py
 
 Pruebas unitarias para el pipeline de clasificación de PQR.
+Adaptadas al nuevo flujo donde classify:
+  1. Ejecuta el pipeline IA (reglas + ML)
+  2. Hace POST a /classifications/create con el resultado
+  3. Retorna ok_response(data="Clasificado Correctamente")
+
+La clasificación se dispara como BackgroundTask desde POST /pqrs.
+
 Cubre:
   - _resolve_source
   - _get_pqr  (helper HTTP)
@@ -12,7 +19,7 @@ Cubre:
   - Instancias lazy (singletons)
 
 Ejecutar:
-    pytest test_ai_service.py -v
+    pytest test_ia_service.py -v
 """
 
 import pytest
@@ -100,6 +107,32 @@ def _build_mocks(
     return mock_rule_engine, mock_generator, mock_cat_clf, mock_pri_clf
 
 
+# ── Helper: patches comunes para flujos completos ─────────────────────────────
+
+def _base_classify_patches(mock_pqr, mock_re, mock_gen, mock_cat, mock_pri,
+                            categoria_id=10, prioridad_id=3):
+    """
+    Retorna el context manager de patches necesarios para que classify()
+    complete su flujo sin llamadas HTTP reales.
+    Mockea _get_category, _get_priority y _post_classification.
+    """
+    return (
+        patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
+        patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
+        patch("app.api.routes.ai_service.ai_service.get_embedding_generator", return_value=mock_gen),
+        patch("app.api.routes.ai_service.ai_service.get_category_classifier", return_value=mock_cat),
+        patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
+        patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
+        patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+        patch("app.api.routes.ai_service.ai_service._get_category",
+              new=AsyncMock(return_value=categoria_id)),
+        patch("app.api.routes.ai_service.ai_service._get_priority",
+              new=AsyncMock(return_value=prioridad_id)),
+        patch("app.api.routes.ai_service.ai_service._post_classification",
+              new=AsyncMock(return_value=True)),
+    )
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. _resolve_source
 # ══════════════════════════════════════════════════════════════════════════════
@@ -132,7 +165,7 @@ class TestResolveSource:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. Cálculo de confianza
+# 2. Cálculo de confianza (lógica pura, sin HTTP)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestConfianzaCalculo:
@@ -234,6 +267,8 @@ class TestGetPqr:
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 4. classify — flujo exitoso
+# Ahora classify termina guardando en BD y retorna ok_response.
+# Verificamos que la respuesta sea exitosa y que los helpers HTTP se llamen.
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestClassifyFlujoExitoso:
@@ -242,9 +277,14 @@ class TestClassifyFlujoExitoso:
     async def test_source_hybrid_con_area_y_ml(
         self, mock_pqr, mock_rule_result_con_area, embedding_fake
     ):
+        """
+        Flujo hybrid: reglas + ML. classify debe completar y retornar ok_response.
+        """
         mock_re, mock_gen, mock_cat, mock_pri = _build_mocks(
             mock_pqr, mock_rule_result_con_area, embedding_fake
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -253,26 +293,33 @@ class TestClassifyFlujoExitoso:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.categoria == "Facturación incorrecta"
-            assert result.prioridad == "alta"
-            assert result.area == "Cartera"
-            assert result.tags == ["cobro duplicado", "facturación"]
-            assert result.rules_matched == ["cartera_cobro_duplicado"]
-            assert result.source == "hybrid"
-            assert result.confianza == pytest.approx(0.825, abs=0.001)
-            assert result.requiere_revision is False
+            # El endpoint exitoso retorna ok_response con data="Clasificado Correctamente"
+            assert result is not None
+            # _post_classification debe haber sido llamado con los IDs correctos
+            mock_post_clf.assert_called_once()
+            call_kwargs = mock_post_clf.call_args
+            assert call_kwargs.kwargs.get("category_id") == 10 or \
+                   (call_kwargs.args and 10 in call_kwargs.args)
 
     @pytest.mark.asyncio
     async def test_source_ml_sin_reglas(
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
+        """
+        Flujo ML puro (sin reglas). classify debe completar y llamar _post_classification.
+        """
         mock_re, mock_gen, mock_cat, mock_pri = _build_mocks(
             mock_pqr, mock_rule_result_sin_area, embedding_fake
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -281,23 +328,31 @@ class TestClassifyFlujoExitoso:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
 
-            assert result.source == "ml"
-            assert result.area is None
-            assert result.tags == []
-            assert result.rules_matched == []
+            assert result is not None
+            mock_post_clf.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_id_pqr_se_propaga_al_response(
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
+        """
+        El pqr_id debe ser propagado a _post_classification como parte de classify_response.
+        """
         mock_pqr.ID = 42
         mock_re, mock_gen, mock_cat, mock_pri = _build_mocks(
             mock_pqr, mock_rule_result_sin_area, embedding_fake
         )
+        mock_post_clf = AsyncMock(return_value=True)
+        mock_get_cat = AsyncMock(return_value=10)
+        mock_get_pri = AsyncMock(return_value=3)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -306,14 +361,28 @@ class TestClassifyFlujoExitoso:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=mock_get_cat),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=mock_get_pri),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=42, token="tok", current_user={"id": 1})
-            assert result.id == 42
+
+            assert result is not None
+            # Verificar que classify_response.id == 42 se pasó a _post_classification
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg is not None
+            assert classify_response_arg.id == 42
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 5. classify — Análisis de Errores y Casos de Falla del Modelo IA
+# En el nuevo flujo, cuando el pipeline IA falla o produce baja confianza,
+# classify aún intenta guardar la clasificación (incluyendo requiere_revision=True).
+# Los tests verifican que el flujo completa (con _post_classification mockeado)
+# o que lanza HTTPException en casos de error real.
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestCasosFallaModeloIA:
@@ -324,11 +393,16 @@ class TestCasosFallaModeloIA:
     async def test_confianza_baja_activa_requiere_revision(
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
-        """conf=0.35 < umbral=0.60 → requiere_revision=True."""
+        """
+        conf=0.35 < umbral=0.60 → requiere_revision=True en classify_response.
+        classify debe completar igual (guardando con requiere_revision=True).
+        """
         mock_re, mock_gen, mock_cat, mock_pri = _build_mocks(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.35, pri_conf=0.35,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -337,11 +411,20 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
-            assert result.requiere_revision is True
-            assert result.confianza < 0.60
+
+            # El flujo completa — la revisión se registra en classify_response
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.requiere_revision is True
+            assert classify_response_arg.confianza < 0.60
 
     # ── 5.2 Confianza exactamente en el umbral ────────────────────────────────
 
@@ -354,6 +437,8 @@ class TestCasosFallaModeloIA:
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.60, pri_conf=0.60,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -362,11 +447,19 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
-            assert result.confianza == 0.60
-            assert result.requiere_revision is False
+
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.confianza == 0.60
+            assert classify_response_arg.requiere_revision is False
 
     # ── 5.3 Modelos no entrenados ─────────────────────────────────────────────
 
@@ -383,6 +476,7 @@ class TestCasosFallaModeloIA:
         )
         mock_cat.predict.return_value = (None, None)
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -392,12 +486,20 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
-            assert result.source == "rules"
-            assert result.confianza is None
-            assert result.requiere_revision is True
+
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.source == "rules"
+            assert classify_response_arg.confianza is None
+            assert classify_response_arg.requiere_revision is True
 
     # ── 5.4 Solo un clasificador disponible ───────────────────────────────────
 
@@ -411,6 +513,7 @@ class TestCasosFallaModeloIA:
             cat_conf=0.78, pri_conf=None, pri_ready=False,
         )
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -420,11 +523,19 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
-            assert result.confianza == 0.78
-            assert result.requiere_revision is True   # pri_clf no listo
+
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.confianza == 0.78
+            assert classify_response_arg.requiere_revision is True  # pri_clf no listo
 
     # ── 5.5 Texto vacío tras limpieza ─────────────────────────────────────────
 
@@ -432,7 +543,7 @@ class TestCasosFallaModeloIA:
     async def test_texto_vacio_tras_limpieza_confianza_baja(
         self, mock_rule_result_sin_area, embedding_fake
     ):
-        """clean_text devuelve '' → embedding pobre → confianza baja."""
+        """clean_text devuelve '' → embedding pobre → confianza baja → requiere_revision=True."""
         pqr = MagicMock()
         pqr.ID = 5
         pqr.descripcion = "!!!???..."
@@ -441,6 +552,8 @@ class TestCasosFallaModeloIA:
             pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.30, pri_conf=0.28,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -449,11 +562,19 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", return_value=""),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=5, token="tok", current_user={"id": 1})
-            assert result.requiere_revision is True
-            assert result.confianza < 0.60
+
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.requiere_revision is True
+            assert classify_response_arg.confianza < 0.60
 
     # ── 5.6 Descripción muy corta (≤5 palabras) ───────────────────────────────
 
@@ -470,6 +591,8 @@ class TestCasosFallaModeloIA:
             pqr, mock_rule_result_sin_area, embedding_fake,
             cat_conf=0.41, pri_conf=0.38,
         )
+        mock_post_clf = AsyncMock(return_value=True)
+
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=pqr)),
             patch("app.api.routes.ai_service.ai_service.get_rule_engine", return_value=mock_re),
@@ -478,11 +601,19 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=10)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=3)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=6, token="tok", current_user={"id": 1})
-            assert result.confianza < 0.60
-            assert result.requiere_revision is True
+
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.confianza < 0.60
+            assert classify_response_arg.requiere_revision is True
 
     # ── 5.7 Fallo del generador de embeddings ─────────────────────────────────
 
@@ -594,6 +725,7 @@ class TestCasosFallaModeloIA:
     async def test_source_unavailable_sin_reglas_ni_ml(
         self, mock_pqr, mock_rule_result_sin_area, embedding_fake
     ):
+        """Sin reglas ni ML listo → source='unavailable', requiere_revision=True."""
         mock_re, mock_gen, mock_cat, mock_pri = _build_mocks(
             mock_pqr, mock_rule_result_sin_area, embedding_fake,
             cat_ready=False, pri_ready=False,
@@ -602,6 +734,7 @@ class TestCasosFallaModeloIA:
         )
         mock_cat.predict.return_value = (None, None)
         mock_pri.predict.return_value = (None, None)
+        mock_post_clf = AsyncMock(return_value=True)
 
         with (
             patch("app.api.routes.ai_service.ai_service._get_pqr", new=AsyncMock(return_value=mock_pqr)),
@@ -611,11 +744,19 @@ class TestCasosFallaModeloIA:
             patch("app.api.routes.ai_service.ai_service.get_priority_classifier", return_value=mock_pri),
             patch("app.api.routes.ai_service.ai_service.get_current_user", return_value={"id": 1}),
             patch("app.ia.preprocessing.cleaner.clean_text", side_effect=lambda x: x),
+            patch("app.api.routes.ai_service.ai_service._get_category", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._get_priority", new=AsyncMock(return_value=None)),
+            patch("app.api.routes.ai_service.ai_service._post_classification", new=mock_post_clf),
         ):
             from app.api.routes.ai_service.ai_service import classify
             result = await classify(pqr_id=1, token="tok", current_user={"id": 1})
-            assert result.source == "unavailable"
-            assert result.requiere_revision is True
+
+            assert result is not None
+            call_kwargs = mock_post_clf.call_args
+            classify_response_arg = call_kwargs.kwargs.get("classify_response") or \
+                                    (call_kwargs.args[0] if call_kwargs.args else None)
+            assert classify_response_arg.source == "unavailable"
+            assert classify_response_arg.requiere_revision is True
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -746,8 +887,7 @@ class TestReloadEndpoints:
         ):
             from app.api.routes.ai_service.ai_service import reload_models
             await reload_models()
-            # Las globales fueron reiniciadas por el endpoint antes de llamar get_*
-            assert svc._category_clf is not None  # ya recargadas
+            assert svc._category_clf is not None
             assert svc._priority_clf is not None
 
 

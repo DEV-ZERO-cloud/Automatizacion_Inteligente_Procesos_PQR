@@ -41,6 +41,69 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # ── Configuración ──────────────────────────────────────────────────────────────
 
 CSV_REQUIRED_COLS     = {"texto", "categoria", "prioridad"}
+
+
+# ── Features de reglas ─────────────────────────────────────────────────────────
+#
+# Cada feature es una señal OBJETIVA de prioridad extraída por el RuleEngine.
+# Se concatenan al embedding del transformer para que el clasificador de prioridad
+# tenga señales explícitas más allá del espacio semántico del texto.
+#
+# CRÍTICO: este orden y estas tags deben ser IDÉNTICOS en train y en inferencia.
+# Si cambias aquí, cambia también PRIORITY_RULE_TAGS en classifiers.py.
+
+PRIORITY_RULE_TAGS = [
+    # Señales que implican CRÍTICA
+    "cuenta hackeada",       # fraude_cuenta_comprometida
+    "acceso no autorizado",  # fraude_cuenta_comprometida
+    "fraude",                # fraude_estafa_robo
+    "cargo no reconocido",   # fraude_cargo_no_reconocido
+    "phishing",              # fraude_phishing
+    "acción legal",          # legal_acciones_formales
+    "SIC",                   # legal_acciones_formales
+    # Señales que implican ALTA
+    "pedido extraviado",     # logistica_pedido_perdido
+    "entrega fallida",       # logistica_entrega_fallida
+    "cobro duplicado",       # cartera_cobro_duplicado
+    "reembolso",             # cartera_reembolso
+    "falla técnica",         # garantias_falla_tecnica
+    "falla plataforma",      # tech_falla_plataforma
+    "pago fallido",          # tech_pago_fallido
+    # Señales que implican MEDIA / contexto
+    "escalamiento",          # atencion_sugerencia_supervisor
+    "caso sin resolver",     # atencion_caso_sin_resolver
+    "producto defectuoso",   # garantias_producto_defectuoso
+    "valor incorrecto",      # cartera_valor_incorrecto
+]
+
+
+def build_rule_features(texts: list[str]) -> np.ndarray:
+    """
+    Genera un vector binario de features objetivas para cada texto usando el RuleEngine.
+
+    Retorna np.ndarray de shape (N, len(PRIORITY_RULE_TAGS)) con valores 0.0 / 1.0.
+    Se concatena al embedding del transformer antes de entrenar.
+    """
+    from app.ia.rule_engine.engine import RuleEngine  # import aquí para no romper el módulo si no está disponible
+
+    engine = RuleEngine()
+    tag_index = {tag: i for i, tag in enumerate(PRIORITY_RULE_TAGS)}
+    n_features = len(PRIORITY_RULE_TAGS)
+
+    features = np.zeros((len(texts), n_features), dtype=np.float32)
+    for row_idx, text in enumerate(texts):
+        result = engine.evaluate(text)
+        for tag in result.tags:
+            if tag in tag_index:
+                features[row_idx, tag_index[tag]] = 1.0
+
+    logger.info(
+        "Rule features generadas: shape=%s | tags con al menos 1 hit: %d/%d",
+        features.shape,
+        int((features.sum(axis=0) > 0).sum()),
+        n_features,
+    )
+    return features
 MODELS_DIR            = Path(__file__).parent.parent.parent.parent.parent / "data" / "models"
 MIN_PER_CLASS_DEFAULT = 5
 CV_MIN_SAMPLES        = 30    # mínimo de ejemplos para hacer cross-validation
@@ -101,6 +164,29 @@ def generate_embeddings(texts: list[str]) -> np.ndarray:
     embeddings = generator.generate(texts)
     logger.info("Embeddings generados: shape=%s", embeddings.shape)
     return embeddings
+
+
+def generate_priority_embeddings(texts: list[str]) -> np.ndarray:
+    """
+    Embedding extendido exclusivo para el clasificador de PRIORIDAD.
+
+    Concatena al embedding semántico del transformer un vector binario de
+    features objetivas extraídas por el RuleEngine (señales de fraude, acción
+    legal, entrega fallida, etc.).
+
+    Shape resultante: (N, 384 + len(PRIORITY_RULE_TAGS))
+
+    CRÍTICO: classifiers.py debe aplicar la misma transformación en inferencia
+    usando el mismo PRIORITY_RULE_TAGS en el mismo orden.
+    """
+    base = generate_embeddings(texts)
+    rule_feats = build_rule_features(texts)
+    extended = np.concatenate([base, rule_feats], axis=1)
+    logger.info(
+        "Priority embeddings: %d base + %d rule_features = %d dims totales",
+        base.shape[1], rule_feats.shape[1], extended.shape[1],
+    )
+    return extended
 
 
 # ── Submuestreo estratificado para GridSearch ──────────────────────────────────
@@ -260,14 +346,15 @@ def run_training(
     logger.info("=== Iniciando entrenamiento ===")
     logger.info("CSV: %s | target: %s | min_per_class: %d", csv_path, target, min_per_class)
 
-    rows       = load_csv(csv_path)
-    texts      = [r["texto"] for r in rows]
-    embeddings = generate_embeddings(texts)
+    rows  = load_csv(csv_path)
+    texts = [r["texto"] for r in rows]
     results: dict[str, str] = {}
 
     if target in ("all", "categoria"):
+        # Categoría usa embeddings base — ya tiene 99.5% accuracy, no necesita features extra
+        embeddings_cat = generate_embeddings(texts)
         labels_cat = [r["categoria"] for r in rows]
-        pair = train_single(embeddings, labels_cat, "CategoryClassifier", min_per_class)
+        pair = train_single(embeddings_cat, labels_cat, "CategoryClassifier", min_per_class)
         if pair:
             save_model(pair[0], pair[1], "category_classifier.pkl", "category_labels.pkl")
             results["categoria"] = f"ok ({len(pair[1])} clases)"
@@ -275,8 +362,10 @@ def run_training(
             results["categoria"] = "skipped (datos insuficientes)"
 
     if target in ("all", "prioridad"):
+        # Prioridad usa embeddings extendidos: base + rule_features objetivas
+        embeddings_pri = generate_priority_embeddings(texts)
         labels_pri = [r["prioridad"] for r in rows]
-        pair = train_single(embeddings, labels_pri, "PriorityClassifier", min_per_class)
+        pair = train_single(embeddings_pri, labels_pri, "PriorityClassifier", min_per_class)
         if pair:
             save_model(pair[0], pair[1], "priority_classifier.pkl", "priority_labels.pkl")
             results["prioridad"] = f"ok ({len(pair[1])} clases)"

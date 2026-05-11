@@ -4,6 +4,26 @@ import numpy as np
 from pathlib import Path
 from typing import Optional, Tuple
 
+# Agrega esto al tope de priority.py, después de los imports
+from app.ia.classifier.engine import RuleEngine
+
+PRIORITY_RULE_TAGS = [
+    "cuenta hackeada", "acceso no autorizado", "fraude", "cargo no reconocido",
+    "phishing", "acción legal", "SIC",
+    "pedido extraviado", "entrega fallida", "cobro duplicado", "reembolso",
+    "falla técnica", "falla plataforma", "pago fallido",
+    "escalamiento", "caso sin resolver", "producto defectuoso", "valor incorrecto",
+]
+_TAG_INDEX = {tag: i for i, tag in enumerate(PRIORITY_RULE_TAGS)}
+
+def _build_rule_features(text: str) -> np.ndarray:
+    result = RuleEngine().evaluate(text)
+    features = np.zeros(len(PRIORITY_RULE_TAGS), dtype=np.float32)
+    for tag in result.tags:
+        if tag in _TAG_INDEX:
+            features[_TAG_INDEX[tag]] = 1.0
+    return features
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,14 +83,16 @@ class PriorityClassifier:
             )
         return embedding
 
-    def predict(self, embedding: np.ndarray) -> Tuple[Optional[str], Optional[float]]:
-        """Predice la prioridad dado un embedding. Retorna (prioridad, confianza)."""
+    def predict(self, embedding: np.ndarray, text: str = "") -> Tuple[Optional[str], Optional[float]]:
         if not self.is_ready():
             return None, None
         try:
-            emb = self._normalize(embedding)
-            proba: np.ndarray = self.model.predict_proba(emb)[0]
-            idx: int = int(proba.argmax())
+            emb = self._normalize(embedding)          # → (1, 384)
+            if text:
+                rule_feats = _build_rule_features(text).reshape(1, -1)  # → (1, 18)
+                emb = np.concatenate([emb, rule_feats], axis=1)         # → (1, 402)
+            proba = self.model.predict_proba(emb)[0]
+            idx = int(proba.argmax())
             return self.labels[idx], float(proba[idx])
         except Exception:
             logger.exception("Error en predicción de prioridad")

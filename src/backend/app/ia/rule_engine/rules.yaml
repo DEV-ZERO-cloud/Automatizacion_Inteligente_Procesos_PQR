@@ -9,7 +9,7 @@
 #   OR  → basta con que UN keyword aparezca en el texto (default)
 #   AND → TODOS los keywords deben aparecer
 #
-# Prioridad: menor número = se evalúa primero.
+# Prioridad: 1 = baja | 2 = media | 3 = alta | 4 = urgente | 5 = crítica
 # set_area solo se aplica si el área aún no fue asignada.
 
 rules:
@@ -19,7 +19,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: fraude_cuenta_comprometida
-    priority: 1
+    priority: 5
     conditions:
       operator: OR
       items:
@@ -31,7 +31,7 @@ rules:
       add_tags: [cuenta hackeada, acceso no autorizado, urgente]
 
   - id: fraude_cargo_no_reconocido
-    priority: 2
+    priority: 5
     conditions:
       operator: OR
       items:
@@ -43,7 +43,7 @@ rules:
       add_tags: [cargo no reconocido, fraude, urgente]
 
   - id: fraude_estafa_robo
-    priority: 3
+    priority: 5
     conditions:
       operator: OR
       items:
@@ -54,7 +54,7 @@ rules:
       add_tags: [fraude, seguridad, urgente]
 
   - id: fraude_phishing
-    priority: 4
+    priority: 5
     conditions:
       operator: OR
       items:
@@ -70,7 +70,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: legal_acciones_formales
-    priority: 5
+    priority: 4
     conditions:
       operator: OR
       items:
@@ -83,7 +83,7 @@ rules:
       add_tags: [acción legal, SIC, ente de control]
 
   - id: legal_abogado
-    priority: 6
+    priority: 4
     conditions:
       operator: OR
       items:
@@ -98,7 +98,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: cartera_cobro_duplicado
-    priority: 10
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -110,7 +110,7 @@ rules:
       add_tags: [cobro duplicado, facturación incorrecta]
 
   - id: cartera_valor_incorrecto
-    priority: 11
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -123,7 +123,7 @@ rules:
       add_tags: [valor incorrecto, facturación]
 
   - id: cartera_descuento_no_aplicado
-    priority: 12
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -135,7 +135,7 @@ rules:
       add_tags: [descuento no aplicado, cupón]
 
   - id: cartera_reembolso
-    priority: 13
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -148,7 +148,7 @@ rules:
       add_tags: [reembolso, devolución de dinero]
 
   - id: cartera_factura_documento
-    priority: 14
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -162,7 +162,7 @@ rules:
       add_tags: [factura, comprobante, documentos]
 
   - id: cartera_cargo_no_justificado
-    priority: 15
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -177,7 +177,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: logistica_pedido_perdido
-    priority: 20
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -189,7 +189,7 @@ rules:
       add_tags: [pedido extraviado, urgente]
 
   - id: logistica_no_entrega
-    priority: 21
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -201,7 +201,7 @@ rules:
       add_tags: [pedido no entregado, entrega]
 
   - id: logistica_entrega_fallida
-    priority: 22
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -213,7 +213,7 @@ rules:
       add_tags: [entrega fallida, entrega incorrecta]
 
   - id: logistica_retraso
-    priority: 23
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -226,7 +226,7 @@ rules:
       add_tags: [entrega tardía, retraso]
 
   - id: logistica_rastreo
-    priority: 24
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -239,7 +239,7 @@ rules:
       add_tags: [rastreo, estado de pedido]
 
   - id: logistica_cancelacion
-    priority: 25
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -251,7 +251,7 @@ rules:
       add_tags: [cancelación, anulación]
 
   - id: logistica_producto_incorrecto
-    priority: 26
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -264,7 +264,7 @@ rules:
       add_tags: [producto incorrecto, error de envío]
 
   - id: logistica_transportadora
-    priority: 27
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -275,7 +275,7 @@ rules:
       add_tags: [transportadora, servicio de entrega]
 
   - id: logistica_devolucion_fisica
-    priority: 28
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -287,7 +287,7 @@ rules:
       add_tags: [devolución física, retorno]
 
   - id: logistica_cobertura
-    priority: 29
+    priority: 3
     conditions:
       operator: OR
       items:
@@ -303,7 +303,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: garantias_producto_defectuoso
-    priority: 40
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -316,7 +316,7 @@ rules:
       add_tags: [producto defectuoso, calidad]
 
   - id: garantias_falla_tecnica
-    priority: 41
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -328,7 +328,7 @@ rules:
       add_tags: [falla técnica, mal funcionamiento]
 
   - id: garantias_solicitud_cobertura
-    priority: 42
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -340,7 +340,7 @@ rules:
       add_tags: [garantía, cobertura]
 
   - id: garantias_servicio_tecnico
-    priority: 43
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -355,7 +355,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: atencion_queja_agente
-    priority: 50
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -368,7 +368,7 @@ rules:
       add_tags: [queja agente, mala atención]
 
   - id: atencion_espera_excesiva
-    priority: 51
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -381,7 +381,7 @@ rules:
       add_tags: [tiempo de espera, atención demorada]
 
   - id: atencion_caso_sin_resolver
-    priority: 52
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -394,7 +394,7 @@ rules:
       add_tags: [caso sin resolver, seguimiento]
 
   - id: atencion_publicidad_engañosa
-    priority: 53
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -407,7 +407,7 @@ rules:
       add_tags: [publicidad engañosa, precio]
 
   - id: atencion_felicitacion
-    priority: 54
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -420,7 +420,7 @@ rules:
       add_tags: [felicitación, satisfacción positiva]
 
   - id: atencion_sugerencia
-    priority: 55
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -432,7 +432,7 @@ rules:
       add_tags: [sugerencia, mejora]
 
   - id: atencion_sugerencia_supervisor
-    priority: 56
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -448,7 +448,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: producto_disponibilidad
-    priority: 60
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -460,7 +460,7 @@ rules:
       add_tags: [disponibilidad, inventario]
 
   - id: producto_informacion_tecnica
-    priority: 61
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -473,7 +473,7 @@ rules:
       add_tags: [información técnica, especificaciones]
 
   - id: producto_comparacion
-    priority: 62
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -488,7 +488,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: fidelizacion_puntos
-    priority: 70
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -501,7 +501,7 @@ rules:
       add_tags: [fidelización, puntos]
 
   - id: fidelizacion_beneficios
-    priority: 71
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -513,7 +513,7 @@ rules:
       add_tags: [beneficios, nivel de membresía]
 
   - id: fidelizacion_referidos
-    priority: 72
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -528,7 +528,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: datos_personales_contacto
-    priority: 80
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -540,7 +540,7 @@ rules:
       add_tags: [actualización de datos, datos personales]
 
   - id: datos_personales_cuenta
-    priority: 81
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -552,7 +552,7 @@ rules:
       add_tags: [acceso a cuenta, contraseña]
 
   - id: datos_personales_eliminacion
-    priority: 82
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -567,7 +567,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: tech_falla_plataforma
-    priority: 90
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -580,7 +580,7 @@ rules:
       add_tags: [falla plataforma, error técnico]
 
   - id: tech_pago_fallido
-    priority: 91
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -592,7 +592,7 @@ rules:
       add_tags: [pago fallido, error de pago]
 
   - id: tech_app_movil
-    priority: 92
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -604,7 +604,7 @@ rules:
       add_tags: [app móvil, aplicación]
 
   - id: tech_notificaciones
-    priority: 93
+    priority: 2
     conditions:
       operator: OR
       items:
@@ -620,7 +620,7 @@ rules:
   # ══════════════════════════════════════════════════════════════════════════════
 
   - id: comercial_promociones
-    priority: 100
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -632,7 +632,7 @@ rules:
       add_tags: [promoción, descuento]
 
   - id: comercial_precio
-    priority: 101
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -643,7 +643,7 @@ rules:
       add_tags: [precio, consulta comercial]
 
   - id: comercial_pedido_empresarial
-    priority: 102
+    priority: 1
     conditions:
       operator: OR
       items:
@@ -655,7 +655,7 @@ rules:
       add_tags: [compra empresarial, corporativo]
 
   - id: cartera_consumo_incorrecto
-    priority: 16
+    priority: 3
     conditions:
       operator: OR
       items:

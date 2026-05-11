@@ -35,6 +35,52 @@ def _infer_dim(model) -> Optional[int]:
     return None
 
 
+# ── Features de reglas para prioridad ─────────────────────────────────────────
+#
+# CRÍTICO: este orden debe ser IDÉNTICO al de train_classifiers.py.
+# Cualquier cambio aquí requiere reentrenar el PriorityClassifier.
+
+PRIORITY_RULE_TAGS = [
+    # Señales que implican CRÍTICA
+    "cuenta hackeada",
+    "acceso no autorizado",
+    "fraude",
+    "cargo no reconocido",
+    "phishing",
+    "acción legal",
+    "SIC",
+    # Señales que implican ALTA
+    "pedido extraviado",
+    "entrega fallida",
+    "cobro duplicado",
+    "reembolso",
+    "falla técnica",
+    "falla plataforma",
+    "pago fallido",
+    # Señales de contexto / MEDIA
+    "escalamiento",
+    "caso sin resolver",
+    "producto defectuoso",
+    "valor incorrecto",
+]
+
+_TAG_INDEX: dict[str, int] = {tag: i for i, tag in enumerate(PRIORITY_RULE_TAGS)}
+
+
+def _build_rule_features(text: str) -> np.ndarray:
+    """
+    Genera el vector binario de features objetivas para un texto en inferencia.
+    Usa el RuleEngine (importado lazy para no romper el módulo si no está disponible).
+    """
+    from app.ia.rule_engine.engine import RuleEngine
+    result = RuleEngine().evaluate(text)
+    features = np.zeros(len(PRIORITY_RULE_TAGS), dtype=np.float32)
+    for tag in result.tags:
+        if tag in _TAG_INDEX:
+            features[_TAG_INDEX[tag]] = 1.0
+    return features
+
+
 # ── Base compartida ────────────────────────────────────────────────────────────
 
 class _BaseClassifier:
@@ -144,7 +190,39 @@ class PriorityClassifier(_BaseClassifier):
     """
     Clasifica la PRIORIDAD de la PQR.
     Salida: "Crítica" | "Alta" | "Media" | "Baja"
+
+    En inferencia extiende el embedding base con features objetivas del RuleEngine
+    (misma transformación que en train_classifiers.py → generate_priority_embeddings).
     """
     model_file  = "priority_classifier.pkl"
     labels_file = "priority_labels.pkl"
     name        = "PriorityClassifier"
+
+    def predict(self, embedding: np.ndarray, text: str = "") -> tuple[Optional[str], Optional[float]]:
+        """
+        Predice la prioridad dado un embedding base y el texto original.
+
+        Args:
+            embedding: embedding base del transformer (shape 1-D o 2-D).
+            text:      texto original — se usa para construir las rule_features.
+                       Pasar siempre que se disponga de él.
+
+        Returns:
+            (label, confianza) o (None, None) si el modelo no está listo.
+        """
+        if not self.is_ready():
+            return None, None
+        try:
+            emb = self._normalize(embedding)           # → (1, 384)
+
+            if text:
+                rule_feats = _build_rule_features(text)             # → (19,)
+                rule_feats = rule_feats.reshape(1, -1)              # → (1, 19)
+                emb = np.concatenate([emb, rule_feats], axis=1)     # → (1, 403)
+
+            proba = self.model.predict_proba(emb)[0]
+            idx   = int(proba.argmax())
+            return self.labels[idx], float(proba[idx])
+        except Exception:
+            logger.exception("[%s] Error en predicción.", self.name)
+            return None, None

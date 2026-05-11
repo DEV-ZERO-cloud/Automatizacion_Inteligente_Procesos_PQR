@@ -98,17 +98,12 @@ def create_classification(classify_response: ClassifyResponseIn) ->Classificatio
 
 # ── Helper HTTP ────────────────────────────────────────────────────────────────
 
-async def _predict_parallel(embedding, cat_clf, pri_clf):
+async def _predict_parallel(embedding, text, cat_clf, pri_clf):
     loop = asyncio.get_event_loop()
-
     cat_future = loop.run_in_executor(_executor, cat_clf.predict, embedding)
-    pri_future = loop.run_in_executor(_executor, pri_clf.predict, embedding)
-
-    (categoria, cat_conf), (prioridad, pri_conf) = await asyncio.gather(
-        cat_future, pri_future
-    )
+    pri_future = loop.run_in_executor(_executor, pri_clf.predict, embedding, text)
+    (categoria, cat_conf), (prioridad, pri_conf) = await asyncio.gather(cat_future, pri_future)
     return categoria, cat_conf, prioridad, pri_conf
-
 async def _get_pqr(pqr_id: int, token: str) -> PQRCreate:
     client = get_http_client()
     response = await client.get(
@@ -230,7 +225,7 @@ async def classify(
         pri_clf = get_priority_classifier()
 
         categoria, cat_conf, prioridad, pri_conf = await _predict_parallel(
-            embedding, cat_clf, pri_clf
+            embedding, text, cat_clf, pri_clf
         )
         # ── 4. Confianza global y flag de revisión ─────────────────────────────
         confidences = [c for c in [cat_conf, pri_conf] if c is not None]
